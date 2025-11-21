@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>藍循節奏大師：全屏觸控版</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
             /* Core Theme */
@@ -21,11 +24,9 @@
             --rank-b: #facc15;
             --rank-c: #fb923c;
             --rank-d: #f87171;
-
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
         }
-
         body {
             margin: 0;
             background-color: var(--bg-dark);
@@ -40,7 +41,6 @@
             user-select: none;
             touch-action: none;
         }
-
         #game-wrapper {
             position: relative;
             width: 100%;
@@ -53,9 +53,7 @@
             border: 1px solid var(--glass-border);
             overflow: hidden;
         }
-
         canvas { display: block; width: 100%; height: 100%; }
-
         /* Touch Zones */
         .touch-layer {
             position: absolute; left: 0; width: 100%; height: 50%;
@@ -63,14 +61,12 @@
         }
         #touch-p1 { top: 0; }
         #touch-p2 { top: 50%; }
-
         /* UI Layout */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; display: flex; flex-direction: column;
             justify-content: space-between; padding: 25px; box-sizing: border-box; z-index: 20;
         }
-
         .hud-bar {
             display: flex; justify-content: space-between; align-items: center;
             font-size: 20px; font-weight: 800; letter-spacing: 1px;
@@ -79,14 +75,12 @@
         }
         .p1-hud { background: linear-gradient(90deg, rgba(34,211,238,0.15), transparent); border-left: 4px solid var(--p1-color); color: var(--p1-color); }
         .p2-hud { background: linear-gradient(90deg, rgba(244,114,182,0.15), transparent); border-left: 4px solid var(--p2-color); color: var(--p2-color); opacity: 0; }
-
-        .lives { letter-spacing: 2px; font-size: 22px; }
-        .hud-center { 
+        .lives { letter-spacing: 2px; font-size: 22px; min-width: 100px; text-align: right; } /* 加了 min-width 保持佈局穩定 */
+        .hud-center {
             position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
             color: var(--text-secondary); font-size: 14px; font-weight: 700; letter-spacing: 2px;
             background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px;
         }
-
         #center-notify {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 90px; font-weight: 900; text-transform: uppercase;
@@ -94,15 +88,22 @@
             filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
             transition: all 0.2s ease-out;
         }
-
         /* Screens */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            overflow-y: auto; 
         }
         .screen.active { opacity: 1; pointer-events: auto; }
+        
+        /* Result Screen Specific Layout Fix */
+        #result-screen {
+            justify-content: flex-start;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
 
         h1 {
             font-size: 52px; margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;
@@ -111,7 +112,6 @@
             text-shadow: 0 10px 30px rgba(34, 211, 238, 0.2);
         }
         .subtitle { color: var(--text-secondary); font-size: 16px; margin-bottom: 30px; letter-spacing: 3px; text-transform: uppercase; }
-
         /* Controls */
         .control-panel {
             display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
@@ -119,16 +119,15 @@
             border-radius: 20px; border: 1px solid var(--glass-border); margin-bottom: 25px;
         }
         .control-group.full { grid-column: span 2; }
-
         label { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; display: block; }
-
         select, .btn {
             padding: 12px; border-radius: 10px; background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--glass-border); color: white; font-family: inherit;
             font-size: 15px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
         }
         select:hover { border-color: var(--p1-color); background: rgba(0,0,0,0.5); }
-
+        .control-group.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
+        
         .toggle-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); background: rgba(0,0,0,0.3); border-radius: 10px; padding: 4px; gap: 4px; }
         .toggle-btn {
             padding: 10px 5px; border: none; background: transparent;
@@ -142,7 +141,6 @@
         .toggle-btn[data-mode="survival"].active { color: #facc15; }
         .toggle-btn[data-mode="vanishing-survival"].active { color: #f87171; }
         .toggle-btn[data-val="2"].active { color: var(--p2-color); }
-
         .btn-start {
             padding: 15px 80px; font-size: 22px; font-weight: 800; width: auto;
             background: linear-gradient(135deg, var(--p1-color), #0ea5e9);
@@ -151,18 +149,16 @@
         }
         .btn-start:hover { transform: scale(1.05); filter: brightness(1.1); }
         .btn-start:active { transform: scale(0.95); }
-
         /* Results */
         .summary-bar {
-            display: flex; gap: 30px; margin-bottom: 30px;
+            display: flex; gap: 30px; margin-bottom: 20px;
             background: rgba(255,255,255,0.05); padding: 10px 30px; border-radius: 50px;
             border: 1px solid var(--glass-border);
         }
         .sum-item { text-align: center; }
         .sum-label { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 700; }
         .sum-val { font-size: 16px; font-weight: 700; color: white; }
-
-        .result-flex { display: flex; justify-content: center; gap: 30px; width: 100%; padding: 0 30px; margin-bottom: 30px; }
+        .result-flex { display: flex; justify-content: center; gap: 30px; width: 100%; padding: 0 30px; margin-bottom: 10px; }
         
         .res-card {
             flex: 1; background: rgba(255,255,255,0.03); border-radius: 20px;
@@ -176,41 +172,38 @@
         .res-score { font-size: 36px; font-weight: 900; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
         
         /* Enhanced Rank Display for 2P */
-        .res-rank { 
-            font-size: 90px; font-weight: 900; line-height: 1; margin: 10px 0 20px 0; 
-            text-shadow: 4px 4px 0px rgba(0,0,0,0.5); 
+        .res-rank {
+            font-size: 90px; font-weight: 900; line-height: 1; margin: 10px 0 20px 0;
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.5);
         }
-
         .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .stat-row { background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; }
         .stat-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
         .stat-num { font-weight: 700; font-size: 16px; }
-
         /* Single Player Override */
         .single-layout .res-card { background: none; border: none; box-shadow: none; max-width: 300px; margin: 0 auto; }
         .single-layout .main-circle {
-            width: 220px; height: 220px; border-radius: 50%;
-            border: 10px solid rgba(255,255,255,0.1);
+            width: 180px; height: 180px; border-radius: 50%;
+            border: 8px solid rgba(255,255,255,0.1);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            margin-bottom: 50px; background: rgba(0,0,0,0.2); position: relative;
+            margin-bottom: 40px; background: rgba(0,0,0,0.2); position: relative;
         }
-        .score-percent { font-size: 56px; font-weight: 900; color: white; line-height: 1; margin-bottom: 5px; }
-        .score-label { font-size: 14px; color: var(--text-secondary); letter-spacing: 1px; }
+        .score-percent { font-size: 48px; font-weight: 900; color: white; line-height: 1; margin-bottom: 5px; }
+        .score-label { font-size: 12px; color: var(--text-secondary); letter-spacing: 1px; }
         
         /* Enhanced Rank Badge for 1P */
         .circle-rank {
-            position: absolute; bottom: -30px; 
-            background: var(--bg-dark); 
+            position: absolute; bottom: -25px;
+            background: var(--bg-dark);
             color: white;
-            padding: 8px 40px; 
-            border-radius: 40px; 
-            font-weight: 900; 
-            font-size: 40px;
+            padding: 6px 30px;
+            border-radius: 40px;
+            font-weight: 900;
+            font-size: 32px;
             border: 3px solid currentColor;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
             z-index: 2;
         }
-
         /* Hit VFX */
         .hit-popup {
             position: absolute; font-weight: 900; font-size: 48px;
@@ -223,33 +216,74 @@
             50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); }
             100% { opacity: 0; transform: translate(-50%, -120%) scale(1); }
         }
+        /* --- 排行榜專用樣式 --- */
+        .leaderboard-section {
+            width: 100%; max-width: 500px;
+            background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px;
+            border: 1px solid var(--glass-border); margin-bottom: 15px;
+            display: none; /* 預設隱藏 */
+        }
+        .leaderboard-section.active { display: block; }
+        
+        /* 獨立頁面樣式調整 */
+        #leaderboard-screen .leaderboard-section {
+            display: block;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
+        #player-name-input {
+            padding: 8px; border-radius: 8px; border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.1); color: white; outline: none; width: 50%;
+        }
+        .btn-upload {
+            background: var(--rank-s); color: #000; border: none; padding: 8px 15px;
+            border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+        .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Leaderboard Tabs */
+        .lb-tabs { display: flex; gap: 5px; margin-bottom: 10px; justify-content: center; }
+        .lb-tab {
+            background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary);
+            padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;
+        }
+        .lb-tab.active { background: var(--p1-color); color: #000; border-color: var(--p1-color); font-weight: bold; }
+        
+        .lb-list { list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; }
+        .lb-item {
+            display: flex; justify-content: space-between; padding: 8px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;
+        }
+        .lb-rank { width: 30px; font-weight: bold; color: var(--rank-b); }
+        .lb-name { flex: 1; text-align: left; color: white; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-right: 10px; }
+        .lb-score { font-weight: bold; color: var(--p1-color); min-width: 60px; text-align: right; }
+        .lb-title { color:white; font-size: 16px; margin-bottom: 15px; text-align:center; font-weight:bold; letter-spacing: 1px;}
     </style>
 </head>
 <body>
-
     <div id="game-wrapper">
         <canvas id="gameCanvas" width="1100" height="680"></canvas>
         
         <div id="touch-p1" class="touch-layer"></div>
         <div id="touch-p2" class="touch-layer"></div>
-
         <div id="ui-layer">
             <div class="hud-bar p1-hud" id="hud-p1">
                 <div>P1 SCORE <span id="p1-score" style="margin-left:10px; color:white;">0</span></div>
-                <div id="p1-lives" class="lives">❤❤❤</div>
+                <div id="p1-lives" class="lives">  ❤❤❤  </div>
             </div>
             <div class="hud-center" id="round-info">ROUND 1</div>
             <div id="center-notify"></div>
             <div class="hud-bar p2-hud" id="hud-p2" style="margin-top: auto;">
                 <div>P2 SCORE <span id="p2-score" style="margin-left:10px; color:white;">0</span></div>
-                <div id="p2-lives" class="lives">❤❤❤</div>
+                <div id="p2-lives" class="lives">  ❤❤❤  </div>
             </div>
         </div>
 
         <div id="menu-screen" class="screen active">
             <h1>藍循節奏大師</h1>
             <p class="subtitle">雙人對戰．聽音特訓</p>
-
             <div class="control-panel">
                 <div class="control-group">
                     <label>玩家人數</label>
@@ -267,7 +301,7 @@
                         <button class="toggle-btn" data-mode="vanishing-survival" onclick="setMode('vanishing-survival')">消失生存</button>
                     </div>
                 </div>
-                <div class="control-group">
+                <div class="control-group" id="round-group">
                     <label>長度</label>
                     <select id="round-select">
                         <option value="4">4 回合 (短)</option>
@@ -293,27 +327,210 @@
                     </select>
                 </div>
             </div>
-            <div style="margin-bottom:20px; color:var(--text-secondary); font-size:13px; text-align:center;">
+            
+            <div style="display: flex; gap: 15px;">
+                <button class="btn btn-start" onclick="startGame()">開始遊戲</button>
+                <button class="btn" style="width:auto; padding: 15px 30px; background: rgba(255,255,255,0.1); color:var(--rank-b); border:1px solid var(--rank-b);" onclick="openLeaderboardMenu()">🏆 排行榜</button>
+            </div>
+
+            <div style="margin-top:20px; color:var(--text-secondary); font-size:13px; text-align:center;">
                 操作方式：鍵盤 [F, J] / [↑, ↓] 或 點擊螢幕 全螢幕(1P) / 上下半分(2P)
             </div>
-            <button class="btn btn-start" onclick="startGame()">開始遊戲</button>
+        </div>
+        
+        <div id="leaderboard-screen" class="screen">
+            <h1 style="font-size:42px;">名人堂</h1>
+            <div class="leaderboard-section">
+                <div class="lb-title">選擇模式查看排名</div>
+                <div class="lb-tabs">
+                    <button class="lb-tab" onclick="fetchLeaderboard('fixed', 'lb-list-menu')" id="tab-menu-fixed">練習</button>
+                    <button class="lb-tab" onclick="fetchLeaderboard('vanishing', 'lb-list-menu')" id="tab-menu-vanishing">消失</button>
+                    <button class="lb-tab" onclick="fetchLeaderboard('survival', 'lb-list-menu')" id="tab-menu-survival">生存</button>
+                    <button class="lb-tab" onclick="fetchLeaderboard('vanishing-survival', 'lb-list-menu')" id="tab-menu-vanishing-survival">消存</button>
+                </div>
+                
+                <ul id="lb-list-menu" class="lb-list" style="height: 300px; max-height: 300px;">
+                    <li class="lb-item" style="justify-content:center; color:#666;">載入中...</li>
+                </ul>
+            </div>
+            <button class="btn" style="width:auto; padding: 10px 40px; margin-top:20px;" onclick="showMenu()">返回主選單</button>
         </div>
 
         <div id="result-screen" class="screen">
-            <h1 style="font-size:42px; margin-bottom:20px;">訓練結束</h1>
+            <h1 style="font-size:42px; margin-bottom:15px;">訓練結束</h1>
             <div class="summary-bar">
                 <div class="sum-item"><span class="sum-label">模式</span><span class="sum-val" id="res-mode">練習</span></div>
                 <div class="sum-item"><span class="sum-label">長度</span><span class="sum-val" id="res-len">6R</span></div>
                 <div class="sum-item"><span class="sum-label">速度</span><span class="sum-val" id="res-spd">中板</span></div>
                 <div class="sum-item"><span class="sum-label">難度</span><span class="sum-val" id="res-diff">普通</span></div>
             </div>
+            
             <div class="result-flex" id="result-content"></div>
-            <button class="btn btn-start" onclick="showMenu()">返回選單</button>
+            
+            <div id="leaderboard-display-result" class="leaderboard-section">
+                <div class="lb-title" id="lb-title-result">本模式排行榜</div>
+                
+                <ul id="lb-list-result" class="lb-list">
+                    <li class="lb-item" style="justify-content:center; color:#666;">載入中...</li>
+                </ul>
+                
+                <div id="upload-ui" style="margin-top: 10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+                    <div class="input-group" id="upload-input-group">
+                        <input type="text" id="player-name-input" placeholder="輸入暱稱上傳" maxlength="10">
+                        <button class="btn-upload" onclick="submitScore()" id="btn-submit">上傳分數</button>
+                    </div>
+                    
+                    <div id="upload-actions-extra" style="margin-top:10px; text-align:center;">
+                        <button class="btn" onclick="location.reload()" style="background:rgba(255,255,255,0.1); font-size:14px; padding:8px;">返回選單</button>
+                    </div>
+
+                    <div id="upload-success-msg" style="display:none; text-align:center;">
+                         <button class="btn-upload" style="background:rgba(255,255,255,0.2); color:white; width:100%;" onclick="location.reload()">返回選單</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-start" onclick="location.reload()" style="margin-top:10px; padding: 10px 40px; font-size:18px;">返回選單</button>
         </div>
     </div>
-
     <script>
-        // --- VFX: PARTICLE STREAM ---
+        // ---------------------------------------------
+        // ★★★ 1. Firebase 初始化設定 ★★★
+        // ---------------------------------------------
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4rb1PhX9TCxj8VORCnZW8Ik6HPDZk8NE",
+            authDomain: "ltmps-rhythm-game.firebaseapp.com",
+            projectId: "ltmps-rhythm-game",
+            storageBucket: "ltmps-rhythm-game.firebasestorage.app",
+            messagingSenderId: "1035907577062",
+            appId: "1:1035907577062:web:0c7e1625fa4c22a9aff727"
+        };
+        let db;
+        try {
+            if (firebaseConfig.apiKey !== "您的_API_KEY") {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                console.log("Firebase initialized");
+            }
+        } catch(e) { console.error("Firebase Init Error:", e); }
+
+        // ---------------------------------------------
+        // ★★★ 2. 分榜系統邏輯 ★★★
+        // ---------------------------------------------
+        
+        function getCollectionName(mode) {
+            const map = {
+                'fixed': 'lb_fixed',
+                'vanishing': 'lb_vanishing',
+                'survival': 'lb_survival',
+                'vanishing-survival': 'lb_vanishing_survival'
+            };
+            return map[mode] || 'lb_fixed';
+        }
+
+        function openLeaderboardMenu() {
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+            document.getElementById('leaderboard-screen').classList.add('active');
+            fetchLeaderboard('fixed', 'lb-list-menu');
+        }
+
+        async function submitScore() {
+            if (!db) { alert("請先設定 Firebase！"); return; }
+            
+            const nameInput = document.getElementById('player-name-input');
+            const btn = document.getElementById('btn-submit');
+            const name = nameInput.value.trim();
+            const score = session.p1.score;
+            
+            if (!name) { alert("請輸入名字！"); return; }
+            
+            btn.disabled = true;
+            btn.innerText = "上傳中...";
+            
+            const colName = getCollectionName(config.mode);
+            
+            try {
+                await db.collection(colName).add({
+                    name: name,
+                    score: score,
+                    difficulty: config.diff,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("上傳成功！");
+                
+                // ★★★ 上傳成功後的 UI 變化 ★★★
+                document.getElementById('upload-input-group').style.display = 'none';
+                document.getElementById('upload-actions-extra').style.display = 'none'; // 隱藏那個小的返回按鈕
+                document.getElementById('upload-success-msg').style.display = 'block'; // 顯示大的成功返回按鈕
+                
+                fetchLeaderboard(config.mode, 'lb-list-result');
+            } catch (e) {
+                console.error("Upload Error:", e);
+                alert("上傳失敗：" + e.message);
+                btn.disabled = false;
+                btn.innerText = "上傳";
+            }
+        }
+
+        async function fetchLeaderboard(mode, targetId) {
+            const list = document.getElementById(targetId);
+            
+            if(targetId === 'lb-list-menu') {
+                document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+                const activeTab = document.getElementById(`tab-menu-${mode}`);
+                if(activeTab) activeTab.classList.add('active');
+            }
+
+            if (!db) {
+                list.innerHTML = '<li class="lb-item" style="justify-content:center;">資料庫未連接</li>';
+                return;
+            }
+            
+            list.innerHTML = '<li class="lb-item" style="justify-content:center;">讀取中...</li>';
+            
+            const colName = getCollectionName(mode);
+            
+            try {
+                const q = db.collection(colName)
+                            .orderBy("score", "desc")
+                            .limit(10);
+                
+                const querySnapshot = await q.get();
+                
+                list.innerHTML = '';
+                let rank = 1;
+                
+                if (querySnapshot.empty) {
+                    list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>';
+                    return;
+                }
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const item = document.createElement('li');
+                    item.className = 'lb-item';
+                    const safeName = data.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    
+                    let rankColor = 'var(--rank-b)';
+                    if(rank===1) rankColor = 'var(--rank-s)';
+                    if(rank===2) rankColor = 'var(--rank-a)';
+                    if(rank===3) rankColor = '#fff';
+
+                    item.innerHTML = `
+                    <span class="lb-rank" style="color:${rankColor}">${rank++}</span>
+                    <span class="lb-name">${safeName}</span>
+                    <span class="lb-score">${data.score}</span>
+                    `;
+                    list.appendChild(item);
+                });
+            } catch (e) {
+                console.error("Fetch Error:", e);
+                list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>';
+            }
+        }
+
+        // ---------------------------------------------
+        // 3. 遊戲引擎代碼
+        // ---------------------------------------------
         const VFX = {
             particles: [],
             init() {
@@ -332,7 +549,6 @@
                 this.particles.forEach(p => {
                     p.x -= p.speed; // Move left
                     if(p.x < -10) { p.x = 1110; p.y = Math.random() * 680; }
-                    
                     ctx.globalAlpha = p.alpha;
                     ctx.fillStyle = p.color;
                     ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
@@ -340,8 +556,6 @@
                 ctx.globalAlpha = 1;
             }
         };
-
-        // --- AUDIO ENGINE ---
         const AudioEngine = {
             ctx: null,
             init() {
@@ -353,7 +567,6 @@
                 t = t || this.ctx.currentTime;
                 const o = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
                 o.connect(f); f.connect(g); g.connect(this.ctx.destination);
-
                 if(type === 'teacher') {
                     o.type = 'sine'; f.type = 'bandpass'; f.frequency.value = 800; f.Q.value = 5;
                     o.frequency.setValueAtTime(850, t); o.frequency.exponentialRampToValueAtTime(800, t+0.1);
@@ -366,7 +579,7 @@
                     o.start(t); o.stop(t+0.3);
                 } else if(type === 'p2') {
                     o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 1500;
-                    o.frequency.setValueAtTime(400, t); 
+                    o.frequency.setValueAtTime(400, t);
                     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.6, t+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+0.3);
                     o.start(t); o.stop(t+0.35);
                 } else if(type === 'metro') {
@@ -377,29 +590,23 @@
                 }
             }
         };
-
-        // --- GAME LOGIC ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const HIT_X = 180, SPAWN_X = 1000, BEATS_PHASE = 4;
         const WINDOWS = { PERF: 0.07, GOOD: 0.15, MISS: 0.3 };
-
         let width = canvas.width, height = canvas.height;
         let gameState = 'MENU';
         let config = { players: 1, mode: 'fixed', rounds: 6, bpm: 95, diff: 'normal' };
         let session = { round: 0, nextTime: 0, p1: {}, p2: {} };
         let animId;
         let timeouts = [];
-
         const PATTERNS = {
             easy: [[1],[2]], normal: [[1],[0.5,0.5],[2]],
             hard: [[1],[0.5,0.5],[0.25,0.25,0.25,0.25],[0.5,0.25,0.25],[1.5,0.5]],
             master: [[0.25,0.5,0.25],[0.25,0.75],[0.5,0.5],[0.25,0.25,0.25,0.25],[1]]
         };
-
         function getBeatSec() { return 60 / config.bpm; }
         function getSpeed() { return (SPAWN_X - HIT_X) / (BEATS_PHASE * getBeatSec()); }
-
         function generatePattern() {
             let beats = [], filled = 0;
             const pool = PATTERNS[config.diff];
@@ -413,74 +620,68 @@
             }
             return beats;
         }
-
-        // --- UI HANDLERS ---
         function setPlayers(n) {
             config.players = n;
             document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active'));
             document.querySelector(`.toggle-btn[data-val="${n}"]`).classList.add('active');
         }
+        
+        // 設定模式時控制長度選單的開關
         function setMode(m) {
             config.mode = m;
             document.querySelectorAll('.toggle-btn[data-mode]').forEach(b => b.classList.remove('active'));
             document.querySelector(`.toggle-btn[data-mode="${m}"]`).classList.add('active');
+            
             const rg = document.getElementById('round-group');
-            if(m.includes('survival')) { rg.style.opacity=0.3; rg.style.pointerEvents='none'; }
-            else { rg.style.opacity=1; rg.style.pointerEvents='auto'; }
+            if(rg) {
+                if(m.includes('survival')) { 
+                    rg.classList.add('disabled'); // 使用 CSS class 來變灰和禁用
+                } else { 
+                    rg.classList.remove('disabled'); 
+                }
+            }
         }
+        
         function showMenu() {
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
             document.getElementById('menu-screen').classList.add('active');
         }
-
         function startGame() {
             if(document.activeElement) document.activeElement.blur();
             AudioEngine.init(); VFX.init();
-            
             config.bpm = parseInt(document.getElementById('speed-select').value);
             config.diff = document.getElementById('diff-select').value;
             config.rounds = config.mode.includes('survival') ? Infinity : parseInt(document.getElementById('round-select').value);
-
             const initP = () => ({ score: 0, lives: 3, notes: [], stats: {p:0,g:0,m:0} });
             session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 1.0, p1: initP(), p2: initP() };
-
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
             document.getElementById('hud-p2').style.opacity = config.players === 2 ? 1 : 0;
             updateHUD();
-            
             gameState = 'PLAYING';
             timeouts.forEach(clearTimeout); timeouts = [];
             if(animId) cancelAnimationFrame(animId);
-            
             schedule();
             render();
         }
-
-        // --- CORE LOOP ---
         function schedule() {
             if(gameState !== 'PLAYING') return;
             if(!config.mode.includes('survival') && session.round >= config.rounds) { endGame(); return; }
-
             const now = session.nextTime;
             const BEAT = getBeatSec();
             const pattern = generatePattern();
             const playStart = now + (BEAT * 4);
-
             pattern.forEach(b => AudioEngine.play('teacher', now + b*BEAT));
-
             pattern.forEach((b, idx) => {
                 const target = playStart + b*BEAT;
                 session.p1.notes.push({ target: target, hit: false, missed: false, index: idx });
                 if(config.players === 2) session.p2.notes.push({ target: target, hit: false, missed: false, index: idx });
             });
-
             timeouts.push(setTimeout(() => {
                 if(gameState!=='PLAYING') return;
                 session.round++; updateHUD();
                 notify("LISTEN", "var(--p1-color)");
                 AudioEngine.play('metro', AudioEngine.ctx.currentTime);
             }, (now - AudioEngine.ctx.currentTime)*1000));
-
             timeouts.push(setTimeout(() => {
                 if(gameState!=='PLAYING') return;
                 let col = config.mode.includes('vanishing') ? 'var(--accent-purple)' : 'var(--accent-yellow)';
@@ -488,74 +689,55 @@
                 notify("PLAY", col);
                 AudioEngine.play('metro', AudioEngine.ctx.currentTime);
             }, (playStart - AudioEngine.ctx.currentTime)*1000));
-
             session.nextTime += (BEAT * 8);
             timeouts.push(setTimeout(schedule, (session.nextTime - AudioEngine.ctx.currentTime - 0.1)*1000));
         }
-
         function render() {
             if(gameState !== 'PLAYING') return;
             ctx.clearRect(0, 0, width, height);
-            
             VFX.update(ctx);
-
             const now = AudioEngine.ctx.currentTime;
             const speed = getSpeed();
             const beatSec = getBeatSec();
             const isVanishing = config.mode.includes('vanishing');
-
             const y1 = config.players === 1 ? height/2 : height*0.28;
             const y2 = height*0.72;
-
             drawTrack(ctx, y1, 'var(--p1-color)', 'P1');
             drawNotes(ctx, session.p1.notes, y1, '#22d3ee', now, speed, beatSec, isVanishing, 1);
-
             if(config.players === 2) {
                 drawTrack(ctx, y2, 'var(--p2-color)', 'P2');
                 drawNotes(ctx, session.p2.notes, y2, '#f472b6', now, speed, beatSec, isVanishing, 2);
             }
-
             animId = requestAnimationFrame(render);
         }
-
         function drawTrack(c, y, color, label) {
             c.shadowBlur = 25; c.shadowColor = color;
             c.fillStyle = "rgba(30, 41, 59, 0.8)"; c.fillRect(0, y-60, width, 120);
             c.shadowBlur = 0;
             c.strokeStyle = "rgba(255,255,255,0.15)"; c.lineWidth = 2;
             c.beginPath(); c.moveTo(0, y-60); c.lineTo(width, y-60); c.moveTo(0, y+60); c.lineTo(width, y+60); c.stroke();
-            
             c.beginPath(); c.arc(HIT_X, y, 45, 0, Math.PI*2);
             c.strokeStyle = "white"; c.lineWidth = 4; c.stroke();
             c.fillStyle = "rgba(255,255,255,0.05)"; c.fill();
             c.fillStyle = "#94a3b8"; c.font = "bold 14px Segoe UI"; c.fillText(label, HIT_X - 8, y + 5);
         }
-
         function drawNotes(c, notes, y, color, now, speed, beatSec, vanish, pid) {
             notes.forEach(n => {
                 if(n.hit) return;
                 const dt = n.target - now;
                 const x = HIT_X + (dt * speed);
-
                 if(vanish && n.index > 0) { /* Hidden */ } else {
                     if(x > -50 && x < width && !n.missed) {
                         const isIncoming = dt <= (BEATS_PHASE * beatSec);
                         const noteColor = (vanish && isIncoming) ? '#d946ef' : (isIncoming ? color : '#64748b');
-                        
                         c.shadowBlur = 25; c.shadowColor = noteColor;
-                        
-                        // Gradient Orb
                         let grad = c.createRadialGradient(x, y, 10, x, y, 35);
                         grad.addColorStop(0, 'rgba(255,255,255,0.9)');
                         grad.addColorStop(0.7, noteColor);
                         grad.addColorStop(1, noteColor);
-                        
                         c.fillStyle = grad;
                         c.beginPath(); c.arc(x, y, 35, 0, Math.PI*2); c.fill();
-                        
                         c.strokeStyle = "white"; c.lineWidth = 2; c.stroke(); c.shadowBlur = 0;
-                        
-                        // Reflection
                         c.fillStyle = "rgba(255,255,255,0.5)";
                         c.beginPath(); c.ellipse(x-12, y-12, 10, 15, Math.PI/4, 0, Math.PI*2); c.fill();
                     }
@@ -565,17 +747,13 @@
                 }
             });
         }
-
         function handleInput(pid) {
             if(gameState !== 'PLAYING') return;
             if(config.players === 1 && pid === 2) return;
-
             const now = AudioEngine.ctx.currentTime;
             const data = pid === 1 ? session.p1 : session.p2;
             const y = config.players === 1 ? height/2 : (pid===1 ? height*0.28 : height*0.72);
-            
             AudioEngine.play(pid === 1 ? 'p1' : 'p2', now);
-
             let best = null, minDiff = Infinity;
             data.notes.forEach(n => {
                 if(!n.hit && !n.missed) {
@@ -583,28 +761,23 @@
                     if(d < minDiff) { minDiff = d; best = n; }
                 }
             });
-
             if(best && minDiff < WINDOWS.MISS) {
                 best.hit = true;
                 let rating = 'POOR', rCol = 'var(--rank-b)';
                 if(minDiff < WINDOWS.PERF) { rating = 'PERFECT'; rCol = 'var(--rank-s)'; }
                 else if(minDiff < WINDOWS.GOOD) { rating = 'GOOD'; rCol = 'var(--rank-a)'; }
-                
                 handleResult(pid, rating);
                 showFeedback(rating, HIT_X, y, rCol);
             }
         }
-
         function handleResult(pid, rating) {
             const data = pid === 1 ? session.p1 : session.p2;
             const isSurvival = config.mode.includes('survival');
-
             if(rating === 'PERFECT') { data.score += 100; data.stats.p++; }
             else if(rating === 'GOOD') { data.score += 50; data.stats.g++; }
             else { data.stats.m++; if(isSurvival) loseLife(pid); }
             updateHUD();
         }
-
         function loseLife(pid) {
             const data = pid === 1 ? session.p1 : session.p2;
             data.lives--;
@@ -613,128 +786,136 @@
             setTimeout(()=>w.style.transform='none', 50);
             if(data.lives <= 0) endGame();
         }
-
+        
+        // ★★★ 修改：只有在生存模式下才顯示愛心 ★★★
         function updateHUD() {
             document.getElementById('p1-score').innerText = session.p1.score;
             document.getElementById('p2-score').innerText = session.p2.score;
-            document.getElementById('p1-lives').innerText = "❤".repeat(Math.max(0, session.p1.lives));
-            document.getElementById('p2-lives').innerText = "❤".repeat(Math.max(0, session.p2.lives));
+            
+            // 判斷是否為生存模式
+            const isSurvivalMode = config.mode.includes('survival');
+            
+            if(isSurvivalMode) {
+                document.getElementById('p1-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p1.lives));
+                document.getElementById('p2-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p2.lives));
+            } else {
+                // 非生存模式隱藏愛心
+                document.getElementById('p1-lives').innerText = "";
+                document.getElementById('p2-lives').innerText = "";
+            }
             
             let rTxt = `ROUND ${session.round}`;
             if(!config.mode.includes('survival')) rTxt += ` / ${config.rounds}`;
             document.getElementById('round-info').innerText = rTxt;
         }
-
+        
         function showFeedback(text, x, y, color) {
             const el = document.createElement('div');
-            el.className = 'hit-popup'; el.innerText = text; 
+            el.className = 'hit-popup'; el.innerText = text;
             el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color;
             document.getElementById('game-wrapper').appendChild(el);
             setTimeout(()=>el.remove(), 500);
         }
-
         function notify(text, color) {
             const el = document.getElementById('center-notify');
             el.innerText = text; el.style.color = color; el.style.opacity = 1;
             el.style.transform = "translate(-50%, -50%) scale(1.2)";
             setTimeout(() => { el.style.opacity = 0; el.style.transform = "translate(-50%, -50%) scale(1)"; }, 600);
         }
-
         function endGame() {
             gameState = 'END';
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
             document.getElementById('result-screen').classList.add('active');
             timeouts.forEach(clearTimeout);
-
-            const mName = {fixed:'練習', vanishing:'消失', survival:'生存', 'v-survival':'消失生存'}[config.mode];
+            const mName = {fixed:'練習', vanishing:'消失', survival:'生存', 'vanishing-survival':'消失生存'}[config.mode];
             document.getElementById('res-mode').innerText = mName;
             document.getElementById('res-len').innerText = config.mode.includes('survival') ? "∞" : config.rounds + "R";
             document.getElementById('res-spd').innerText = config.bpm===70?'慢板':(config.bpm===95?'中板':'快板');
             const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'};
             document.getElementById('res-diff').innerText = dNames[config.diff];
-
             const container = document.getElementById('result-content');
             container.innerHTML = '';
             container.className = config.players===1 ? 'result-flex single-layout' : 'result-flex';
-
             container.appendChild(createResultCard(1, session.p1));
             if(config.players === 2) container.appendChild(createResultCard(2, session.p2));
+            
+            const uploadUI = document.getElementById('upload-ui');
+            const lbDisplayResult = document.getElementById('leaderboard-display-result');
+            const submitBtn = document.getElementById('btn-submit');
+            
+            if(config.players === 1) {
+                lbDisplayResult.classList.add('active'); 
+                uploadUI.style.display = 'block';
+                // 重置上傳 UI 狀態 (因為可能上一局上傳過)
+                document.getElementById('upload-input-group').style.display = 'flex';
+                document.getElementById('upload-actions-extra').style.display = 'block'; // 顯示 1P 上傳前的返回按鈕
+                document.getElementById('upload-success-msg').style.display = 'none';
+                
+                submitBtn.disabled = false;
+                submitBtn.innerText = "上傳分數";
+                document.getElementById('player-name-input').value = '';
+                
+                document.getElementById('lb-title-result').innerText = `${mName}模式 排行榜`;
+                fetchLeaderboard(config.mode, 'lb-list-result');
+            } else {
+                lbDisplayResult.classList.remove('active');
+            }
         }
-
         function createResultCard(pid, data) {
             const total = data.stats.p + data.stats.g + data.stats.m;
             const acc = total===0 ? 0 : Math.round(((data.stats.p + data.stats.g)/total)*100);
-            
             let rank='D', rCol='var(--rank-d)';
             if(acc===100){rank='S';rCol='var(--rank-s)'}
             else if(acc>=90){rank='A';rCol='var(--rank-a)'}
             else if(acc>=76){rank='B';rCol='var(--rank-b)'}
             else if(acc>=60){rank='C';rCol='var(--rank-c)'}
-
             const div = document.createElement('div');
             div.className = `res-card p${pid}`;
-            
             if(config.players === 1) {
                 div.innerHTML = `
-                    <div class="main-circle" style="border-color:${rCol}">
-                        <div class="score-percent">${acc}%</div>
-                        <div class="score-label">SUCCESS RATE</div>
-                        <div class="circle-rank" style="color:${rCol}">${rank}</div>
-                    </div>
-                    <div class="res-score">${data.score}</div>
-                    <div class="stats-table">
-                        <div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num" style="color:var(--rank-s)">${data.stats.p}</span></div>
-                        <div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num" style="color:var(--rank-a)">${data.stats.g}</span></div>
-                        <div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num" style="color:var(--rank-d)">${data.stats.m}</span></div>
-                    </div>
+                <div class="main-circle" style="border-color:${rCol}">
+                <div class="score-percent">${acc}%</div>
+                <div class="score-label">ACCURACY</div>
+                <div class="circle-rank" style="color:${rCol}">${rank}</div>
+                </div>
+                <div class="res-score">${data.score}</div>
+                <div class="stats-table">
+                <div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num" style="color:var(--rank-s)">${data.stats.p}</span></div>
+                <div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num" style="color:var(--rank-a)">${data.stats.g}</span></div>
+                <div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num" style="color:var(--rank-d)">${data.stats.m}</span></div>
+                </div>
                 `;
             } else {
                 div.innerHTML = `
-                    <h2 style="color:var(--p${pid}-color)">PLAYER ${pid}</h2>
-                    <div class="res-rank" style="color:${rCol}">${rank}</div>
-                    <div class="res-score">${data.score}</div>
-                    <div class="stats-table">
-                        <div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num">${data.stats.p}</span></div>
-                        <div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num">${data.stats.g}</span></div>
-                        <div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num">${data.stats.m}</span></div>
-                        <div class="stat-row" style="background:var(--glass-border)"><span class="stat-label" style="color:white">ACC</span><span class="stat-num">${acc}%</span></div>
-                    </div>
+                <h2 style="color:var(--p${pid}-color)">PLAYER ${pid}</h2>
+                <div class="res-rank" style="color:${rCol}">${rank}</div>
+                <div class="res-score">${data.score}</div>
+                <div class="stats-table">
+                <div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num">${data.stats.p}</span></div>
+                <div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num">${data.stats.g}</span></div>
+                <div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num">${data.stats.m}</span></div>
+                <div class="stat-row" style="background:var(--glass-border)"><span class="stat-label" style="color:white">ACC</span><span class="stat-num">${acc}%</span></div>
+                </div>
                 `;
             }
             return div;
         }
-
-        function showMenu() {
-            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-            document.getElementById('menu-screen').classList.add('active');
-        }
-
-        // --- INPUTS (UNIFIED TOUCH) ---
         const handleTouch = (zone, e) => {
-            e.preventDefault(); // Stop zooming
-            if(config.players === 1) {
-                handleInput(1); // 1P Mode: Any touch is Player 1
-            } else {
-                handleInput(zone); // 2P Mode: Top=1, Bottom=2
-            }
+            e.preventDefault();
+            if(config.players === 1) { handleInput(1); }
+            else { handleInput(zone); }
         };
-        
         window.addEventListener('keydown', e => {
             const k = e.key.toLowerCase();
             if(['f','j','d','k',' '].includes(k)) { e.preventDefault(); if(!e.repeat) handleInput(1); }
             if(['arrowup','arrowdown','arrowleft','arrowright'].includes(k)) { e.preventDefault(); if(!e.repeat) handleInput(2); }
         });
-        
         const t1 = document.getElementById('touch-p1');
         const t2 = document.getElementById('touch-p2');
-        
-        // Support multi-touch events
-        t1.addEventListener('touchstart', (e)=>handleTouch(1,e)); 
+        t1.addEventListener('touchstart', (e)=>handleTouch(1,e));
         t1.addEventListener('mousedown', (e)=>handleTouch(1,e));
-        
-        t2.addEventListener('touchstart', (e)=>handleTouch(2,e)); 
+        t2.addEventListener('touchstart', (e)=>handleTouch(2,e));
         t2.addEventListener('mousedown', (e)=>handleTouch(2,e));
-
     </script>
 </body>
 </html>
