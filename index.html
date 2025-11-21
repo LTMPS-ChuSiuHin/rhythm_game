@@ -9,10 +9,14 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
-            /* Core Theme */
+            /* Theme Colors */
             --bg-dark: #020617;
-            --glass-bg: rgba(15, 23, 42, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.12);
+            
+            /* Glassmorphism Variables */
+            --glass-panel: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --glass-blur: blur(12px);
             
             /* Player Colors */
             --p1-color: #22d3ee; /* Cyan */
@@ -24,13 +28,13 @@
             --rank-b: #facc15;
             --rank-c: #fb923c;
             --rank-d: #f87171;
+            
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
         }
         body {
             margin: 0;
             background-color: var(--bg-dark);
-            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
             color: var(--text-primary);
             font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
             display: flex;
@@ -40,20 +44,62 @@
             overflow: hidden;
             user-select: none;
             touch-action: none;
+            position: relative;
         }
+
+        /* --- 動態背景層 (Cyberpunk Grid) --- */
+        .bg-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden; z-index: 0; pointer-events: none;
+            background: #020617;
+        }
+        .cyber-grid {
+            position: absolute; width: 200%; height: 200%;
+            bottom: -50%; left: -50%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            background-position: center bottom;
+            transform: perspective(500px) rotateX(60deg);
+            animation: gridMove 4s linear infinite;
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
+        }
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(60px); }
+        }
+        .particle {
+            position: absolute; background: white; border-radius: 50%;
+            opacity: 0; animation: floatUp 5s linear infinite;
+        }
+        .p-1 { left: 10%; width: 2px; height: 2px; animation-duration: 4s; animation-delay: 0s; }
+        .p-2 { left: 30%; width: 3px; height: 3px; animation-duration: 7s; animation-delay: 1s; }
+        .p-3 { left: 70%; width: 2px; height: 2px; animation-duration: 5s; animation-delay: 2s; }
+        .p-4 { left: 90%; width: 4px; height: 4px; animation-duration: 6s; animation-delay: 0.5s; }
+        @keyframes floatUp {
+            0% { bottom: -10px; opacity: 0; }
+            50% { opacity: 0.4; }
+            100% { bottom: 100%; opacity: 0; }
+        }
+
+        /* --- 遊戲主容器 --- */
         #game-wrapper {
             position: relative;
-            width: 100%;
-            max-width: 1100px;
-            height: 100%;
-            max-height: 680px;
-            background: rgba(15, 23, 42, 0.6);
+            width: 100%; max-width: 1100px;
+            height: 100%; max-height: 680px;
+            /* 這裡保留一點點透度，讓 Grid 可以微微透出，但主要靠 Menu Screen 遮擋 */
+            background: rgba(15, 23, 42, 0.4); 
             border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-            border: 1px solid var(--glass-border);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255,255,255,0.05);
             overflow: hidden;
+            z-index: 10;
+            backdrop-filter: blur(5px);
         }
         canvas { display: block; width: 100%; height: 100%; }
+        
         /* Touch Zones */
         .touch-layer {
             position: absolute; left: 0; width: 100%; height: 50%;
@@ -61,7 +107,8 @@
         }
         #touch-p1 { top: 0; }
         #touch-p2 { top: 50%; }
-        /* UI Layout */
+        
+        /* UI Layer (HUD) */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; display: flex; flex-direction: column;
@@ -71,198 +118,300 @@
             display: flex; justify-content: space-between; align-items: center;
             font-size: 20px; font-weight: 800; letter-spacing: 1px;
             padding: 8px 20px; border-radius: 12px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            
+            /* HUD Glass Effect */
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            text-shadow: 0 0 10px currentColor;
         }
-        .p1-hud { background: linear-gradient(90deg, rgba(34,211,238,0.15), transparent); border-left: 4px solid var(--p1-color); color: var(--p1-color); }
-        .p2-hud { background: linear-gradient(90deg, rgba(244,114,182,0.15), transparent); border-left: 4px solid var(--p2-color); color: var(--p2-color); opacity: 0; }
-        .lives { letter-spacing: 2px; font-size: 22px; min-width: 100px; text-align: right; } /* 加了 min-width 保持佈局穩定 */
+        .p1-hud { border-left: 4px solid var(--p1-color); color: var(--p1-color); }
+        .p2-hud { border-left: 4px solid var(--p2-color); color: var(--p2-color); opacity: 0; }
+        .lives { letter-spacing: 2px; font-size: 22px; min-width: 100px; text-align: right; }
+        
         .hud-center {
             position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
             color: var(--text-secondary); font-size: 14px; font-weight: 700; letter-spacing: 2px;
-            background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px;
+            background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(4px);
         }
         #center-notify {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 90px; font-weight: 900; text-transform: uppercase;
             opacity: 0; white-space: nowrap;
-            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
             transition: all 0.2s ease-out;
+            z-index: 50;
         }
-        /* Screens */
+
+        /* --- Screens (選單頁面) --- */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);
+            
+            /* ★★★ 關鍵修改：遮擋背景的玻璃擬態 ★★★ */
+            /* 使用極深的背景色 (96% 不透明) 加上極強的模糊 */
+            /* 這樣你看不到後面的遊戲軌道，但依然有一種深邃的質感 */
+            background: rgba(2, 6, 23, 0.96); 
+            backdrop-filter: blur(40px); /* 強力模糊，確保遊戲界面不可見 */
+            
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
             overflow-y: auto; 
         }
         .screen.active { opacity: 1; pointer-events: auto; }
         
-        /* Result Screen Specific Layout Fix */
-        #result-screen {
-            justify-content: flex-start;
-            padding-top: 40px;
-            padding-bottom: 40px;
+        h1 {
+            font-size: 56px; margin-bottom: 5px; font-weight: 900; letter-spacing: 4px;
+            color: white; text-transform: uppercase;
+            text-shadow: 0 0 20px var(--p1-color), 0 0 40px rgba(34, 211, 238, 0.4);
+            animation: titleFloat 3s ease-in-out infinite;
+        }
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0); text-shadow: 0 0 20px var(--p1-color); }
+            50% { transform: translateY(-5px); text-shadow: 0 0 30px var(--p1-color), 0 0 10px white; }
+        }
+        .subtitle { 
+            color: var(--text-secondary); font-size: 15px; margin-bottom: 30px; 
+            letter-spacing: 4px; text-transform: uppercase; opacity: 0.8;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;
         }
 
-        h1 {
-            font-size: 52px; margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;
-            background: linear-gradient(135deg, #fff 30%, var(--p1-color) 100%);
-            -webkit-background-clip: text; color: transparent;
-            text-shadow: 0 10px 30px rgba(34, 211, 238, 0.2);
-        }
-        .subtitle { color: var(--text-secondary); font-size: 16px; margin-bottom: 30px; letter-spacing: 3px; text-transform: uppercase; }
-        /* Controls */
+        /* --- 玻璃擬態控制面板 --- */
         .control-panel {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
-            width: 700px; background: var(--glass-bg); padding: 25px;
-            border-radius: 20px; border: 1px solid var(--glass-border); margin-bottom: 25px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+            width: 700px; 
+            
+            /* ★ Glass Effect ★ */
+            background: var(--glass-panel);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            
+            padding: 30px;
+            border-radius: 24px; 
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
         }
+        /* 加一道微光掃過面板 */
+        .control-panel::before {
+            content:''; position: absolute; top:0; left:-50%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
+            transform: skewX(-25deg); pointer-events: none;
+        }
+
         .control-group.full { grid-column: span 2; }
-        label { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; display: block; }
+        label { font-size: 11px; color: var(--p1-color); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; display: block; letter-spacing: 1px; }
+        
+        /* 玻璃擬態輸入元件 */
         select, .btn {
-            padding: 12px; border-radius: 10px; background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--glass-border); color: white; font-family: inherit;
+            padding: 12px 15px; border-radius: 12px; 
+            
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            
+            color: white; font-family: inherit;
             font-size: 15px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
         }
-        select:hover { border-color: var(--p1-color); background: rgba(0,0,0,0.5); }
+        select:hover, .btn:hover { 
+            border-color: var(--p1-color); 
+            background: rgba(34, 211, 238, 0.1); 
+            box-shadow: 0 0 15px rgba(34,211,238,0.1);
+        }
         .control-group.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
         
-        .toggle-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); background: rgba(0,0,0,0.3); border-radius: 10px; padding: 4px; gap: 4px; }
+        /* Toggle Switch */
+        .toggle-wrapper { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); 
+            background: rgba(0,0,0,0.5); border-radius: 12px; padding: 4px; gap: 4px; 
+            border: 1px solid rgba(255,255,255,0.05);
+        }
         .toggle-btn {
             padding: 10px 5px; border: none; background: transparent;
             color: var(--text-secondary); cursor: pointer; border-radius: 8px;
             font-weight: 600; transition: 0.2s; font-size: 14px; white-space: nowrap;
         }
-        .toggle-btn:hover { background: rgba(255,255,255,0.05); color: white; }
-        .toggle-btn.active { background: rgba(255,255,255,0.1); color: var(--p1-color); box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        
-        .toggle-btn[data-mode="vanishing"].active { color: #d946ef; }
-        .toggle-btn[data-mode="survival"].active { color: #facc15; }
-        .toggle-btn[data-mode="vanishing-survival"].active { color: #f87171; }
-        .toggle-btn[data-val="2"].active { color: var(--p2-color); }
-        .btn-start {
-            padding: 15px 80px; font-size: 22px; font-weight: 800; width: auto;
-            background: linear-gradient(135deg, var(--p1-color), #0ea5e9);
-            border: none; color: #0f172a; box-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
-            border-radius: 50px;
+        .toggle-btn:hover { color: white; background: rgba(255,255,255,0.05); }
+        .toggle-btn.active { 
+            background: rgba(255,255,255,0.15); 
+            color: white; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+            text-shadow: 0 0 8px currentColor;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .btn-start:hover { transform: scale(1.05); filter: brightness(1.1); }
+        
+        .toggle-btn[data-mode="vanishing"].active { color: #d946ef; border-color: #d946ef; background: rgba(217, 70, 239, 0.15); }
+        .toggle-btn[data-mode="survival"].active { color: #facc15; border-color: #facc15; background: rgba(250, 204, 21, 0.15); }
+        .toggle-btn[data-mode="vanishing-survival"].active { color: #f87171; border-color: #f87171; background: rgba(248, 113, 113, 0.15); }
+        .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.15); }
+
+        /* Start Button */
+        .btn-start {
+            padding: 18px 80px; font-size: 24px; font-weight: 800; width: auto;
+            background: linear-gradient(90deg, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8));
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            color: #fff; 
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
+            border-radius: 50px;
+            letter-spacing: 2px;
+            position: relative; overflow: hidden;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(34, 211, 238, 0.5); border-color: white; }
         .btn-start:active { transform: scale(0.95); }
-        /* Results */
-        .summary-bar {
-            display: flex; gap: 30px; margin-bottom: 20px;
-            background: rgba(255,255,255,0.05); padding: 10px 30px; border-radius: 50px;
+
+        /* Secondary Button (Leaderboard) */
+        .btn-secondary {
+            width:auto; padding: 18px 30px; 
+            background: rgba(255,255,255,0.05); 
+            color: var(--text-secondary); 
             border: 1px solid var(--glass-border);
+            border-radius: 12px;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
+
+        /* Result Screen */
+        #result-screen { justify-content: flex-start; padding-top: 40px; padding-bottom: 40px; }
+        .summary-bar {
+            display: flex; gap: 30px; margin-bottom: 30px;
+            background: rgba(0,0,0,0.3); padding: 12px 40px; border-radius: 50px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
         }
         .sum-item { text-align: center; }
-        .sum-label { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 700; }
-        .sum-val { font-size: 16px; font-weight: 700; color: white; }
-        .result-flex { display: flex; justify-content: center; gap: 30px; width: 100%; padding: 0 30px; margin-bottom: 10px; }
+        .sum-label { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
+        .sum-val { font-size: 18px; font-weight: 700; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
         
+        .result-flex { display: flex; justify-content: center; gap: 30px; width: 100%; padding: 0 30px; margin-bottom: 15px; }
+        
+        /* Glass Result Card */
         .res-card {
-            flex: 1; background: rgba(255,255,255,0.03); border-radius: 20px;
-            padding: 25px; border: 1px solid var(--glass-border); text-align: center;
+            flex: 1; 
+            background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); 
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px; border: 1px solid var(--glass-border); text-align: center;
             display: flex; flex-direction: column; align-items: center;
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.3);
         }
-        .res-card.p1 { border-top: 4px solid var(--p1-color); box-shadow: 0 10px 30px -5px rgba(34,211,238,0.1); }
-        .res-card.p2 { border-top: 4px solid var(--p2-color); box-shadow: 0 10px 30px -5px rgba(244,114,182,0.1); }
+        .res-card.p1 { border-top: 4px solid var(--p1-color); }
+        .res-card.p2 { border-top: 4px solid var(--p2-color); }
         
-        .res-card h2 { margin: 0 0 10px 0; font-size: 18px; letter-spacing: 2px; opacity: 0.8; }
-        .res-score { font-size: 36px; font-weight: 900; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
-        
-        /* Enhanced Rank Display for 2P */
+        .res-card h2 { margin: 0 0 15px 0; font-size: 20px; letter-spacing: 3px; opacity: 0.9; }
+        .res-score { font-size: 42px; font-weight: 900; margin-bottom: 15px; font-variant-numeric: tabular-nums; text-shadow: 0 0 20px currentColor; }
         .res-rank {
-            font-size: 90px; font-weight: 900; line-height: 1; margin: 10px 0 20px 0;
-            text-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+            font-size: 100px; font-weight: 900; line-height: 1; margin: 10px 0 25px 0;
+            text-shadow: 0 0 30px currentColor;
         }
-        .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .stat-row { background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; }
+        
+        .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-row { 
+            background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 8px; 
+            display: flex; justify-content: space-between; 
+            border: 1px solid rgba(255,255,255,0.03); 
+        }
         .stat-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
         .stat-num { font-weight: 700; font-size: 16px; }
-        /* Single Player Override */
-        .single-layout .res-card { background: none; border: none; box-shadow: none; max-width: 300px; margin: 0 auto; }
-        .single-layout .main-circle {
-            width: 180px; height: 180px; border-radius: 50%;
-            border: 8px solid rgba(255,255,255,0.1);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            margin-bottom: 40px; background: rgba(0,0,0,0.2); position: relative;
-        }
-        .score-percent { font-size: 48px; font-weight: 900; color: white; line-height: 1; margin-bottom: 5px; }
-        .score-label { font-size: 12px; color: var(--text-secondary); letter-spacing: 1px; }
         
-        /* Enhanced Rank Badge for 1P */
+        /* Single Player Override */
+        .single-layout .res-card { background: none; border: none; box-shadow: none; max-width: 350px; margin: 0 auto; backdrop-filter: none; }
+        .single-layout .main-circle {
+            width: 200px; height: 200px; border-radius: 50%;
+            border: 10px solid rgba(255,255,255,0.05);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            margin-bottom: 50px; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent); 
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        .score-percent { font-size: 56px; font-weight: 900; color: white; line-height: 1; margin-bottom: 5px; text-shadow: 0 0 20px white; }
+        .score-label { font-size: 12px; color: var(--text-secondary); letter-spacing: 2px; }
+        
         .circle-rank {
-            position: absolute; bottom: -25px;
+            position: absolute; bottom: -30px;
             background: var(--bg-dark);
             color: white;
-            padding: 6px 30px;
+            padding: 5px 35px;
             border-radius: 40px;
             font-weight: 900;
-            font-size: 32px;
-            border: 3px solid currentColor;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            font-size: 40px;
+            border: 4px solid currentColor;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px currentColor;
             z-index: 2;
         }
+
+        /* Leaderboard Styles */
+        .leaderboard-section {
+            width: 100%; max-width: 500px;
+            background: rgba(0,0,0,0.3); border-radius: 16px; padding: 20px;
+            border: 1px solid var(--glass-border); margin-bottom: 15px;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+        .leaderboard-section.active { display: block; }
+        #leaderboard-screen .leaderboard-section { display: block; margin: 20px auto; max-width: 600px; background: rgba(0,0,0,0.5); }
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
+        #player-name-input {
+            padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.05); color: white; outline: none; width: 60%;
+            text-align: center; font-size: 16px;
+        }
+        #player-name-input:focus { border-color: var(--p1-color); background: rgba(0,0,0,0.5); }
+        
+        .btn-upload {
+            background: var(--rank-s); color: #000; border: none; padding: 0 20px;
+            border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-upload:hover { box-shadow: 0 0 15px var(--rank-s); }
+        .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+        
+        .lb-tabs { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; }
+        .lb-tab {
+            background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary);
+            padding: 8px 15px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s;
+        }
+        .lb-tab:hover { border-color: white; color: white; background: rgba(255,255,255,0.05); }
+        .lb-tab.active { background: var(--p1-color); color: #000; border-color: var(--p1-color); font-weight: bold; box-shadow: 0 0 15px rgba(34,211,238,0.3); }
+        
+        .lb-list { list-style: none; padding: 0; margin: 0; max-height: 220px; overflow-y: auto; }
+        .lb-item {
+            display: flex; justify-content: space-between; padding: 10px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 15px;
+            align-items: center;
+        }
+        .lb-item:hover { background: rgba(255,255,255,0.05); }
+        .lb-rank { width: 30px; font-weight: 800; font-style: italic; }
+        .lb-name { flex: 1; text-align: left; color: #e2e8f0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-right: 15px; }
+        .lb-score { font-weight: 800; color: var(--p1-color); min-width: 70px; text-align: right; font-family: monospace; font-size: 16px; }
+        .lb-title { color:white; font-size: 18px; margin-bottom: 20px; text-align:center; font-weight:bold; letter-spacing: 2px; text-transform: uppercase;}
+
         /* Hit VFX */
         .hit-popup {
             position: absolute; font-weight: 900; font-size: 48px;
             transform: translate(-50%, -50%); pointer-events: none;
             animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 25;
+            text-shadow: 0 0 20px currentColor; z-index: 25;
         }
         @keyframes popUp {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
             50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); }
             100% { opacity: 0; transform: translate(-50%, -120%) scale(1); }
         }
-        /* --- 排行榜專用樣式 --- */
-        .leaderboard-section {
-            width: 100%; max-width: 500px;
-            background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px;
-            border: 1px solid var(--glass-border); margin-bottom: 15px;
-            display: none; /* 預設隱藏 */
-        }
-        .leaderboard-section.active { display: block; }
-        
-        /* 獨立頁面樣式調整 */
-        #leaderboard-screen .leaderboard-section {
-            display: block;
-            margin: 20px auto;
-            max-width: 600px;
-        }
-
-        .input-group { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
-        #player-name-input {
-            padding: 8px; border-radius: 8px; border: 1px solid var(--glass-border);
-            background: rgba(255,255,255,0.1); color: white; outline: none; width: 50%;
-        }
-        .btn-upload {
-            background: var(--rank-s); color: #000; border: none; padding: 8px 15px;
-            border-radius: 8px; font-weight: bold; cursor: pointer;
-        }
-        .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        /* Leaderboard Tabs */
-        .lb-tabs { display: flex; gap: 5px; margin-bottom: 10px; justify-content: center; }
-        .lb-tab {
-            background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary);
-            padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;
-        }
-        .lb-tab.active { background: var(--p1-color); color: #000; border-color: var(--p1-color); font-weight: bold; }
-        
-        .lb-list { list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; }
-        .lb-item {
-            display: flex; justify-content: space-between; padding: 8px 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;
-        }
-        .lb-rank { width: 30px; font-weight: bold; color: var(--rank-b); }
-        .lb-name { flex: 1; text-align: left; color: white; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-right: 10px; }
-        .lb-score { font-weight: bold; color: var(--p1-color); min-width: 60px; text-align: right; }
-        .lb-title { color:white; font-size: 16px; margin-bottom: 15px; text-align:center; font-weight:bold; letter-spacing: 1px;}
     </style>
 </head>
 <body>
+    <div class="bg-layer">
+        <div class="cyber-grid"></div>
+        <div class="particle p-1"></div>
+        <div class="particle p-2"></div>
+        <div class="particle p-3"></div>
+        <div class="particle p-4"></div>
+    </div>
+
     <div id="game-wrapper">
         <canvas id="gameCanvas" width="1100" height="680"></canvas>
         
@@ -283,7 +432,7 @@
 
         <div id="menu-screen" class="screen active">
             <h1>藍循節奏大師</h1>
-            <p class="subtitle">1.0版本</p>
+            <p class="subtitle">1.0 正式版</p>
             <div class="control-panel">
                 <div class="control-group">
                     <label>玩家人數</label>
@@ -298,7 +447,7 @@
                         <button class="toggle-btn active" data-mode="fixed" onclick="setMode('fixed')">練習</button>
                         <button class="toggle-btn" data-mode="vanishing" onclick="setMode('vanishing')">消失</button>
                         <button class="toggle-btn" data-mode="survival" onclick="setMode('survival')">生存</button>
-                        <button class="toggle-btn" data-mode="vanishing-survival" onclick="setMode('vanishing-survival')">消失生存</button>
+                        <button class="toggle-btn" data-mode="vanishing-survival" onclick="setMode('vanishing-survival')">消存</button>
                     </div>
                 </div>
                 <div class="control-group" id="round-group">
@@ -330,16 +479,16 @@
             
             <div style="display: flex; gap: 15px;">
                 <button class="btn btn-start" onclick="startGame()">開始遊戲</button>
-                <button class="btn" style="width:auto; padding: 15px 30px; background: rgba(255,255,255,0.1); color:var(--rank-b); border:1px solid var(--rank-b);" onclick="openLeaderboardMenu()">🏆 排行榜</button>
+                <button class="btn btn-secondary" onclick="openLeaderboardMenu()">🏆 名人堂</button>
             </div>
 
-            <div style="margin-top:20px; color:var(--text-secondary); font-size:13px; text-align:center;">
-                操作方式：鍵盤 [F, J] / [↑, ↓] 或 點擊螢幕 全螢幕(1P) / 上下半分(2P)
+            <div style="margin-top:25px; color:var(--text-secondary); font-size:12px; text-align:center; opacity:0.6;">
+                操作方式：鍵盤 [空白鍵] / [↑, ↓] 或 點擊螢幕
             </div>
         </div>
         
         <div id="leaderboard-screen" class="screen">
-            <h1 style="font-size:42px;">名人堂</h1>
+            <h1 style="font-size:48px; margin-bottom: 20px;">名人堂</h1>
             <div class="leaderboard-section">
                 <div class="lb-title">選擇模式查看排名</div>
                 <div class="lb-tabs">
@@ -353,11 +502,11 @@
                     <li class="lb-item" style="justify-content:center; color:#666;">載入中...</li>
                 </ul>
             </div>
-            <button class="btn" style="width:auto; padding: 10px 40px; margin-top:20px;" onclick="showMenu()">返回主選單</button>
+            <button class="btn btn-secondary" style="width:auto; padding: 12px 40px; margin-top:10px;" onclick="showMenu()">返回主選單</button>
         </div>
 
         <div id="result-screen" class="screen">
-            <h1 style="font-size:42px; margin-bottom:15px;">訓練結束</h1>
+            <h1 style="font-size:48px; margin-bottom:15px;">訓練結束</h1>
             <div class="summary-bar">
                 <div class="sum-item"><span class="sum-label">模式</span><span class="sum-val" id="res-mode">練習</span></div>
                 <div class="sum-item"><span class="sum-label">長度</span><span class="sum-val" id="res-len">6R</span></div>
@@ -374,23 +523,23 @@
                     <li class="lb-item" style="justify-content:center; color:#666;">載入中...</li>
                 </ul>
                 
-                <div id="upload-ui" style="margin-top: 10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+                <div id="upload-ui" style="margin-top: 15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
                     <div class="input-group" id="upload-input-group">
-                        <input type="text" id="player-name-input" placeholder="輸入暱稱上傳" maxlength="10">
+                        <input type="text" id="player-name-input" placeholder="輸入暱稱 (Max 10)" maxlength="10">
                         <button class="btn-upload" onclick="submitScore()" id="btn-submit">上傳分數</button>
                     </div>
                     
                     <div id="upload-actions-extra" style="margin-top:10px; text-align:center;">
-                        <button class="btn" onclick="location.reload()" style="background:rgba(255,255,255,0.1); font-size:14px; padding:8px;">返回選單</button>
+                        <button class="btn" onclick="location.reload()" style="background:rgba(255,255,255,0.05); font-size:14px; padding:8px 20px; width:auto; border:none;">略過上傳</button>
                     </div>
 
                     <div id="upload-success-msg" style="display:none; text-align:center;">
-                         <button class="btn-upload" style="background:rgba(255,255,255,0.2); color:white; width:100%;" onclick="location.reload()">返回選單</button>
+                         <button class="btn-upload" style="background:linear-gradient(90deg, var(--p1-color), #3b82f6); color:#020617; width:100%; padding:12px;" onclick="location.reload()">完成並返回</button>
                     </div>
                 </div>
             </div>
 
-            <button class="btn btn-start" onclick="location.reload()" style="margin-top:10px; padding: 10px 40px; font-size:18px;">返回選單</button>
+            <button class="btn btn-start" onclick="location.reload()" style="margin-top:10px; padding: 15px 50px; font-size:18px;">返回選單</button>
         </div>
     </div>
     <script>
@@ -456,12 +605,10 @@
                     difficulty: config.diff,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                alert("上傳成功！");
                 
-                // ★★★ 上傳成功後的 UI 變化 ★★★
                 document.getElementById('upload-input-group').style.display = 'none';
-                document.getElementById('upload-actions-extra').style.display = 'none'; // 隱藏那個小的返回按鈕
-                document.getElementById('upload-success-msg').style.display = 'block'; // 顯示大的成功返回按鈕
+                document.getElementById('upload-actions-extra').style.display = 'none'; 
+                document.getElementById('upload-success-msg').style.display = 'block'; 
                 
                 fetchLeaderboard(config.mode, 'lb-list-result');
             } catch (e) {
@@ -684,8 +831,8 @@
             }, (now - AudioEngine.ctx.currentTime)*1000));
             timeouts.push(setTimeout(() => {
                 if(gameState!=='PLAYING') return;
-                let col = config.mode.includes('vanishing') ? 'var(--accent-purple)' : 'var(--accent-yellow)';
-                if(config.mode === 'vanishing-survival') col = 'var(--accent-red)';
+                let col = config.mode.includes('vanishing') ? '#d946ef' : '#facc15';
+                if(config.mode === 'vanishing-survival') col = '#f87171';
                 notify("PLAY", col);
                 AudioEngine.play('metro', AudioEngine.ctx.currentTime);
             }, (playStart - AudioEngine.ctx.currentTime)*1000));
@@ -787,19 +934,16 @@
             if(data.lives <= 0) endGame();
         }
         
-        // ★★★ 修改：只有在生存模式下才顯示愛心 ★★★
         function updateHUD() {
             document.getElementById('p1-score').innerText = session.p1.score;
             document.getElementById('p2-score').innerText = session.p2.score;
             
-            // 判斷是否為生存模式
             const isSurvivalMode = config.mode.includes('survival');
             
             if(isSurvivalMode) {
                 document.getElementById('p1-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p1.lives));
                 document.getElementById('p2-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p2.lives));
             } else {
-                // 非生存模式隱藏愛心
                 document.getElementById('p1-lives').innerText = "";
                 document.getElementById('p2-lives').innerText = "";
             }
@@ -846,9 +990,8 @@
             if(config.players === 1) {
                 lbDisplayResult.classList.add('active'); 
                 uploadUI.style.display = 'block';
-                // 重置上傳 UI 狀態 (因為可能上一局上傳過)
                 document.getElementById('upload-input-group').style.display = 'flex';
-                document.getElementById('upload-actions-extra').style.display = 'block'; // 顯示 1P 上傳前的返回按鈕
+                document.getElementById('upload-actions-extra').style.display = 'block'; 
                 document.getElementById('upload-success-msg').style.display = 'none';
                 
                 submitBtn.disabled = false;
