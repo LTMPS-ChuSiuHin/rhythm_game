@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>藍循節奏大師：1.0 正式版</title>
+    <title>藍循節奏大師：全屏觸控版</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -19,8 +19,8 @@
             --glass-blur: blur(12px);
             
             /* Player Colors */
-            --p1-color: #22d3ee; /* Cyan */
-            --p2-color: #f472b6; /* Pink */
+            --p1-color: #22d3ee;
+            --p2-color: #f472b6;
             
             /* Ranks */
             --rank-s: #22d3ee;
@@ -47,7 +47,7 @@
             position: relative;
         }
 
-        /* --- 動態背景層 (Cyberpunk Grid) --- */
+        /* --- 動態背景層 --- */
         .bg-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             overflow: hidden; z-index: 0; pointer-events: none;
@@ -89,7 +89,6 @@
             position: relative;
             width: 100%; max-width: 1100px;
             height: 100%; max-height: 680px;
-            /* 這裡保留一點點透度，讓 Grid 可以微微透出，但主要靠 Menu Screen 遮擋 */
             background: rgba(15, 23, 42, 0.4); 
             border-radius: 24px;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
@@ -100,7 +99,6 @@
         }
         canvas { display: block; width: 100%; height: 100%; }
         
-        /* Touch Zones */
         .touch-layer {
             position: absolute; left: 0; width: 100%; height: 50%;
             z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent;
@@ -108,7 +106,7 @@
         #touch-p1 { top: 0; }
         #touch-p2 { top: 50%; }
         
-        /* UI Layer (HUD) */
+        /* UI Layer */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; display: flex; flex-direction: column;
@@ -118,8 +116,6 @@
             display: flex; justify-content: space-between; align-items: center;
             font-size: 20px; font-weight: 800; letter-spacing: 1px;
             padding: 8px 20px; border-radius: 12px;
-            
-            /* HUD Glass Effect */
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(8px);
@@ -146,24 +142,41 @@
             z-index: 50;
         }
 
-        /* --- Screens (選單頁面) --- */
+        /* --- Screens --- */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            
-            /* ★★★ 關鍵修改：遮擋背景的玻璃擬態 ★★★ */
-            /* 使用極深的背景色 (96% 不透明) 加上極強的模糊 */
-            /* 這樣你看不到後面的遊戲軌道，但依然有一種深邃的質感 */
             background: rgba(2, 6, 23, 0.96); 
-            backdrop-filter: blur(40px); /* 強力模糊，確保遊戲界面不可見 */
-            
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(40px);
             z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
-            overflow-y: auto; 
+            
+            display: flex; flex-direction: column; align-items: center; 
+            box-sizing: border-box; padding: 20px;
         }
         .screen.active { opacity: 1; pointer-events: auto; }
         
+        .screen-header { flex-shrink: 0; text-align: center; margin-bottom: 10px; width: 100%; }
+
+        .scroll-content {
+            flex: 1; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            overflow-y: auto; overflow-x: hidden;
+            margin-bottom: 10px; 
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.2) transparent;
+        }
+        .scroll-content::-webkit-scrollbar { width: 6px; }
+        .scroll-content::-webkit-scrollbar-track { background: transparent; }
+        .scroll-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        .screen-footer {
+            flex-shrink: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            width: 100%; padding-bottom: 5px;
+        }
+
         h1 {
-            font-size: 56px; margin-bottom: 5px; font-weight: 900; letter-spacing: 4px;
+            font-size: 48px; margin: 0; font-weight: 900; letter-spacing: 4px;
             color: white; text-transform: uppercase;
             text-shadow: 0 0 20px var(--p1-color), 0 0 40px rgba(34, 211, 238, 0.4);
             animation: titleFloat 3s ease-in-out infinite;
@@ -173,223 +186,154 @@
             50% { transform: translateY(-5px); text-shadow: 0 0 30px var(--p1-color), 0 0 10px white; }
         }
         .subtitle { 
-            color: var(--text-secondary); font-size: 15px; margin-bottom: 30px; 
+            color: var(--text-secondary); font-size: 14px; margin-top: 5px; margin-bottom: 5px;
             letter-spacing: 4px; text-transform: uppercase; opacity: 0.8;
-            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; display: inline-block;
         }
 
-        /* --- 玻璃擬態控制面板 --- */
+        /* --- Controls --- */
         .control-panel {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-            width: 700px; 
-            
-            /* ★ Glass Effect ★ */
-            background: var(--glass-panel);
-            backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
-            
-            padding: 30px;
-            border-radius: 24px; 
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-        /* 加一道微光掃過面板 */
-        .control-panel::before {
-            content:''; position: absolute; top:0; left:-50%; width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
-            transform: skewX(-25deg); pointer-events: none;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+            width: 90%; max-width: 600px;
+            background: var(--glass-panel); backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
+            padding: 20px; border-radius: 20px; margin: 10px 0; flex-shrink: 0; 
         }
 
         .control-group.full { grid-column: span 2; }
-        label { font-size: 11px; color: var(--p1-color); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; display: block; letter-spacing: 1px; }
+        label { font-size: 11px; color: var(--p1-color); margin-bottom: 5px; font-weight: 800; text-transform: uppercase; display: block; letter-spacing: 1px; }
         
-        /* 玻璃擬態輸入元件 */
-        select, .btn {
-            padding: 12px 15px; border-radius: 12px; 
-            
+        select, .btn, input {
+            padding: 10px; border-radius: 10px; 
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(5px);
-            
             color: white; font-family: inherit;
-            font-size: 15px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
+            font-size: 14px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
         }
-        select:hover, .btn:hover { 
-            border-color: var(--p1-color); 
-            background: rgba(34, 211, 238, 0.1); 
-            box-shadow: 0 0 15px rgba(34,211,238,0.1);
-        }
-        .control-group.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
+        select:hover, .btn:hover, input:focus { border-color: var(--p1-color); background: rgba(34, 211, 238, 0.1); box-shadow: 0 0 15px rgba(34,211,238,0.1); }
         
-        /* Toggle Switch */
         .toggle-wrapper { 
             display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); 
             background: rgba(0,0,0,0.5); border-radius: 12px; padding: 4px; gap: 4px; 
             border: 1px solid rgba(255,255,255,0.05);
         }
         .toggle-btn {
-            padding: 10px 5px; border: none; background: transparent;
+            padding: 8px 4px; border: none; background: transparent;
             color: var(--text-secondary); cursor: pointer; border-radius: 8px;
-            font-weight: 600; transition: 0.2s; font-size: 14px; white-space: nowrap;
+            font-weight: 600; transition: 0.2s; font-size: 13px; white-space: nowrap;
         }
         .toggle-btn:hover { color: white; background: rgba(255,255,255,0.05); }
         .toggle-btn.active { 
-            background: rgba(255,255,255,0.15); 
-            color: white; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
-            text-shadow: 0 0 8px currentColor;
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15); color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+            text-shadow: 0 0 8px currentColor; border: 1px solid rgba(255,255,255,0.1);
         }
-        
         .toggle-btn[data-mode="vanishing"].active { color: #d946ef; border-color: #d946ef; background: rgba(217, 70, 239, 0.15); }
         .toggle-btn[data-mode="survival"].active { color: #facc15; border-color: #facc15; background: rgba(250, 204, 21, 0.15); }
         .toggle-btn[data-mode="vanishing-survival"].active { color: #f87171; border-color: #f87171; background: rgba(248, 113, 113, 0.15); }
         .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.15); }
 
-        /* Start Button */
+        .btn-group { display: flex; gap: 15px; justify-content: center; width: 100%; max-width: 500px; }
+        
         .btn-start {
-            padding: 18px 80px; font-size: 24px; font-weight: 800; width: auto;
+            padding: 12px 24px; font-size: 20px; font-weight: 800; width: auto; flex: 2;
+            min-width: 140px; 
             background: linear-gradient(90deg, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8));
-            border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            color: #fff; 
-            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
-            border-radius: 50px;
-            letter-spacing: 2px;
-            position: relative; overflow: hidden;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; 
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 2px; white-space: nowrap;
         }
         .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(34, 211, 238, 0.5); border-color: white; }
-        .btn-start:active { transform: scale(0.95); }
-
-        /* Secondary Button (Leaderboard) */
+        
         .btn-secondary {
-            width:auto; padding: 18px 30px; 
-            background: rgba(255,255,255,0.05); 
-            color: var(--text-secondary); 
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
+            width:auto; padding: 12px 20px; flex: 1; min-width: 100px;
+            background: rgba(255,255,255,0.05); color: var(--text-secondary); 
+            border: 1px solid var(--glass-border); border-radius: 12px; white-space: nowrap;
         }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
 
         /* Result Screen */
-        #result-screen { justify-content: flex-start; padding-top: 40px; padding-bottom: 40px; }
         .summary-bar {
-            display: flex; gap: 30px; margin-bottom: 30px;
-            background: rgba(0,0,0,0.3); padding: 12px 40px; border-radius: 50px;
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
+            display: flex; gap: 15px; margin-bottom: 15px;
+            background: rgba(0,0,0,0.3); padding: 8px 20px; border-radius: 50px;
+            border: 1px solid var(--glass-border); backdrop-filter: blur(10px);
+            flex-wrap: wrap; justify-content: center; flex-shrink: 0;
         }
         .sum-item { text-align: center; }
         .sum-label { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
-        .sum-val { font-size: 18px; font-weight: 700; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .sum-val { font-size: 14px; font-weight: 700; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
         
-        .result-flex { display: flex; justify-content: center; gap: 30px; width: 100%; padding: 0 30px; margin-bottom: 15px; }
-        
-        /* Glass Result Card */
+        .result-flex { 
+            display: flex; justify-content: center; gap: 20px; width: 100%; max-width: 800px;
+            padding: 0 10px; margin-bottom: 10px; flex-shrink: 0;
+        }
         .res-card {
-            flex: 1; 
-            background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); 
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px; border: 1px solid var(--glass-border); text-align: center;
-            display: flex; flex-direction: column; align-items: center;
-            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.3);
+            flex: 1; background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); 
+            backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); 
+            text-align: center; display: flex; flex-direction: column; align-items: center;
         }
         .res-card.p1 { border-top: 4px solid var(--p1-color); }
         .res-card.p2 { border-top: 4px solid var(--p2-color); }
+        .res-score { font-size: 32px; font-weight: 900; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
+        .res-rank { font-size: 60px; font-weight: 900; line-height: 1; margin: 5px 0 15px 0; text-shadow: 0 0 30px currentColor; }
+        .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .stat-row { background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); }
+        .stat-label { font-size: 10px; font-weight: 700; color: var(--text-secondary); }
+        .stat-num { font-weight: 700; font-size: 13px; }
         
-        .res-card h2 { margin: 0 0 15px 0; font-size: 20px; letter-spacing: 3px; opacity: 0.9; }
-        .res-score { font-size: 42px; font-weight: 900; margin-bottom: 15px; font-variant-numeric: tabular-nums; text-shadow: 0 0 20px currentColor; }
-        .res-rank {
-            font-size: 100px; font-weight: 900; line-height: 1; margin: 10px 0 25px 0;
-            text-shadow: 0 0 30px currentColor;
-        }
-        
-        .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .stat-row { 
-            background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 8px; 
-            display: flex; justify-content: space-between; 
-            border: 1px solid rgba(255,255,255,0.03); 
-        }
-        .stat-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
-        .stat-num { font-weight: 700; font-size: 16px; }
-        
-        /* Single Player Override */
-        .single-layout .res-card { background: none; border: none; box-shadow: none; max-width: 350px; margin: 0 auto; backdrop-filter: none; }
+        .single-layout .res-card { background: none; border: none; box-shadow: none; max-width: 300px; margin: 0 auto; backdrop-filter: none; }
         .single-layout .main-circle {
-            width: 200px; height: 200px; border-radius: 50%;
-            border: 10px solid rgba(255,255,255,0.05);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            margin-bottom: 50px; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent); 
-            position: relative;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
+            width: 140px; height: 140px; border-radius: 50%;
+            border: 8px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center;
+            margin-bottom: 30px; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent); 
+            position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px);
         }
-        .score-percent { font-size: 56px; font-weight: 900; color: white; line-height: 1; margin-bottom: 5px; text-shadow: 0 0 20px white; }
-        .score-label { font-size: 12px; color: var(--text-secondary); letter-spacing: 2px; }
-        
+        .score-percent { font-size: 40px; font-weight: 900; color: white; line-height: 1; margin-bottom: 5px; text-shadow: 0 0 20px white; }
         .circle-rank {
-            position: absolute; bottom: -30px;
-            background: var(--bg-dark);
-            color: white;
-            padding: 5px 35px;
-            border-radius: 40px;
-            font-weight: 900;
-            font-size: 40px;
-            border: 4px solid currentColor;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px currentColor;
-            z-index: 2;
+            position: absolute; bottom: -20px; background: var(--bg-dark); color: white; padding: 4px 25px;
+            border-radius: 40px; font-weight: 900; font-size: 30px; border: 3px solid currentColor;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px currentColor; z-index: 2;
         }
 
-        /* Leaderboard Styles */
+        /* Leaderboard & Upload Styles */
         .leaderboard-section {
-            width: 100%; max-width: 500px;
-            background: rgba(0,0,0,0.3); border-radius: 16px; padding: 20px;
-            border: 1px solid var(--glass-border); margin-bottom: 15px;
-            display: none;
-            backdrop-filter: blur(10px);
+            width: 100%; max-width: 550px;
+            background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px;
+            border: 1px solid var(--glass-border); 
+            display: none; backdrop-filter: blur(10px); margin: 0 auto;
         }
         .leaderboard-section.active { display: block; }
-        #leaderboard-screen .leaderboard-section { display: block; margin: 20px auto; max-width: 600px; background: rgba(0,0,0,0.5); }
-        .input-group { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
-        #player-name-input {
-            padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border);
-            background: rgba(255,255,255,0.05); color: white; outline: none; width: 60%;
-            text-align: center; font-size: 16px;
-        }
-        #player-name-input:focus { border-color: var(--p1-color); background: rgba(0,0,0,0.5); }
         
-        .btn-upload {
-            background: var(--rank-s); color: #000; border: none; padding: 0 20px;
-            border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s;
-        }
-        .btn-upload:hover { box-shadow: 0 0 15px var(--rank-s); }
-        .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+        /* Upload UI Logic */
+        .role-switch { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
+        .role-btn { padding: 8px 15px; opacity: 0.6; border: 1px solid transparent; background: rgba(0,0,0,0.3); }
+        .role-btn.active { opacity: 1; background: var(--p1-color); color:black; font-weight:bold; box-shadow: 0 0 10px var(--p1-color); }
         
-        .lb-tabs { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; }
+        .upload-form-row { display: flex; gap: 8px; margin-bottom: 8px; justify-content: center; width: 100%; }
+        .upload-input { flex: 1; text-align: center; }
+        
+        .lb-filter-row { display: flex; gap: 8px; margin-bottom: 10px; justify-content: center; }
+        .lb-filter-select { width: auto; min-width: 80px; padding: 5px 10px; font-size: 12px; height: 32px; }
+
+        .lb-tabs { display: flex; gap: 5px; margin-bottom: 10px; justify-content: center; flex-wrap: wrap; }
         .lb-tab {
             background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary);
-            padding: 8px 15px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s;
+            padding: 6px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: 0.2s;
         }
         .lb-tab:hover { border-color: white; color: white; background: rgba(255,255,255,0.05); }
         .lb-tab.active { background: var(--p1-color); color: #000; border-color: var(--p1-color); font-weight: bold; box-shadow: 0 0 15px rgba(34,211,238,0.3); }
         
-        .lb-list { list-style: none; padding: 0; margin: 0; max-height: 220px; overflow-y: auto; }
+        .lb-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
         .lb-item {
-            display: flex; justify-content: space-between; padding: 10px 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 15px;
-            align-items: center;
+            display: flex; justify-content: space-between; padding: 8px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; align-items: center;
         }
-        .lb-item:hover { background: rgba(255,255,255,0.05); }
-        .lb-rank { width: 30px; font-weight: 800; font-style: italic; }
-        .lb-name { flex: 1; text-align: left; color: #e2e8f0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-right: 15px; }
-        .lb-score { font-weight: 800; color: var(--p1-color); min-width: 70px; text-align: right; font-family: monospace; font-size: 16px; }
-        .lb-title { color:white; font-size: 18px; margin-bottom: 20px; text-align:center; font-weight:bold; letter-spacing: 2px; text-transform: uppercase;}
+        .lb-rank { width: 30px; font-weight: 800; font-style: italic; text-align: center; }
+        .lb-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; margin-right: 10px; }
+        .lb-name { color: #e2e8f0; white-space: nowrap; text-overflow: ellipsis; font-weight: bold;}
+        .lb-detail { font-size: 10px; color: var(--text-secondary); }
+        .lb-score { font-weight: 800; color: var(--p1-color); min-width: 60px; text-align: right; font-family: monospace; font-size: 14px; }
+        .lb-title { color:white; font-size: 14px; margin-bottom: 10px; text-align:center; font-weight:bold; letter-spacing: 2px; text-transform: uppercase;}
 
-        /* Hit VFX */
         .hit-popup {
             position: absolute; font-weight: 900; font-size: 48px;
             transform: translate(-50%, -50%); pointer-events: none;
@@ -400,6 +344,18 @@
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
             50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); }
             100% { opacity: 0; transform: translate(-50%, -120%) scale(1); }
+        }
+
+        @media (max-height: 600px) {
+            h1 { font-size: 32px; }
+            .control-panel { padding: 10px; gap: 8px; margin: 5px 0; }
+            .btn-start { padding: 8px 20px; font-size: 16px; min-width: 100px; }
+            .btn-secondary { padding: 8px 15px; font-size: 12px; min-width: 80px; }
+            .res-rank { font-size: 40px; margin: 0 0 10px 0; }
+            .single-layout .main-circle { width: 100px; height: 100px; margin-bottom: 20px; }
+            .score-percent { font-size: 30px; }
+            .circle-rank { font-size: 24px; bottom: -15px; padding: 2px 20px; }
+            .upload-form-row { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -431,115 +387,170 @@
         </div>
 
         <div id="menu-screen" class="screen active">
-            <h1>藍循節奏大師</h1>
-            <p class="subtitle">1.0 正式版</p>
-            <div class="control-panel">
-                <div class="control-group">
-                    <label>玩家人數</label>
-                    <div class="toggle-wrapper">
-                        <button class="toggle-btn active" data-val="1" onclick="setPlayers(1)">單人 (1P)</button>
-                        <button class="toggle-btn" data-val="2" onclick="setPlayers(2)">雙人 (2P)</button>
+            <div class="screen-header">
+                <h1>藍循節奏大師</h1>
+                <p class="subtitle">雙人對戰．聽音特訓</p>
+            </div>
+            
+            <div class="scroll-content">
+                <div class="control-panel">
+                    <div class="control-group">
+                        <label>玩家人數</label>
+                        <div class="toggle-wrapper">
+                            <button class="toggle-btn active" data-val="1" onclick="setPlayers(1)">單人 (1P)</button>
+                            <button class="toggle-btn" data-val="2" onclick="setPlayers(2)">雙人 (2P)</button>
+                        </div>
                     </div>
-                </div>
-                <div class="control-group">
-                    <label>遊戲模式</label>
-                    <div class="toggle-wrapper">
-                        <button class="toggle-btn active" data-mode="fixed" onclick="setMode('fixed')">練習</button>
-                        <button class="toggle-btn" data-mode="vanishing" onclick="setMode('vanishing')">消失</button>
-                        <button class="toggle-btn" data-mode="survival" onclick="setMode('survival')">生存</button>
-                        <button class="toggle-btn" data-mode="vanishing-survival" onclick="setMode('vanishing-survival')">消存</button>
+                    <div class="control-group">
+                        <label>遊戲模式</label>
+                        <div class="toggle-wrapper">
+                            <button class="toggle-btn active" data-mode="fixed" onclick="setMode('fixed')">練習</button>
+                            <button class="toggle-btn" data-mode="vanishing" onclick="setMode('vanishing')">消失</button>
+                            <button class="toggle-btn" data-mode="survival" onclick="setMode('survival')">生存</button>
+                            <button class="toggle-btn" data-mode="vanishing-survival" onclick="setMode('vanishing-survival')">消存</button>
+                        </div>
                     </div>
-                </div>
-                <div class="control-group" id="round-group">
-                    <label>長度</label>
-                    <select id="round-select">
-                        <option value="4">4 回合 (短)</option>
-                        <option value="6" selected>6 回合 (標準)</option>
-                        <option value="10">10 回合 (長)</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label>難度</label>
-                    <select id="diff-select">
-                        <option value="easy">簡單 (四分/二分)</option>
-                        <option value="normal">普通 (八分音符)</option>
-                        <option value="hard">困難 (十六分/附點)</option>
-                        <option value="master">達人 (切分/混合)</option>
-                    </select>
-                </div>
-                <div class="control-group full">
-                    <label>速度 (BPM)</label>
-                    <select id="speed-select">
-                        <option value="70">慢板 Adagio (70)</option>
-                        <option value="95" selected>中板 Moderato (95)</option>
-                        <option value="120">快板 Allegro (120)</option>
-                    </select>
+                    <div class="control-group" id="round-group">
+                        <label>長度</label>
+                        <select id="round-select">
+                            <option value="4">4 回合 (短)</option>
+                            <option value="6" selected>6 回合 (標準)</option>
+                            <option value="10">10 回合 (長)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>難度</label>
+                        <select id="diff-select">
+                            <option value="easy">簡單 (四分/二分)</option>
+                            <option value="normal">普通 (八分音符)</option>
+                            <option value="hard">困難 (十六分/附點)</option>
+                            <option value="master">達人 (切分/混合)</option>
+                        </select>
+                    </div>
+                    <div class="control-group full">
+                        <label>速度 (BPM)</label>
+                        <select id="speed-select">
+                            <option value="70">慢板 Adagio (70)</option>
+                            <option value="95" selected>中板 Moderato (95)</option>
+                            <option value="120">快板 Allegro (120)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
-            <div style="display: flex; gap: 15px;">
-                <button class="btn btn-start" onclick="startGame()">開始遊戲</button>
-                <button class="btn btn-secondary" onclick="openLeaderboardMenu()">🏆 名人堂</button>
-            </div>
-
-            <div style="margin-top:25px; color:var(--text-secondary); font-size:12px; text-align:center; opacity:0.6;">
-                操作方式：鍵盤 [空白鍵] / [↑, ↓] 或 點擊螢幕
+            <div class="screen-footer">
+                <div class="btn-group">
+                    <button class="btn btn-start" onclick="startGame()">開始遊戲</button>
+                    <button class="btn btn-secondary" onclick="openLeaderboardMenu()">🏆 名人堂</button>
+                </div>
+                <div style="margin-top:10px; color:var(--text-secondary); font-size:11px; text-align:center; opacity:0.6;">
+                    鍵盤 [F, J] / [↑, ↓] 或 點擊螢幕
+                </div>
             </div>
         </div>
         
         <div id="leaderboard-screen" class="screen">
-            <h1 style="font-size:48px; margin-bottom: 20px;">名人堂</h1>
-            <div class="leaderboard-section">
-                <div class="lb-title">選擇模式查看排名</div>
-                <div class="lb-tabs">
-                    <button class="lb-tab" onclick="fetchLeaderboard('fixed', 'lb-list-menu')" id="tab-menu-fixed">練習</button>
-                    <button class="lb-tab" onclick="fetchLeaderboard('vanishing', 'lb-list-menu')" id="tab-menu-vanishing">消失</button>
-                    <button class="lb-tab" onclick="fetchLeaderboard('survival', 'lb-list-menu')" id="tab-menu-survival">生存</button>
-                    <button class="lb-tab" onclick="fetchLeaderboard('vanishing-survival', 'lb-list-menu')" id="tab-menu-vanishing-survival">消存</button>
-                </div>
-                
-                <ul id="lb-list-menu" class="lb-list" style="height: 300px; max-height: 300px;">
-                    <li class="lb-item" style="justify-content:center; color:#666;">載入中...</li>
-                </ul>
+            <div class="screen-header">
+                <h1>名人堂</h1>
             </div>
-            <button class="btn btn-secondary" style="width:auto; padding: 12px 40px; margin-top:10px;" onclick="showMenu()">返回主選單</button>
+            
+            <div class="scroll-content">
+                <div class="leaderboard-section">
+                    <div class="lb-title">選擇模式與分類</div>
+                    <div class="lb-tabs">
+                        <button class="lb-tab active" onclick="switchLBCategory('class')">班別榜</button>
+                        <button class="lb-tab" onclick="switchLBCategory('grade')">年級榜</button>
+                        <button class="lb-tab" onclick="switchLBCategory('school')">全校榜</button>
+                        <button class="lb-tab" onclick="switchLBCategory('world')">世界榜</button>
+                    </div>
+
+                    <div class="lb-filter-row" id="lb-filters">
+                        <select id="filter-grade" class="lb-filter-select" onchange="refreshLB()">
+                            <option value="1">一年級</option><option value="2">二年級</option>
+                            <option value="3">三年級</option><option value="4">四年級</option>
+                            <option value="5">五年級</option><option value="6">六年級</option>
+                        </select>
+                        <select id="filter-class" class="lb-filter-select" onchange="refreshLB()">
+                            <option value="A">A班</option><option value="B">B班</option>
+                            <option value="C">C班</option><option value="D">D班</option>
+                            <option value="E">E班</option>
+                        </select>
+                    </div>
+                    
+                    <div class="lb-tabs" style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+                        <button class="lb-tab active" id="menu-lb-fixed" onclick="switchLBMode('fixed')">練習</button>
+                        <button class="lb-tab" id="menu-lb-vanishing" onclick="switchLBMode('vanishing')">消失</button>
+                        <button class="lb-tab" id="menu-lb-survival" onclick="switchLBMode('survival')">生存</button>
+                        <button class="lb-tab" id="menu-lb-vanishing-survival" onclick="switchLBMode('vanishing-survival')">消存</button>
+                    </div>
+                    
+                    <ul id="lb-list-menu" class="lb-list">
+                        <li class="lb-item" style="justify-content:center; color:#666;">載入中...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="screen-footer">
+                <button class="btn btn-secondary" style="width:auto; padding: 12px 30px;" onclick="showMenu()">返回主選單</button>
+            </div>
         </div>
 
         <div id="result-screen" class="screen">
-            <h1 style="font-size:48px; margin-bottom:15px;">訓練結束</h1>
-            <div class="summary-bar">
-                <div class="sum-item"><span class="sum-label">模式</span><span class="sum-val" id="res-mode">練習</span></div>
-                <div class="sum-item"><span class="sum-label">長度</span><span class="sum-val" id="res-len">6R</span></div>
-                <div class="sum-item"><span class="sum-label">速度</span><span class="sum-val" id="res-spd">中板</span></div>
-                <div class="sum-item"><span class="sum-label">難度</span><span class="sum-val" id="res-diff">普通</span></div>
+            <div class="screen-header">
+                <h1>訓練結束</h1>
+                <div class="summary-bar">
+                    <div class="sum-item"><span class="sum-label">模式</span><span class="sum-val" id="res-mode">練習</span></div>
+                    <div class="sum-item"><span class="sum-label">長度</span><span class="sum-val" id="res-len">6R</span></div>
+                    <div class="sum-item"><span class="sum-label">難度</span><span class="sum-val" id="res-diff">普通</span></div>
+                </div>
             </div>
             
-            <div class="result-flex" id="result-content"></div>
-            
-            <div id="leaderboard-display-result" class="leaderboard-section">
-                <div class="lb-title" id="lb-title-result">本模式排行榜</div>
+            <div class="scroll-content">
+                <div class="result-flex" id="result-content"></div>
                 
-                <ul id="lb-list-result" class="lb-list">
-                    <li class="lb-item" style="justify-content:center; color:#666;">載入中...</li>
-                </ul>
-                
-                <div id="upload-ui" style="margin-top: 15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
-                    <div class="input-group" id="upload-input-group">
-                        <input type="text" id="player-name-input" placeholder="輸入暱稱 (Max 10)" maxlength="10">
-                        <button class="btn-upload" onclick="submitScore()" id="btn-submit">上傳分數</button>
-                    </div>
-                    
-                    <div id="upload-actions-extra" style="margin-top:10px; text-align:center;">
-                        <button class="btn" onclick="location.reload()" style="background:rgba(255,255,255,0.05); font-size:14px; padding:8px 20px; width:auto; border:none;">略過上傳</button>
+                <div id="leaderboard-display-result" class="leaderboard-section">
+                    <div id="upload-ui">
+                        <div class="lb-title">上傳分數</div>
+                        <div class="role-switch">
+                            <button class="btn role-btn active" id="role-student" onclick="setUploadRole('student')">我是學生</button>
+                            <button class="btn role-btn" id="role-guest" onclick="setUploadRole('guest')">訪客遊玩</button>
+                        </div>
+
+                        <div id="input-student-row" class="upload-form-row">
+                            <select id="up-grade" class="upload-input" style="flex:0.5;">
+                                <option value="1">P.1</option><option value="2">P.2</option><option value="3">P.3</option>
+                                <option value="4">P.4</option><option value="5">P.5</option><option value="6">P.6</option>
+                            </select>
+                            <select id="up-class" class="upload-input" style="flex:0.5;">
+                                <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                                <option value="D">D</option><option value="E">E</option>
+                            </select>
+                            <input type="text" id="up-sid" class="upload-input" style="flex:1.5;" placeholder="學號/姓名" maxlength="12">
+                        </div>
+
+                        <div id="input-guest-row" class="upload-form-row" style="display:none;">
+                            <input type="text" id="up-guest-name" class="upload-input" placeholder="輸入訪客暱稱" maxlength="12">
+                        </div>
+
+                        <div class="upload-form-row">
+                            <button class="btn-upload" style="flex:1; padding:10px;" onclick="submitScore()" id="btn-submit">確認上傳</button>
+                        </div>
+                        
+                        <div id="upload-actions-extra" style="margin-top:5px; text-align:center;">
+                            <button class="btn" onclick="location.reload()" style="background:transparent; font-size:12px; padding:6px; width:auto; border:none; color:#666;">略過上傳</button>
+                        </div>
                     </div>
 
                     <div id="upload-success-msg" style="display:none; text-align:center;">
-                         <button class="btn-upload" style="background:linear-gradient(90deg, var(--p1-color), #3b82f6); color:#020617; width:100%; padding:12px;" onclick="location.reload()">完成並返回</button>
+                         <div style="color:var(--rank-a); font-weight:bold; margin-bottom:10px;">上傳成功！</div>
+                         <button class="btn-upload" style="background:linear-gradient(90deg, var(--p1-color), #3b82f6); color:#020617; width:100%; padding:10px;" onclick="location.reload()">完成並返回</button>
                     </div>
                 </div>
             </div>
 
-            <button class="btn btn-start" onclick="location.reload()" style="margin-top:10px; padding: 15px 50px; font-size:18px;">返回選單</button>
+            <div class="screen-footer">
+                <button class="btn btn-start" onclick="location.reload()">返回選單</button>
+            </div>
         </div>
     </div>
     <script>
@@ -564,9 +575,72 @@
         } catch(e) { console.error("Firebase Init Error:", e); }
 
         // ---------------------------------------------
-        // ★★★ 2. 分榜系統邏輯 ★★★
+        // ★★★ 2. 全新排行榜系統邏輯 ★★★
         // ---------------------------------------------
+        let currentLB = {
+            mode: 'fixed',
+            category: 'class', // class, grade, school, world
+            filterGrade: '1',
+            filterClass: 'A'
+        };
+        let uploadRole = 'student';
+
+        // --- 上傳介面邏輯 ---
+        function setUploadRole(role) {
+            uploadRole = role;
+            document.getElementById('role-student').classList.toggle('active', role === 'student');
+            document.getElementById('role-guest').classList.toggle('active', role === 'guest');
+            document.getElementById('input-student-row').style.display = role === 'student' ? 'flex' : 'none';
+            document.getElementById('input-guest-row').style.display = role === 'guest' ? 'flex' : 'none';
+        }
+
+        // --- 排行榜檢視邏輯 ---
+        function switchLBCategory(cat) {
+            currentLB.category = cat;
+            document.querySelectorAll('.lb-tabs:first-of-type .lb-tab').forEach(b => b.classList.remove('active'));
+            // 找出按鈕並設為 active (這裡簡單用文字對應，實際專案可用 ID)
+            const map = {'class':0, 'grade':1, 'school':2, 'world':3};
+            document.querySelectorAll('.lb-tabs:first-of-type .lb-tab')[map[cat]].classList.add('active');
+            
+            // 顯示/隱藏篩選器
+            const filters = document.getElementById('lb-filters');
+            const fGrade = document.getElementById('filter-grade');
+            const fClass = document.getElementById('filter-class');
+            
+            if(cat === 'class') {
+                filters.style.display = 'flex';
+                fGrade.style.display = 'block';
+                fClass.style.display = 'block';
+            } else if (cat === 'grade') {
+                filters.style.display = 'flex';
+                fGrade.style.display = 'block';
+                fClass.style.display = 'none';
+            } else {
+                filters.style.display = 'none';
+            }
+            refreshLB();
+        }
         
+        function switchLBMode(m) {
+            currentLB.mode = m;
+            document.querySelectorAll('[id^="menu-lb-"]').forEach(b => b.classList.remove('active'));
+            document.getElementById(`menu-lb-${m}`).classList.add('active');
+            refreshLB();
+        }
+
+        function refreshLB() {
+            // 更新目前篩選值
+            currentLB.filterGrade = document.getElementById('filter-grade').value;
+            currentLB.filterClass = document.getElementById('filter-class').value;
+            fetchLeaderboard(currentLB.mode, 'lb-list-menu');
+        }
+
+        function openLeaderboardMenu() {
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+            document.getElementById('leaderboard-screen').classList.add('active');
+            refreshLB();
+        }
+
         function getCollectionName(mode) {
             const map = {
                 'fixed': 'lb_fixed',
@@ -577,21 +651,25 @@
             return map[mode] || 'lb_fixed';
         }
 
-        function openLeaderboardMenu() {
-            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-            document.getElementById('leaderboard-screen').classList.add('active');
-            fetchLeaderboard('fixed', 'lb-list-menu');
-        }
-
         async function submitScore() {
             if (!db) { alert("請先設定 Firebase！"); return; }
             
-            const nameInput = document.getElementById('player-name-input');
             const btn = document.getElementById('btn-submit');
-            const name = nameInput.value.trim();
-            const score = session.p1.score;
+            let name, grade, cls, classId, type;
             
-            if (!name) { alert("請輸入名字！"); return; }
+            if (uploadRole === 'student') {
+                grade = document.getElementById('up-grade').value;
+                cls = document.getElementById('up-class').value;
+                name = document.getElementById('up-sid').value.trim();
+                classId = grade + cls; // e.g., "1A"
+                type = 'student';
+                
+                if (!name) { alert("請輸入學號或姓名！"); return; }
+            } else {
+                name = document.getElementById('up-guest-name').value.trim();
+                type = 'guest';
+                if (!name) { alert("請輸入訪客暱稱！"); return; }
+            }
             
             btn.disabled = true;
             btn.innerText = "上傳中...";
@@ -599,50 +677,66 @@
             const colName = getCollectionName(config.mode);
             
             try {
-                await db.collection(colName).add({
+                // 建構資料物件
+                let payload = {
                     name: name,
-                    score: score,
+                    score: session.p1.score,
                     difficulty: config.diff,
+                    type: type,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                };
                 
-                document.getElementById('upload-input-group').style.display = 'none';
-                document.getElementById('upload-actions-extra').style.display = 'none'; 
+                // 學生額外欄位
+                if(type === 'student') {
+                    payload.grade = grade;
+                    payload.class = cls;
+                    payload.classId = classId;
+                }
+                
+                await db.collection(colName).add(payload);
+                
+                document.getElementById('upload-ui').style.display = 'none';
                 document.getElementById('upload-success-msg').style.display = 'block'; 
                 
-                fetchLeaderboard(config.mode, 'lb-list-result');
             } catch (e) {
                 console.error("Upload Error:", e);
                 alert("上傳失敗：" + e.message);
                 btn.disabled = false;
-                btn.innerText = "上傳";
+                btn.innerText = "確認上傳";
             }
         }
 
         async function fetchLeaderboard(mode, targetId) {
             const list = document.getElementById(targetId);
-            
-            if(targetId === 'lb-list-menu') {
-                document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
-                const activeTab = document.getElementById(`tab-menu-${mode}`);
-                if(activeTab) activeTab.classList.add('active');
-            }
-
-            if (!db) {
-                list.innerHTML = '<li class="lb-item" style="justify-content:center;">資料庫未連接</li>';
-                return;
-            }
+            if (!db) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">資料庫未連接</li>'; return; }
             
             list.innerHTML = '<li class="lb-item" style="justify-content:center;">讀取中...</li>';
             
             const colName = getCollectionName(mode);
+            let q = db.collection(colName);
             
+            // ★★★ 根據分類建構查詢 ★★★
+            // 注意：Firebase 複合查詢需要建立索引
             try {
-                const q = db.collection(colName)
-                            .orderBy("score", "desc")
-                            .limit(10);
-                
-                const querySnapshot = await q.get();
+                if (currentLB.category === 'class') {
+                    // 查詢特定班別 (例如 1A)
+                    const cid = currentLB.filterGrade + currentLB.filterClass;
+                    q = q.where('classId', '==', cid).orderBy('score', 'desc');
+                } 
+                else if (currentLB.category === 'grade') {
+                    // 查詢特定年級 (例如 Grade 1)
+                    q = q.where('grade', '==', currentLB.filterGrade).orderBy('score', 'desc');
+                }
+                else if (currentLB.category === 'school') {
+                    // 查詢所有學生
+                    q = q.where('type', '==', 'student').orderBy('score', 'desc');
+                }
+                else {
+                    // 世界榜 (所有人)
+                    q = q.orderBy('score', 'desc');
+                }
+
+                const querySnapshot = await q.limit(20).get();
                 
                 list.innerHTML = '';
                 let rank = 1;
@@ -651,6 +745,7 @@
                     list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>';
                     return;
                 }
+                
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     const item = document.createElement('li');
@@ -661,22 +756,37 @@
                     if(rank===1) rankColor = 'var(--rank-s)';
                     if(rank===2) rankColor = 'var(--rank-a)';
                     if(rank===3) rankColor = '#fff';
+                    
+                    // 顯示詳細資訊 (如果是學生顯示班級，訪客顯示Guest)
+                    let detailInfo = "訪客";
+                    if(data.type === 'student') {
+                        detailInfo = `${data.classId} (${data.grade}年級)`;
+                    }
 
                     item.innerHTML = `
                     <span class="lb-rank" style="color:${rankColor}">${rank++}</span>
-                    <span class="lb-name">${safeName}</span>
+                    <div class="lb-info">
+                        <span class="lb-name">${safeName}</span>
+                        <span class="lb-detail">${detailInfo}</span>
+                    </div>
                     <span class="lb-score">${data.score}</span>
                     `;
                     list.appendChild(item);
                 });
             } catch (e) {
                 console.error("Fetch Error:", e);
-                list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>';
+                // 提示索引錯誤
+                if(e.message.includes('index')) {
+                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>';
+                    console.log("請點擊錯誤訊息中的連結來建立索引");
+                } else {
+                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>';
+                }
             }
         }
 
         // ---------------------------------------------
-        // 3. 遊戲引擎代碼
+        // 3. 遊戲引擎代碼 (維持不變)
         // ---------------------------------------------
         const VFX = {
             particles: [],
@@ -773,7 +883,6 @@
             document.querySelector(`.toggle-btn[data-val="${n}"]`).classList.add('active');
         }
         
-        // 設定模式時控制長度選單的開關
         function setMode(m) {
             config.mode = m;
             document.querySelectorAll('.toggle-btn[data-mode]').forEach(b => b.classList.remove('active'));
@@ -782,7 +891,7 @@
             const rg = document.getElementById('round-group');
             if(rg) {
                 if(m.includes('survival')) { 
-                    rg.classList.add('disabled'); // 使用 CSS class 來變灰和禁用
+                    rg.classList.add('disabled'); 
                 } else { 
                     rg.classList.remove('disabled'); 
                 }
@@ -974,7 +1083,6 @@
             const mName = {fixed:'練習', vanishing:'消失', survival:'生存', 'vanishing-survival':'消失生存'}[config.mode];
             document.getElementById('res-mode').innerText = mName;
             document.getElementById('res-len').innerText = config.mode.includes('survival') ? "∞" : config.rounds + "R";
-            document.getElementById('res-spd').innerText = config.bpm===70?'慢板':(config.bpm===95?'中板':'快板');
             const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'};
             document.getElementById('res-diff').innerText = dNames[config.diff];
             const container = document.getElementById('result-content');
@@ -984,24 +1092,26 @@
             if(config.players === 2) container.appendChild(createResultCard(2, session.p2));
             
             const uploadUI = document.getElementById('upload-ui');
-            const lbDisplayResult = document.getElementById('leaderboard-display-result');
             const submitBtn = document.getElementById('btn-submit');
             
             if(config.players === 1) {
-                lbDisplayResult.classList.add('active'); 
+                // 重置上傳區域
+                document.getElementById('leaderboard-display-result').classList.add('active'); 
                 uploadUI.style.display = 'block';
-                document.getElementById('upload-input-group').style.display = 'flex';
-                document.getElementById('upload-actions-extra').style.display = 'block'; 
                 document.getElementById('upload-success-msg').style.display = 'none';
                 
+                // 重置按鈕狀態
                 submitBtn.disabled = false;
-                submitBtn.innerText = "上傳分數";
-                document.getElementById('player-name-input').value = '';
+                submitBtn.innerText = "確認上傳";
                 
-                document.getElementById('lb-title-result').innerText = `${mName}模式 排行榜`;
-                fetchLeaderboard(config.mode, 'lb-list-result');
+                // 清空輸入
+                document.getElementById('up-sid').value = '';
+                document.getElementById('up-guest-name').value = '';
+                
+                // 預設切換回學生
+                setUploadRole('student');
             } else {
-                lbDisplayResult.classList.remove('active');
+                document.getElementById('leaderboard-display-result').classList.remove('active');
             }
         }
         function createResultCard(pid, data) {
