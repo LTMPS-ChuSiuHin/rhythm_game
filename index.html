@@ -294,7 +294,7 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px currentColor; z-index: 2;
         }
 
-        /* Leaderboard & Upload Styles */
+        /* Leaderboard Styles */
         .leaderboard-section {
             width: 100%; max-width: 550px;
             background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px;
@@ -303,7 +303,36 @@
         }
         .leaderboard-section.active { display: block; }
         
-        /* Upload UI Logic */
+        /* ★★★ 關鍵修正：強制主選單的排行榜區塊可見 ★★★ */
+        #leaderboard-screen .leaderboard-section { display: block !important; }
+
+        .lb-category-container {
+            display: flex; gap: 5px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap;
+            background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px;
+        }
+        .cat-btn {
+            background: transparent; border: none; color: var(--text-secondary);
+            padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; flex: 1; white-space: nowrap; text-align: center;
+        }
+        .cat-btn:hover { background: rgba(255,255,255,0.05); color: white; }
+        .cat-btn.active {
+            background: var(--p1-color); color: #000; box-shadow: 0 2px 10px rgba(34,211,238,0.3);
+        }
+
+        .lb-mode-container {
+            display: flex; gap: 5px; margin-top: 15px; justify-content: center; flex-wrap: wrap;
+            border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;
+        }
+        .mode-tab {
+            background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary);
+            padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.2s;
+        }
+        .mode-tab:hover { border-color: white; color: white; }
+        .mode-tab.active {
+            border-color: var(--p1-color); color: var(--p1-color); background: rgba(34,211,238,0.1); font-weight: bold;
+        }
+        
         .role-switch { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
         .role-btn { padding: 8px 15px; opacity: 0.6; border: 1px solid transparent; background: rgba(0,0,0,0.3); }
         .role-btn.active { opacity: 1; background: var(--p1-color); color:black; font-weight:bold; box-shadow: 0 0 10px var(--p1-color); }
@@ -314,14 +343,6 @@
         .lb-filter-row { display: flex; gap: 8px; margin-bottom: 10px; justify-content: center; }
         .lb-filter-select { width: auto; min-width: 80px; padding: 5px 10px; font-size: 12px; height: 32px; }
 
-        .lb-tabs { display: flex; gap: 5px; margin-bottom: 10px; justify-content: center; flex-wrap: wrap; }
-        .lb-tab {
-            background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary);
-            padding: 6px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: 0.2s;
-        }
-        .lb-tab:hover { border-color: white; color: white; background: rgba(255,255,255,0.05); }
-        .lb-tab.active { background: var(--p1-color); color: #000; border-color: var(--p1-color); font-weight: bold; box-shadow: 0 0 15px rgba(34,211,238,0.3); }
-        
         .lb-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
         .lb-item {
             display: flex; justify-content: space-between; padding: 8px 10px;
@@ -356,6 +377,8 @@
             .score-percent { font-size: 30px; }
             .circle-rank { font-size: 24px; bottom: -15px; padding: 2px 20px; }
             .upload-form-row { flex-wrap: wrap; }
+            .lb-category-container { margin-bottom: 5px; }
+            .cat-btn { padding: 5px 10px; font-size: 11px; }
         }
     </style>
 </head>
@@ -455,13 +478,14 @@
             </div>
             
             <div class="scroll-content">
-                <div class="leaderboard-section">
-                    <div class="lb-title">選擇模式與分類</div>
-                    <div class="lb-tabs">
-                        <button class="lb-tab active" onclick="switchLBCategory('class')">班別榜</button>
-                        <button class="lb-tab" onclick="switchLBCategory('grade')">年級榜</button>
-                        <button class="lb-tab" onclick="switchLBCategory('school')">全校榜</button>
-                        <button class="lb-tab" onclick="switchLBCategory('world')">世界榜</button>
+                <div class="leaderboard-section active">
+                    <div class="lb-title">分類與篩選</div>
+                    
+                    <div class="lb-category-container" id="lb-category-tabs">
+                        <button class="cat-btn active" id="cat-class" onclick="switchLBCategory('class')">班別</button>
+                        <button class="cat-btn" id="cat-grade" onclick="switchLBCategory('grade')">年級</button>
+                        <button class="cat-btn" id="cat-school" onclick="switchLBCategory('school')">全校</button>
+                        <button class="cat-btn" id="cat-world" onclick="switchLBCategory('world')">世界</button>
                     </div>
 
                     <div class="lb-filter-row" id="lb-filters">
@@ -477,16 +501,16 @@
                         </select>
                     </div>
                     
-                    <div class="lb-tabs" style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
-                        <button class="lb-tab active" id="menu-lb-fixed" onclick="switchLBMode('fixed')">練習</button>
-                        <button class="lb-tab" id="menu-lb-vanishing" onclick="switchLBMode('vanishing')">消失</button>
-                        <button class="lb-tab" id="menu-lb-survival" onclick="switchLBMode('survival')">生存</button>
-                        <button class="lb-tab" id="menu-lb-vanishing-survival" onclick="switchLBMode('vanishing-survival')">消存</button>
-                    </div>
-                    
                     <ul id="lb-list-menu" class="lb-list">
                         <li class="lb-item" style="justify-content:center; color:#666;">載入中...</li>
                     </ul>
+
+                    <div class="lb-mode-container" id="lb-mode-tabs">
+                        <button class="mode-tab active" id="menu-lb-fixed" onclick="switchLBMode('fixed')">練習模式</button>
+                        <button class="mode-tab" id="menu-lb-vanishing" onclick="switchLBMode('vanishing')">消失模式</button>
+                        <button class="mode-tab" id="menu-lb-survival" onclick="switchLBMode('survival')">生存模式</button>
+                        <button class="mode-tab" id="menu-lb-vanishing-survival" onclick="switchLBMode('vanishing-survival')">消存模式</button>
+                    </div>
                 </div>
             </div>
 
@@ -594,13 +618,13 @@
             document.getElementById('input-guest-row').style.display = role === 'guest' ? 'flex' : 'none';
         }
 
-        // --- 排行榜檢視邏輯 ---
+        // --- 排行榜檢視邏輯 (使用 ID 選擇器) ---
         function switchLBCategory(cat) {
             currentLB.category = cat;
-            document.querySelectorAll('.lb-tabs:first-of-type .lb-tab').forEach(b => b.classList.remove('active'));
-            // 找出按鈕並設為 active (這裡簡單用文字對應，實際專案可用 ID)
-            const map = {'class':0, 'grade':1, 'school':2, 'world':3};
-            document.querySelectorAll('.lb-tabs:first-of-type .lb-tab')[map[cat]].classList.add('active');
+            // 移除所有 active 樣式
+            document.querySelectorAll('#lb-category-tabs .cat-btn').forEach(b => b.classList.remove('active'));
+            // 加入 active 樣式到選取的按鈕
+            document.getElementById(`cat-${cat}`).classList.add('active');
             
             // 顯示/隱藏篩選器
             const filters = document.getElementById('lb-filters');
@@ -623,13 +647,12 @@
         
         function switchLBMode(m) {
             currentLB.mode = m;
-            document.querySelectorAll('[id^="menu-lb-"]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#lb-mode-tabs .mode-tab').forEach(b => b.classList.remove('active'));
             document.getElementById(`menu-lb-${m}`).classList.add('active');
             refreshLB();
         }
 
         function refreshLB() {
-            // 更新目前篩選值
             currentLB.filterGrade = document.getElementById('filter-grade').value;
             currentLB.filterClass = document.getElementById('filter-class').value;
             fetchLeaderboard(currentLB.mode, 'lb-list-menu');
@@ -677,7 +700,6 @@
             const colName = getCollectionName(config.mode);
             
             try {
-                // 建構資料物件
                 let payload = {
                     name: name,
                     score: session.p1.score,
@@ -686,7 +708,6 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                // 學生額外欄位
                 if(type === 'student') {
                     payload.grade = grade;
                     payload.class = cls;
@@ -715,24 +736,18 @@
             const colName = getCollectionName(mode);
             let q = db.collection(colName);
             
-            // ★★★ 根據分類建構查詢 ★★★
-            // 注意：Firebase 複合查詢需要建立索引
             try {
                 if (currentLB.category === 'class') {
-                    // 查詢特定班別 (例如 1A)
                     const cid = currentLB.filterGrade + currentLB.filterClass;
                     q = q.where('classId', '==', cid).orderBy('score', 'desc');
                 } 
                 else if (currentLB.category === 'grade') {
-                    // 查詢特定年級 (例如 Grade 1)
                     q = q.where('grade', '==', currentLB.filterGrade).orderBy('score', 'desc');
                 }
                 else if (currentLB.category === 'school') {
-                    // 查詢所有學生
                     q = q.where('type', '==', 'student').orderBy('score', 'desc');
                 }
                 else {
-                    // 世界榜 (所有人)
                     q = q.orderBy('score', 'desc');
                 }
 
@@ -757,7 +772,6 @@
                     if(rank===2) rankColor = 'var(--rank-a)';
                     if(rank===3) rankColor = '#fff';
                     
-                    // 顯示詳細資訊 (如果是學生顯示班級，訪客顯示Guest)
                     let detailInfo = "訪客";
                     if(data.type === 'student') {
                         detailInfo = `${data.classId} (${data.grade}年級)`;
@@ -775,7 +789,6 @@
                 });
             } catch (e) {
                 console.error("Fetch Error:", e);
-                // 提示索引錯誤
                 if(e.message.includes('index')) {
                     list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>';
                     console.log("請點擊錯誤訊息中的連結來建立索引");
