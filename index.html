@@ -11,24 +11,17 @@
         :root {
             /* Theme Colors */
             --bg-dark: #020617;
-            
-            /* Glassmorphism Variables */
             --glass-panel: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.1);
             --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
             --glass-blur: blur(12px);
-            
-            /* Player Colors */
             --p1-color: #22d3ee;
             --p2-color: #f472b6;
-            
-            /* Ranks */
             --rank-s: #22d3ee;
             --rank-a: #4ade80;
             --rank-b: #facc15;
             --rank-c: #fb923c;
             --rank-d: #f87171;
-            
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
         }
@@ -47,232 +40,141 @@
             position: relative;
         }
 
-        /* --- 動態背景層 --- */
-        .bg-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            overflow: hidden; z-index: 0; pointer-events: none;
-            background: #020617;
-        }
+        .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; background: #020617; }
         .cyber-grid {
-            position: absolute; width: 200%; height: 200%;
-            bottom: -50%; left: -50%;
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-            background-position: center bottom;
-            transform: perspective(500px) rotateX(60deg);
+            position: absolute; width: 200%; height: 200%; bottom: -50%; left: -50%;
+            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px; background-position: center bottom; transform: perspective(500px) rotateX(60deg);
             animation: gridMove 4s linear infinite;
             mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
             -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
         }
-        @keyframes gridMove {
-            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
-            100% { transform: perspective(500px) rotateX(60deg) translateY(60px); }
-        }
-        .particle {
-            position: absolute; background: white; border-radius: 50%;
-            opacity: 0; animation: floatUp 5s linear infinite;
-        }
+        @keyframes gridMove { 0% { transform: perspective(500px) rotateX(60deg) translateY(0); } 100% { transform: perspective(500px) rotateX(60deg) translateY(60px); } }
+        .particle { position: absolute; background: white; border-radius: 50%; opacity: 0; animation: floatUp 5s linear infinite; }
         .p-1 { left: 10%; width: 2px; height: 2px; animation-duration: 4s; animation-delay: 0s; }
         .p-2 { left: 30%; width: 3px; height: 3px; animation-duration: 7s; animation-delay: 1s; }
         .p-3 { left: 70%; width: 2px; height: 2px; animation-duration: 5s; animation-delay: 2s; }
         .p-4 { left: 90%; width: 4px; height: 4px; animation-duration: 6s; animation-delay: 0.5s; }
-        @keyframes floatUp {
-            0% { bottom: -10px; opacity: 0; }
-            50% { opacity: 0.4; }
-            100% { bottom: 100%; opacity: 0; }
-        }
+        @keyframes floatUp { 0% { bottom: -10px; opacity: 0; } 50% { opacity: 0.4; } 100% { bottom: 100%; opacity: 0; } }
 
-        /* --- 遊戲主容器 --- */
         #game-wrapper {
-            position: relative;
-            width: 100%; max-width: 1100px;
-            height: 100%; max-height: 680px;
-            background: rgba(15, 23, 42, 0.4); 
-            border-radius: 24px;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(255,255,255,0.05);
-            overflow: hidden;
-            z-index: 10;
-            backdrop-filter: blur(5px);
+            position: relative; width: 100%; max-width: 1100px; height: 100%; max-height: 680px;
+            background: rgba(15, 23, 42, 0.4); border-radius: 24px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8); border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden; z-index: 10; backdrop-filter: blur(5px);
         }
         canvas { display: block; width: 100%; height: 100%; }
+        .touch-layer { position: absolute; left: 0; width: 100%; height: 50%; z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        #touch-p1 { top: 0; } #touch-p2 { top: 50%; }
         
-        .touch-layer {
-            position: absolute; left: 0; width: 100%; height: 50%;
-            z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent;
-        }
-        #touch-p1 { top: 0; }
-        #touch-p2 { top: 50%; }
-        
-        /* UI Layer */
         #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; display: flex; flex-direction: column;
-            justify-content: space-between; padding: 25px; box-sizing: border-box; z-index: 20;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+            display: flex; flex-direction: column; justify-content: space-between; padding: 25px; box-sizing: border-box; z-index: 20;
         }
         .hud-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 20px; font-weight: 800; letter-spacing: 1px;
-            padding: 8px 20px; border-radius: 12px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            text-shadow: 0 0 10px currentColor;
+            display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: 800; letter-spacing: 1px;
+            padding: 8px 20px; border-radius: 12px; background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border); backdrop-filter: blur(8px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-shadow: 0 0 10px currentColor;
         }
         .p1-hud { border-left: 4px solid var(--p1-color); color: var(--p1-color); }
         .p2-hud { border-left: 4px solid var(--p2-color); color: var(--p2-color); opacity: 0; }
         .lives { letter-spacing: 2px; font-size: 22px; min-width: 100px; text-align: right; }
-        
         .hud-center {
             position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
             color: var(--text-secondary); font-size: 14px; font-weight: 700; letter-spacing: 2px;
             background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(4px);
+            border: 1px solid var(--glass-border); backdrop-filter: blur(4px);
         }
         #center-notify {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 90px; font-weight: 900; text-transform: uppercase;
-            opacity: 0; white-space: nowrap;
-            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
-            transition: all 0.2s ease-out;
-            z-index: 50;
+            font-size: 90px; font-weight: 900; text-transform: uppercase; opacity: 0; white-space: nowrap;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5)); transition: all 0.2s ease-out; z-index: 50;
         }
 
-        /* --- Screens --- */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 23, 0.96); 
-            backdrop-filter: blur(40px);
+            background: rgba(2, 6, 23, 0.96); backdrop-filter: blur(40px);
             z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
-            
-            display: flex; flex-direction: column; align-items: center; 
-            box-sizing: border-box; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; box-sizing: border-box; padding: 20px;
         }
         .screen.active { opacity: 1; pointer-events: auto; }
-        
         .screen-header { flex-shrink: 0; text-align: center; margin-bottom: 10px; width: 100%; }
-
         .scroll-content {
-            flex: 1; width: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            overflow-y: auto; overflow-x: hidden;
-            margin-bottom: 10px; 
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.2) transparent;
+            flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center;
+            overflow-y: auto; overflow-x: hidden; margin-bottom: 10px;
+            scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;
         }
         .scroll-content::-webkit-scrollbar { width: 6px; }
         .scroll-content::-webkit-scrollbar-track { background: transparent; }
         .scroll-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
-
-        .screen-footer {
-            flex-shrink: 0;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            width: 100%; padding-bottom: 5px;
-        }
+        .screen-footer { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding-bottom: 5px; }
 
         h1 {
-            font-size: 48px; margin: 0; font-weight: 900; letter-spacing: 4px;
-            color: white; text-transform: uppercase;
-            text-shadow: 0 0 20px var(--p1-color), 0 0 40px rgba(34, 211, 238, 0.4);
-            animation: titleFloat 3s ease-in-out infinite;
+            font-size: 48px; margin: 0; font-weight: 900; letter-spacing: 4px; color: white; text-transform: uppercase;
+            text-shadow: 0 0 20px var(--p1-color), 0 0 40px rgba(34, 211, 238, 0.4); animation: titleFloat 3s ease-in-out infinite;
         }
-        @keyframes titleFloat {
-            0%, 100% { transform: translateY(0); text-shadow: 0 0 20px var(--p1-color); }
-            50% { transform: translateY(-5px); text-shadow: 0 0 30px var(--p1-color), 0 0 10px white; }
-        }
+        @keyframes titleFloat { 0%, 100% { transform: translateY(0); text-shadow: 0 0 20px var(--p1-color); } 50% { transform: translateY(-5px); text-shadow: 0 0 30px var(--p1-color), 0 0 10px white; } }
         .subtitle { 
             color: var(--text-secondary); font-size: 14px; margin-top: 5px; margin-bottom: 5px;
             letter-spacing: 4px; text-transform: uppercase; opacity: 0.8;
             border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; display: inline-block;
         }
 
-        /* --- Controls --- */
         .control-panel {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
-            width: 90%; max-width: 600px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 90%; max-width: 600px;
             background: var(--glass-panel); backdrop-filter: var(--glass-blur);
             border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
             padding: 20px; border-radius: 20px; margin: 10px 0; flex-shrink: 0; 
         }
-
         .control-group.full { grid-column: span 2; }
         label { font-size: 11px; color: var(--p1-color); margin-bottom: 5px; font-weight: 800; text-transform: uppercase; display: block; letter-spacing: 1px; }
-        
         select, .btn, input {
-            padding: 10px; border-radius: 10px; 
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(5px);
-            color: white; font-family: inherit;
-            font-size: 14px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
+            padding: 10px; border-radius: 10px; background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
+            color: white; font-family: inherit; font-size: 14px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
         }
         select:hover, .btn:hover, input:focus { border-color: var(--p1-color); background: rgba(34, 211, 238, 0.1); box-shadow: 0 0 15px rgba(34,211,238,0.1); }
+        .control-group.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
+
+        .mode-description {
+            grid-column: span 2; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 12px; font-size: 13px; color: #e2e8f0; text-align: center;
+            line-height: 1.6; margin-top: 5px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
         
-        .toggle-wrapper { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); 
-            background: rgba(0,0,0,0.5); border-radius: 12px; padding: 4px; gap: 4px; 
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .toggle-btn {
-            padding: 8px 4px; border: none; background: transparent;
-            color: var(--text-secondary); cursor: pointer; border-radius: 8px;
-            font-weight: 600; transition: 0.2s; font-size: 13px; white-space: nowrap;
-        }
+        .toggle-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); background: rgba(0,0,0,0.5); border-radius: 12px; padding: 4px; gap: 4px; border: 1px solid rgba(255,255,255,0.05); }
+        .toggle-btn { padding: 8px 4px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.2s; font-size: 13px; white-space: nowrap; }
         .toggle-btn:hover { color: white; background: rgba(255,255,255,0.05); }
-        .toggle-btn.active { 
-            background: rgba(255,255,255,0.15); color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
-            text-shadow: 0 0 8px currentColor; border: 1px solid rgba(255,255,255,0.1);
-        }
+        .toggle-btn.active { background: rgba(255,255,255,0.15); color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); text-shadow: 0 0 8px currentColor; border: 1px solid rgba(255,255,255,0.1); }
         .toggle-btn[data-mode="vanishing"].active { color: #d946ef; border-color: #d946ef; background: rgba(217, 70, 239, 0.15); }
         .toggle-btn[data-mode="survival"].active { color: #facc15; border-color: #facc15; background: rgba(250, 204, 21, 0.15); }
         .toggle-btn[data-mode="vanishing-survival"].active { color: #f87171; border-color: #f87171; background: rgba(248, 113, 113, 0.15); }
         .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.15); }
 
         .btn-group { display: flex; gap: 15px; justify-content: center; width: 100%; max-width: 500px; }
-        
         .btn-start {
-            padding: 12px 24px; font-size: 20px; font-weight: 800; width: auto; flex: 2;
-            min-width: 140px; 
+            padding: 12px 24px; font-size: 20px; font-weight: 800; width: auto; flex: 2; min-width: 140px; 
             background: linear-gradient(90deg, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8));
             border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; 
             box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 2px; white-space: nowrap;
         }
         .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(34, 211, 238, 0.5); border-color: white; }
-        
         .btn-secondary {
-            width:auto; padding: 12px 20px; flex: 1; min-width: 100px;
-            background: rgba(255,255,255,0.05); color: var(--text-secondary); 
+            width:auto; padding: 12px 20px; flex: 1; min-width: 100px; background: rgba(255,255,255,0.05); color: var(--text-secondary); 
             border: 1px solid var(--glass-border); border-radius: 12px; white-space: nowrap;
         }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
 
-        /* Result Screen */
-        .summary-bar {
-            display: flex; gap: 15px; margin-bottom: 15px;
-            background: rgba(0,0,0,0.3); padding: 8px 20px; border-radius: 50px;
-            border: 1px solid var(--glass-border); backdrop-filter: blur(10px);
-            flex-wrap: wrap; justify-content: center; flex-shrink: 0;
-        }
+        /* Result & Leaderboard */
+        .summary-bar { display: flex; gap: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 8px 20px; border-radius: 50px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); flex-wrap: wrap; justify-content: center; flex-shrink: 0; }
         .sum-item { text-align: center; }
         .sum-label { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
         .sum-val { font-size: 14px; font-weight: 700; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
         
-        .result-flex { 
-            display: flex; justify-content: center; gap: 20px; width: 100%; max-width: 800px;
-            padding: 0 10px; margin-bottom: 10px; flex-shrink: 0;
-        }
-        .res-card {
-            flex: 1; background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); 
-            backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); 
-            text-align: center; display: flex; flex-direction: column; align-items: center;
-        }
-        .res-card.p1 { border-top: 4px solid var(--p1-color); }
-        .res-card.p2 { border-top: 4px solid var(--p2-color); }
+        .result-flex { display: flex; justify-content: center; gap: 20px; width: 100%; max-width: 800px; padding: 0 10px; margin-bottom: 10px; flex-shrink: 0; }
+        .res-card { flex: 1; background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .res-card.p1 { border-top: 4px solid var(--p1-color); } .res-card.p2 { border-top: 4px solid var(--p2-color); }
         .res-score { font-size: 32px; font-weight: 900; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
         .res-rank { font-size: 60px; font-weight: 900; line-height: 1; margin: 5px 0 15px 0; text-shadow: 0 0 30px currentColor; }
         .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
@@ -281,73 +183,33 @@
         .stat-num { font-weight: 700; font-size: 13px; }
         
         .single-layout .res-card { background: none; border: none; box-shadow: none; max-width: 300px; margin: 0 auto; backdrop-filter: none; }
-        .single-layout .main-circle {
-            width: 140px; height: 140px; border-radius: 50%;
-            border: 8px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center;
-            margin-bottom: 30px; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent); 
-            position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px);
-        }
+        .single-layout .main-circle { width: 140px; height: 140px; border-radius: 50%; border: 8px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 30px; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent); position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
         .score-percent { font-size: 40px; font-weight: 900; color: white; line-height: 1; margin-bottom: 5px; text-shadow: 0 0 20px white; }
-        .circle-rank {
-            position: absolute; bottom: -20px; background: var(--bg-dark); color: white; padding: 4px 25px;
-            border-radius: 40px; font-weight: 900; font-size: 30px; border: 3px solid currentColor;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px currentColor; z-index: 2;
-        }
+        .circle-rank { position: absolute; bottom: -20px; background: var(--bg-dark); color: white; padding: 4px 25px; border-radius: 40px; font-weight: 900; font-size: 30px; border: 3px solid currentColor; box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px currentColor; z-index: 2; }
 
-        /* Leaderboard Styles */
-        .leaderboard-section {
-            width: 100%; max-width: 550px;
-            background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px;
-            border: 1px solid var(--glass-border); 
-            display: none; backdrop-filter: blur(10px); margin: 0 auto;
-        }
+        .leaderboard-section { width: 100%; max-width: 550px; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px; border: 1px solid var(--glass-border); display: none; backdrop-filter: blur(10px); margin: 0 auto; }
         .leaderboard-section.active { display: block; }
-        
-        /* ★★★ 關鍵修正：強制主選單的排行榜區塊可見 ★★★ */
         #leaderboard-screen .leaderboard-section { display: block !important; }
 
-        .lb-category-container {
-            display: flex; gap: 5px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap;
-            background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px;
-        }
-        .cat-btn {
-            background: transparent; border: none; color: var(--text-secondary);
-            padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
-            cursor: pointer; transition: 0.2s; flex: 1; white-space: nowrap; text-align: center;
-        }
+        .lb-category-container { display: flex; gap: 5px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px; }
+        .cat-btn { background: transparent; border: none; color: var(--text-secondary); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; flex: 1; white-space: nowrap; text-align: center; }
         .cat-btn:hover { background: rgba(255,255,255,0.05); color: white; }
-        .cat-btn.active {
-            background: var(--p1-color); color: #000; box-shadow: 0 2px 10px rgba(34,211,238,0.3);
-        }
+        .cat-btn.active { background: var(--p1-color); color: #000; box-shadow: 0 2px 10px rgba(34,211,238,0.3); }
 
-        .lb-mode-container {
-            display: flex; gap: 5px; margin-top: 15px; justify-content: center; flex-wrap: wrap;
-            border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;
-        }
-        .mode-tab {
-            background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary);
-            padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.2s;
-        }
+        .lb-mode-container { display: flex; gap: 5px; margin-top: 15px; justify-content: center; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+        .mode-tab { background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.2s; }
         .mode-tab:hover { border-color: white; color: white; }
-        .mode-tab.active {
-            border-color: var(--p1-color); color: var(--p1-color); background: rgba(34,211,238,0.1); font-weight: bold;
-        }
+        .mode-tab.active { border-color: var(--p1-color); color: var(--p1-color); background: rgba(34,211,238,0.1); font-weight: bold; }
         
         .role-switch { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
         .role-btn { padding: 8px 15px; opacity: 0.6; border: 1px solid transparent; background: rgba(0,0,0,0.3); }
         .role-btn.active { opacity: 1; background: var(--p1-color); color:black; font-weight:bold; box-shadow: 0 0 10px var(--p1-color); }
-        
         .upload-form-row { display: flex; gap: 8px; margin-bottom: 8px; justify-content: center; width: 100%; }
         .upload-input { flex: 1; text-align: center; }
-        
         .lb-filter-row { display: flex; gap: 8px; margin-bottom: 10px; justify-content: center; }
         .lb-filter-select { width: auto; min-width: 80px; padding: 5px 10px; font-size: 12px; height: 32px; }
-
         .lb-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
-        .lb-item {
-            display: flex; justify-content: space-between; padding: 8px 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; align-items: center;
-        }
+        .lb-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; align-items: center; }
         .lb-rank { width: 30px; font-weight: 800; font-style: italic; text-align: center; }
         .lb-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; margin-right: 10px; }
         .lb-name { color: #e2e8f0; white-space: nowrap; text-overflow: ellipsis; font-weight: bold;}
@@ -355,17 +217,8 @@
         .lb-score { font-weight: 800; color: var(--p1-color); min-width: 60px; text-align: right; font-family: monospace; font-size: 14px; }
         .lb-title { color:white; font-size: 14px; margin-bottom: 10px; text-align:center; font-weight:bold; letter-spacing: 2px; text-transform: uppercase;}
 
-        .hit-popup {
-            position: absolute; font-weight: 900; font-size: 48px;
-            transform: translate(-50%, -50%); pointer-events: none;
-            animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            text-shadow: 0 0 20px currentColor; z-index: 25;
-        }
-        @keyframes popUp {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); }
-            100% { opacity: 0; transform: translate(-50%, -120%) scale(1); }
-        }
+        .hit-popup { position: absolute; font-weight: 900; font-size: 48px; transform: translate(-50%, -50%); pointer-events: none; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; text-shadow: 0 0 20px currentColor; z-index: 25; }
+        @keyframes popUp { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -120%) scale(1); } }
 
         @media (max-height: 600px) {
             h1 { font-size: 32px; }
@@ -393,7 +246,6 @@
 
     <div id="game-wrapper">
         <canvas id="gameCanvas" width="1100" height="680"></canvas>
-        
         <div id="touch-p1" class="touch-layer"></div>
         <div id="touch-p2" class="touch-layer"></div>
         <div id="ui-layer">
@@ -414,7 +266,6 @@
                 <h1>藍循節奏大師</h1>
                 <p class="subtitle">1.0正式版</p>
             </div>
-            
             <div class="scroll-content">
                 <div class="control-panel">
                     <div class="control-group">
@@ -433,6 +284,7 @@
                             <button class="toggle-btn" data-mode="vanishing-survival" onclick="setMode('vanishing-survival')">消存</button>
                         </div>
                     </div>
+                    <div id="mode-desc" class="mode-description">載入說明中...</div>
                     <div class="control-group" id="round-group">
                         <label>長度</label>
                         <select id="round-select">
@@ -460,51 +312,34 @@
                     </div>
                 </div>
             </div>
-            
             <div class="screen-footer">
                 <div class="btn-group">
                     <button class="btn btn-start" onclick="startGame()">開始遊戲</button>
                     <button class="btn btn-secondary" onclick="openLeaderboardMenu()">🏆 名人堂</button>
                 </div>
-                <div style="margin-top:10px; color:var(--text-secondary); font-size:11px; text-align:center; opacity:0.6;">
-                    鍵盤 Player 1[空白鍵] / Player 2[↑, ↓] 或 點擊螢幕
-                </div>
             </div>
         </div>
         
         <div id="leaderboard-screen" class="screen">
-            <div class="screen-header">
-                <h1>名人堂</h1>
-            </div>
-            
+            <div class="screen-header"><h1>名人堂</h1></div>
             <div class="scroll-content">
                 <div class="leaderboard-section active">
-                    <div class="lb-title">請選擇排行榜及遊玩模式</div>
-                    
+                    <div class="lb-title">請選擇排行榜類別及遊玩模式</div>
                     <div class="lb-category-container" id="lb-category-tabs">
                         <button class="cat-btn active" id="cat-class" onclick="switchLBCategory('class')">班別</button>
                         <button class="cat-btn" id="cat-grade" onclick="switchLBCategory('grade')">年級</button>
                         <button class="cat-btn" id="cat-school" onclick="switchLBCategory('school')">全校</button>
                         <button class="cat-btn" id="cat-world" onclick="switchLBCategory('world')">世界</button>
                     </div>
-
                     <div class="lb-filter-row" id="lb-filters">
                         <select id="filter-grade" class="lb-filter-select" onchange="refreshLB()">
-                            <option value="1">一年級</option><option value="2">二年級</option>
-                            <option value="3">三年級</option><option value="4">四年級</option>
-                            <option value="5">五年級</option><option value="6">六年級</option>
+                            <option value="1">一年級</option><option value="2">二年級</option><option value="3">三年級</option><option value="4">四年級</option><option value="5">五年級</option><option value="6">六年級</option>
                         </select>
                         <select id="filter-class" class="lb-filter-select" onchange="refreshLB()">
-                            <option value="A">A班</option><option value="B">B班</option>
-                            <option value="C">C班</option><option value="D">D班</option>
-                            <option value="E">E班</option>
+                            <option value="A">A班</option><option value="B">B班</option><option value="C">C班</option><option value="D">D班</option><option value="E">E班</option>
                         </select>
                     </div>
-                    
-                    <ul id="lb-list-menu" class="lb-list">
-                        <li class="lb-item" style="justify-content:center; color:#666;">載入中...</li>
-                    </ul>
-
+                    <ul id="lb-list-menu" class="lb-list"><li class="lb-item" style="justify-content:center; color:#666;">載入中...</li></ul>
                     <div class="lb-mode-container" id="lb-mode-tabs">
                         <button class="mode-tab active" id="menu-lb-fixed" onclick="switchLBMode('fixed')">練習模式</button>
                         <button class="mode-tab" id="menu-lb-vanishing" onclick="switchLBMode('vanishing')">消失模式</button>
@@ -513,10 +348,7 @@
                     </div>
                 </div>
             </div>
-
-            <div class="screen-footer">
-                <button class="btn btn-secondary" style="width:auto; padding: 12px 30px;" onclick="showMenu()">返回主選單</button>
-            </div>
+            <div class="screen-footer"><button class="btn btn-secondary" style="width:auto; padding: 12px 30px;" onclick="showMenu()">返回主選單</button></div>
         </div>
 
         <div id="result-screen" class="screen">
@@ -528,10 +360,8 @@
                     <div class="sum-item"><span class="sum-label">難度</span><span class="sum-val" id="res-diff">普通</span></div>
                 </div>
             </div>
-            
             <div class="scroll-content">
                 <div class="result-flex" id="result-content"></div>
-                
                 <div id="leaderboard-display-result" class="leaderboard-section">
                     <div id="upload-ui">
                         <div class="lb-title">上傳分數</div>
@@ -539,649 +369,273 @@
                             <button class="btn role-btn active" id="role-student" onclick="setUploadRole('student')">我是學生</button>
                             <button class="btn role-btn" id="role-guest" onclick="setUploadRole('guest')">訪客遊玩</button>
                         </div>
-
                         <div id="input-student-row" class="upload-form-row">
-                            <select id="up-grade" class="upload-input" style="flex:0.5;">
-                                <option value="1">P.1</option><option value="2">P.2</option><option value="3">P.3</option>
-                                <option value="4">P.4</option><option value="5">P.5</option><option value="6">P.6</option>
-                            </select>
-                            <select id="up-class" class="upload-input" style="flex:0.5;">
-                                <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                                <option value="D">D</option><option value="E">E</option>
-                            </select>
+                            <select id="up-grade" class="upload-input" style="flex:0.5;"><option value="1">P.1</option><option value="2">P.2</option><option value="3">P.3</option><option value="4">P.4</option><option value="5">P.5</option><option value="6">P.6</option></select>
+                            <select id="up-class" class="upload-input" style="flex:0.5;"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option></select>
                             <input type="text" id="up-sid" class="upload-input" style="flex:1.5;" placeholder="學號/姓名" maxlength="12">
                         </div>
-
                         <div id="input-guest-row" class="upload-form-row" style="display:none;">
                             <input type="text" id="up-guest-name" class="upload-input" placeholder="輸入訪客暱稱" maxlength="12">
                         </div>
-
-                        <div class="upload-form-row">
-                            <button class="btn-upload" style="flex:1; padding:10px;" onclick="submitScore()" id="btn-submit">確認上傳</button>
-                        </div>
-                        
-                        <div id="upload-actions-extra" style="margin-top:5px; text-align:center;">
-                            <button class="btn" onclick="location.reload()" style="background:transparent; font-size:12px; padding:6px; width:auto; border:none; color:#666;">略過上傳</button>
-                        </div>
+                        <div class="upload-form-row"><button class="btn-upload" style="flex:1; padding:10px;" onclick="submitScore()" id="btn-submit">確認上傳</button></div>
+                        <div id="upload-actions-extra" style="margin-top:5px; text-align:center;"><button class="btn" onclick="location.reload()" style="background:transparent; font-size:12px; padding:6px; width:auto; border:none; color:#666;">略過上傳</button></div>
                     </div>
-
                     <div id="upload-success-msg" style="display:none; text-align:center;">
                          <div style="color:var(--rank-a); font-weight:bold; margin-bottom:10px;">上傳成功！</div>
                          <button class="btn-upload" style="background:linear-gradient(90deg, var(--p1-color), #3b82f6); color:#020617; width:100%; padding:10px;" onclick="location.reload()">完成並返回</button>
                     </div>
                 </div>
             </div>
-
-            <div class="screen-footer">
-                <button class="btn btn-start" onclick="location.reload()">返回選單</button>
-            </div>
+            <div class="screen-footer"><button class="btn btn-start" onclick="location.reload()">返回選單</button></div>
         </div>
     </div>
     <script>
-        // ---------------------------------------------
-        // ★★★ 1. Firebase 初始化設定 ★★★
-        // ---------------------------------------------
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4rb1PhX9TCxj8VORCnZW8Ik6HPDZk8NE",
-            authDomain: "ltmps-rhythm-game.firebaseapp.com",
-            projectId: "ltmps-rhythm-game",
-            storageBucket: "ltmps-rhythm-game.firebasestorage.app",
-            messagingSenderId: "1035907577062",
-            appId: "1:1035907577062:web:0c7e1625fa4c22a9aff727"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyD4rb1PhX9TCxj8VORCnZW8Ik6HPDZk8NE", authDomain: "ltmps-rhythm-game.firebaseapp.com", projectId: "ltmps-rhythm-game", storageBucket: "ltmps-rhythm-game.firebasestorage.app", messagingSenderId: "1035907577062", appId: "1:1035907577062:web:0c7e1625fa4c22a9aff727" };
         let db;
-        try {
-            if (firebaseConfig.apiKey !== "您的_API_KEY") {
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.firestore();
-                console.log("Firebase initialized");
-            }
-        } catch(e) { console.error("Firebase Init Error:", e); }
+        try { if (firebaseConfig.apiKey !== "您的_API_KEY") { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); } } catch(e) { console.error("Firebase Init Error:", e); }
 
-        // ---------------------------------------------
-        // ★★★ 2. 全新排行榜系統邏輯 ★★★
-        // ---------------------------------------------
-        let currentLB = {
-            mode: 'fixed',
-            category: 'class', // class, grade, school, world
-            filterGrade: '1',
-            filterClass: 'A'
-        };
+        let currentLB = { mode: 'fixed', category: 'class', filterGrade: '1', filterClass: 'A' };
         let uploadRole = 'student';
 
-        // --- 上傳介面邏輯 ---
-        function setUploadRole(role) {
-            uploadRole = role;
-            document.getElementById('role-student').classList.toggle('active', role === 'student');
-            document.getElementById('role-guest').classList.toggle('active', role === 'guest');
-            document.getElementById('input-student-row').style.display = role === 'student' ? 'flex' : 'none';
-            document.getElementById('input-guest-row').style.display = role === 'guest' ? 'flex' : 'none';
-        }
-
-        // --- 排行榜檢視邏輯 (使用 ID 選擇器) ---
-        function switchLBCategory(cat) {
-            currentLB.category = cat;
-            // 移除所有 active 樣式
-            document.querySelectorAll('#lb-category-tabs .cat-btn').forEach(b => b.classList.remove('active'));
-            // 加入 active 樣式到選取的按鈕
-            document.getElementById(`cat-${cat}`).classList.add('active');
-            
-            // 顯示/隱藏篩選器
-            const filters = document.getElementById('lb-filters');
-            const fGrade = document.getElementById('filter-grade');
-            const fClass = document.getElementById('filter-class');
-            
-            if(cat === 'class') {
-                filters.style.display = 'flex';
-                fGrade.style.display = 'block';
-                fClass.style.display = 'block';
-            } else if (cat === 'grade') {
-                filters.style.display = 'flex';
-                fGrade.style.display = 'block';
-                fClass.style.display = 'none';
-            } else {
-                filters.style.display = 'none';
+        const DESCRIPTIONS = {
+            players: {
+                1: "單人模式：全螢幕判定，使用 [空白鍵]、[A] 或 點擊螢幕。",
+                2: "雙人對戰：P1 點擊上半屏 [空白鍵/A]，P2 點擊下半屏 [↑, ↓]。",
+            },
+            modes: {
+                'fixed': "練習模式：標準音符顯示，熟悉節奏與按鍵的最佳起點。",
+                'vanishing': "消失模式：音符會在判定線前隱形，考驗您的絕對節奏感。",
+                'survival': "生存模式：MISS 即扣血，耗盡將失敗，挑戰您的持久力。",
+                'vanishing-survival': "消存模式：隱形音符 + 殘酷生存，大師級的終極試煉！"
             }
-            refreshLB();
-        }
-        
-        function switchLBMode(m) {
-            currentLB.mode = m;
-            document.querySelectorAll('#lb-mode-tabs .mode-tab').forEach(b => b.classList.remove('active'));
-            document.getElementById(`menu-lb-${m}`).classList.add('active');
-            refreshLB();
-        }
+        };
 
-        function refreshLB() {
-            currentLB.filterGrade = document.getElementById('filter-grade').value;
-            currentLB.filterClass = document.getElementById('filter-class').value;
-            fetchLeaderboard(currentLB.mode, 'lb-list-menu');
-        }
-
-        function openLeaderboardMenu() {
-            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-            document.getElementById('leaderboard-screen').classList.add('active');
-            refreshLB();
-        }
-
-        function getCollectionName(mode) {
-            const map = {
-                'fixed': 'lb_fixed',
-                'vanishing': 'lb_vanishing',
-                'survival': 'lb_survival',
-                'vanishing-survival': 'lb_vanishing_survival'
-            };
-            return map[mode] || 'lb_fixed';
-        }
-
-        async function submitScore() {
-            if (!db) { alert("請先設定 Firebase！"); return; }
-            
-            const btn = document.getElementById('btn-submit');
-            let name, grade, cls, classId, type;
-            
-            if (uploadRole === 'student') {
-                grade = document.getElementById('up-grade').value;
-                cls = document.getElementById('up-class').value;
-                name = document.getElementById('up-sid').value.trim();
-                classId = grade + cls; // e.g., "1A"
-                type = 'student';
-                
-                if (!name) { alert("請輸入學號或姓名！"); return; }
-            } else {
-                name = document.getElementById('up-guest-name').value.trim();
-                type = 'guest';
-                if (!name) { alert("請輸入訪客暱稱！"); return; }
-            }
-            
-            btn.disabled = true;
-            btn.innerText = "上傳中...";
-            
-            const colName = getCollectionName(config.mode);
-            
-            try {
-                let payload = {
-                    name: name,
-                    score: session.p1.score,
-                    difficulty: config.diff,
-                    type: type,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                if(type === 'student') {
-                    payload.grade = grade;
-                    payload.class = cls;
-                    payload.classId = classId;
-                }
-                
-                await db.collection(colName).add(payload);
-                
-                document.getElementById('upload-ui').style.display = 'none';
-                document.getElementById('upload-success-msg').style.display = 'block'; 
-                
-            } catch (e) {
-                console.error("Upload Error:", e);
-                alert("上傳失敗：" + e.message);
-                btn.disabled = false;
-                btn.innerText = "確認上傳";
+        function updateDescription() {
+            const pText = DESCRIPTIONS.players[config.players];
+            const mText = DESCRIPTIONS.modes[config.mode];
+            const el = document.getElementById('mode-desc');
+            let pColor = config.players === 1 ? 'var(--p1-color)' : 'var(--p2-color)';
+            let mColor = 'white';
+            if(config.mode.includes('vanishing')) mColor = '#d946ef';
+            if(config.mode.includes('survival')) mColor = '#facc15';
+            if(config.mode === 'vanishing-survival') mColor = '#f87171';
+            if(el) {
+                el.innerHTML = `<div><span style="color:${pColor}; font-weight:bold;">[${config.players}P]</span> ${pText}</div><div style="margin-top:3px;"><span style="color:${mColor}; font-weight:bold;">[${getModeName(config.mode)}]</span> ${mText}</div>`;
             }
         }
+        function getModeName(m) { const names = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存'}; return names[m] || m; }
+        function setUploadRole(role) { uploadRole = role; document.getElementById('role-student').classList.toggle('active', role === 'student'); document.getElementById('role-guest').classList.toggle('active', role === 'guest'); document.getElementById('input-student-row').style.display = role === 'student' ? 'flex' : 'none'; document.getElementById('input-guest-row').style.display = role === 'guest' ? 'flex' : 'none'; }
+        function switchLBCategory(cat) { currentLB.category = cat; document.querySelectorAll('#lb-category-tabs .cat-btn').forEach(b => b.classList.remove('active')); document.getElementById(`cat-${cat}`).classList.add('active'); const filters = document.getElementById('lb-filters'); const fGrade = document.getElementById('filter-grade'); const fClass = document.getElementById('filter-class'); if(cat === 'class') { filters.style.display = 'flex'; fGrade.style.display = 'block'; fClass.style.display = 'block'; } else if (cat === 'grade') { filters.style.display = 'flex'; fGrade.style.display = 'block'; fClass.style.display = 'none'; } else { filters.style.display = 'none'; } refreshLB(); }
+        function switchLBMode(m) { currentLB.mode = m; document.querySelectorAll('#lb-mode-tabs .mode-tab').forEach(b => b.classList.remove('active')); document.getElementById(`menu-lb-${m}`).classList.add('active'); refreshLB(); }
+        function refreshLB() { currentLB.filterGrade = document.getElementById('filter-grade').value; currentLB.filterClass = document.getElementById('filter-class').value; fetchLeaderboard(currentLB.mode, 'lb-list-menu'); }
+        function openLeaderboardMenu() { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('leaderboard-screen').classList.add('active'); refreshLB(); }
+        function getCollectionName(mode) { const map = { 'fixed': 'lb_fixed', 'vanishing': 'lb_vanishing', 'survival': 'lb_survival', 'vanishing-survival': 'lb_vanishing_survival' }; return map[mode] || 'lb_fixed'; }
+        async function submitScore() { if (!db) { alert("請先設定 Firebase！"); return; } const btn = document.getElementById('btn-submit'); let name, grade, cls, classId, type; if (uploadRole === 'student') { grade = document.getElementById('up-grade').value; cls = document.getElementById('up-class').value; name = document.getElementById('up-sid').value.trim(); classId = grade + cls; type = 'student'; if (!name) { alert("請輸入學號或姓名！"); return; } } else { name = document.getElementById('up-guest-name').value.trim(); type = 'guest'; if (!name) { alert("請輸入訪客暱稱！"); return; } } btn.disabled = true; btn.innerText = "上傳中..."; const colName = getCollectionName(config.mode); try { let payload = { name: name, score: session.p1.score, difficulty: config.diff, type: type, timestamp: firebase.firestore.FieldValue.serverTimestamp() }; if(type === 'student') { payload.grade = grade; payload.class = cls; payload.classId = classId; } await db.collection(colName).add(payload); document.getElementById('upload-ui').style.display = 'none'; document.getElementById('upload-success-msg').style.display = 'block'; } catch (e) { console.error("Upload Error:", e); alert("上傳失敗：" + e.message); btn.disabled = false; btn.innerText = "確認上傳"; } }
+        async function fetchLeaderboard(mode, targetId) { const list = document.getElementById(targetId); if (!db) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">資料庫未連接</li>'; return; } list.innerHTML = '<li class="lb-item" style="justify-content:center;">讀取中...</li>'; const colName = getCollectionName(mode); let q = db.collection(colName); try { if (currentLB.category === 'class') { const cid = currentLB.filterGrade + currentLB.filterClass; q = q.where('classId', '==', cid).orderBy('score', 'desc'); } else if (currentLB.category === 'grade') { q = q.where('grade', '==', currentLB.filterGrade).orderBy('score', 'desc'); } else if (currentLB.category === 'school') { q = q.where('type', '==', 'student').orderBy('score', 'desc'); } else { q = q.orderBy('score', 'desc'); } const querySnapshot = await q.limit(20).get(); list.innerHTML = ''; let rank = 1; if (querySnapshot.empty) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>'; return; } querySnapshot.forEach((doc) => { const data = doc.data(); const item = document.createElement('li'); item.className = 'lb-item'; const safeName = data.name.replace(/</g, "&lt;").replace(/>/g, "&gt;"); let rankColor = 'var(--rank-b)'; if(rank===1) rankColor = 'var(--rank-s)'; if(rank===2) rankColor = 'var(--rank-a)'; if(rank===3) rankColor = '#fff'; let detailInfo = "訪客"; if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } item.innerHTML = `<span class="lb-rank" style="color:${rankColor}">${rank++}</span><div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div><span class="lb-score">${data.score}</span>`; list.appendChild(item); }); } catch (e) { console.error("Fetch Error:", e); if(e.message.includes('index')) { list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>'; console.log("請點擊錯誤訊息中的連結來建立索引"); } else { list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>'; } } }
 
-        async function fetchLeaderboard(mode, targetId) {
-            const list = document.getElementById(targetId);
-            if (!db) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">資料庫未連接</li>'; return; }
-            
-            list.innerHTML = '<li class="lb-item" style="justify-content:center;">讀取中...</li>';
-            
-            const colName = getCollectionName(mode);
-            let q = db.collection(colName);
-            
-            try {
-                if (currentLB.category === 'class') {
-                    const cid = currentLB.filterGrade + currentLB.filterClass;
-                    q = q.where('classId', '==', cid).orderBy('score', 'desc');
-                } 
-                else if (currentLB.category === 'grade') {
-                    q = q.where('grade', '==', currentLB.filterGrade).orderBy('score', 'desc');
-                }
-                else if (currentLB.category === 'school') {
-                    q = q.where('type', '==', 'student').orderBy('score', 'desc');
-                }
-                else {
-                    q = q.orderBy('score', 'desc');
-                }
-
-                const querySnapshot = await q.limit(20).get();
-                
-                list.innerHTML = '';
-                let rank = 1;
-                
-                if (querySnapshot.empty) {
-                    list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>';
-                    return;
-                }
-                
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const item = document.createElement('li');
-                    item.className = 'lb-item';
-                    const safeName = data.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    
-                    let rankColor = 'var(--rank-b)';
-                    if(rank===1) rankColor = 'var(--rank-s)';
-                    if(rank===2) rankColor = 'var(--rank-a)';
-                    if(rank===3) rankColor = '#fff';
-                    
-                    let detailInfo = "訪客";
-                    if(data.type === 'student') {
-                        detailInfo = `${data.classId} (${data.grade}年級)`;
-                    }
-
-                    item.innerHTML = `
-                    <span class="lb-rank" style="color:${rankColor}">${rank++}</span>
-                    <div class="lb-info">
-                        <span class="lb-name">${safeName}</span>
-                        <span class="lb-detail">${detailInfo}</span>
-                    </div>
-                    <span class="lb-score">${data.score}</span>
-                    `;
-                    list.appendChild(item);
-                });
-            } catch (e) {
-                console.error("Fetch Error:", e);
-                if(e.message.includes('index')) {
-                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>';
-                    console.log("請點擊錯誤訊息中的連結來建立索引");
-                } else {
-                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>';
-                }
-            }
-        }
-
-        // ---------------------------------------------
-        // 3. 遊戲引擎代碼 (維持不變)
-        // ---------------------------------------------
+        // Game Engine
         const VFX = {
             particles: [],
-            init() {
-                this.particles = [];
-                for(let i=0; i<100; i++) {
-                    this.particles.push({
-                        x: Math.random() * 1100, y: Math.random() * 680,
-                        size: Math.random() * 2 + 0.5,
-                        speed: Math.random() * 4 + 1,
-                        alpha: Math.random() * 0.6 + 0.1,
-                        color: Math.random() > 0.5 ? '#22d3ee' : '#f472b6'
-                    });
-                }
-            },
-            update(ctx) {
-                this.particles.forEach(p => {
-                    p.x -= p.speed; // Move left
-                    if(p.x < -10) { p.x = 1110; p.y = Math.random() * 680; }
-                    ctx.globalAlpha = p.alpha;
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
-                });
-                ctx.globalAlpha = 1;
-            }
+            init() { this.particles = []; for(let i=0; i<100; i++) { this.particles.push({ x: Math.random() * 1100, y: Math.random() * 680, size: Math.random() * 2 + 0.5, speed: Math.random() * 4 + 1, alpha: Math.random() * 0.6 + 0.1, color: Math.random() > 0.5 ? '#22d3ee' : '#f472b6' }); } },
+            update(ctx) { this.particles.forEach(p => { p.x -= p.speed; if(p.x < -10) { p.x = 1110; p.y = Math.random() * 680; } ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill(); }); ctx.globalAlpha = 1; }
         };
         const AudioEngine = {
             ctx: null,
-            init() {
-                if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                if(this.ctx.state === 'suspended') this.ctx.resume();
-            },
+            init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if(this.ctx.state === 'suspended') this.ctx.resume(); },
             play(type, t) {
-                if(!this.ctx) return;
-                t = t || this.ctx.currentTime;
+                if(!this.ctx) return; t = t || this.ctx.currentTime;
                 const o = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
                 o.connect(f); f.connect(g); g.connect(this.ctx.destination);
-                if(type === 'teacher') {
-                    o.type = 'sine'; f.type = 'bandpass'; f.frequency.value = 800; f.Q.value = 5;
-                    o.frequency.setValueAtTime(850, t); o.frequency.exponentialRampToValueAtTime(800, t+0.1);
-                    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.7, t+0.01); g.gain.exponentialRampToValueAtTime(0.001, t+0.2);
-                    o.start(t); o.stop(t+0.25);
-                } else if(type === 'p1') {
-                    o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1000;
-                    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t+0.15);
-                    g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.25);
-                    o.start(t); o.stop(t+0.3);
-                } else if(type === 'p2') {
-                    o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 1500;
-                    o.frequency.setValueAtTime(400, t);
-                    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.6, t+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+0.3);
-                    o.start(t); o.stop(t+0.35);
-                } else if(type === 'metro') {
-                    o.type = 'square'; f.type = 'highpass'; f.frequency.value = 2500;
-                    o.frequency.setValueAtTime(800, t);
-                    g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.05);
-                    o.start(t); o.stop(t+0.05);
-                }
+                if(type === 'teacher') { o.type = 'sine'; f.type = 'bandpass'; f.frequency.value = 800; f.Q.value = 5; o.frequency.setValueAtTime(850, t); o.frequency.exponentialRampToValueAtTime(800, t+0.1); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.7, t+0.01); g.gain.exponentialRampToValueAtTime(0.001, t+0.2); o.start(t); o.stop(t+0.25); }
+                else if(type === 'p1') { o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1000; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t+0.15); g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.25); o.start(t); o.stop(t+0.3); }
+                else if(type === 'p2') { o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 1500; o.frequency.setValueAtTime(400, t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.6, t+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+0.3); o.start(t); o.stop(t+0.35); }
+                else if(type === 'metro') { o.type = 'square'; f.type = 'highpass'; f.frequency.value = 2500; o.frequency.setValueAtTime(800, t); g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.05); o.start(t); o.stop(t+0.05); }
             }
         };
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const HIT_X = 180, SPAWN_X = 1000, BEATS_PHASE = 4;
-        const WINDOWS = { PERF: 0.07, GOOD: 0.15, MISS: 0.3 };
-        let width = canvas.width, height = canvas.height;
-        let gameState = 'MENU';
+        const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
+        const HIT_X = 180, SPAWN_X = 1000, BEATS_PHASE = 4; const WINDOWS = { PERF: 0.07, GOOD: 0.15, MISS: 0.3 };
+        let width = canvas.width, height = canvas.height; let gameState = 'MENU';
         let config = { players: 1, mode: 'fixed', rounds: 6, bpm: 95, diff: 'normal' };
         let session = { round: 0, nextTime: 0, p1: {}, p2: {} };
-        let animId;
-        let timeouts = [];
-        const PATTERNS = {
-            easy: [[1],[2]], normal: [[1],[0.5,0.5],[2]],
-            hard: [[1],[0.5,0.5],[0.25,0.25,0.25,0.25],[0.5,0.25,0.25],[1.5,0.5]],
-            master: [[0.25,0.5,0.25],[0.25,0.75],[0.5,0.5],[0.25,0.25,0.25,0.25],[1]]
-        };
+        let animId; let timeouts = [];
+        const PATTERNS = { easy: [[1],[2]], normal: [[1],[0.5,0.5],[2]], hard: [[1],[0.5,0.5],[0.25,0.25,0.25,0.25],[0.5,0.25,0.25],[1.5,0.5]], master: [[0.25,0.5,0.25],[0.25,0.75],[0.5,0.5],[0.25,0.25,0.25,0.25],[1]] };
+        
         function getBeatSec() { return 60 / config.bpm; }
         function getSpeed() { return (SPAWN_X - HIT_X) / (BEATS_PHASE * getBeatSec()); }
         function generatePattern() {
-            let beats = [], filled = 0;
-            const pool = PATTERNS[config.diff];
+            let beats = [], filled = 0; const pool = PATTERNS[config.diff];
             while(filled < 4) {
-                let rem = 4 - filled;
-                let valid = pool.filter(b => b.reduce((a,c)=>a+c,0) <= rem + 0.01);
-                if(valid.length===0) valid=[[rem]];
-                if(config.diff==='normal' && rem===0.5) valid=[[0.5]];
-                let choice = valid[Math.floor(Math.random()*valid.length)];
-                choice.forEach(d => { beats.push(filled); filled += d; });
-            }
-            return beats;
+                let rem = 4 - filled; let valid = pool.filter(b => b.reduce((a,c)=>a+c,0) <= rem + 0.01);
+                if(valid.length===0) valid=[[rem]]; if(config.diff==='normal' && rem===0.5) valid=[[0.5]];
+                let choice = valid[Math.floor(Math.random()*valid.length)]; choice.forEach(d => { beats.push(filled); filled += d; });
+            } return beats;
         }
-        function setPlayers(n) {
-            config.players = n;
-            document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active'));
-            document.querySelector(`.toggle-btn[data-val="${n}"]`).classList.add('active');
-        }
+        function setPlayers(n) { config.players = n; document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active')); document.querySelector(`.toggle-btn[data-val="${n}"]`).classList.add('active'); updateDescription(); }
+        function setMode(m) { config.mode = m; document.querySelectorAll('.toggle-btn[data-mode]').forEach(b => b.classList.remove('active')); document.querySelector(`.toggle-btn[data-mode="${m}"]`).classList.add('active'); const rg = document.getElementById('round-group'); if(m.includes('survival')) { rg.classList.add('disabled'); } else { rg.classList.remove('disabled'); } updateDescription(); }
+        function showMenu() { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('menu-screen').classList.add('active'); updateDescription(); }
         
-        function setMode(m) {
-            config.mode = m;
-            document.querySelectorAll('.toggle-btn[data-mode]').forEach(b => b.classList.remove('active'));
-            document.querySelector(`.toggle-btn[data-mode="${m}"]`).classList.add('active');
-            
-            const rg = document.getElementById('round-group');
-            if(rg) {
-                if(m.includes('survival')) { 
-                    rg.classList.add('disabled'); 
-                } else { 
-                    rg.classList.remove('disabled'); 
-                }
-            }
-        }
-        
-        function showMenu() {
-            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-            document.getElementById('menu-screen').classList.add('active');
-        }
         function startGame() {
-            if(document.activeElement) document.activeElement.blur();
-            AudioEngine.init(); VFX.init();
-            config.bpm = parseInt(document.getElementById('speed-select').value);
-            config.diff = document.getElementById('diff-select').value;
+            if(document.activeElement) document.activeElement.blur(); AudioEngine.init(); VFX.init();
+            config.bpm = parseInt(document.getElementById('speed-select').value); config.diff = document.getElementById('diff-select').value;
             config.rounds = config.mode.includes('survival') ? Infinity : parseInt(document.getElementById('round-select').value);
-            const initP = () => ({ score: 0, lives: 3, notes: [], stats: {p:0,g:0,m:0} });
+            // Add bump property for visual feedback
+            const initP = () => ({ score: 0, lives: 3, notes: [], stats: {p:0,g:0,m:0}, bump: 1 });
             session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 1.0, p1: initP(), p2: initP() };
-            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-            document.getElementById('hud-p2').style.opacity = config.players === 2 ? 1 : 0;
-            updateHUD();
-            gameState = 'PLAYING';
-            timeouts.forEach(clearTimeout); timeouts = [];
-            if(animId) cancelAnimationFrame(animId);
-            schedule();
-            render();
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('hud-p2').style.opacity = config.players === 2 ? 1 : 0;
+            updateHUD(); gameState = 'PLAYING'; timeouts.forEach(clearTimeout); timeouts = []; if(animId) cancelAnimationFrame(animId);
+            schedule(); render();
         }
         function schedule() {
             if(gameState !== 'PLAYING') return;
             if(!config.mode.includes('survival') && session.round >= config.rounds) { endGame(); return; }
-            const now = session.nextTime;
-            const BEAT = getBeatSec();
-            const pattern = generatePattern();
-            const playStart = now + (BEAT * 4);
+            const now = session.nextTime; const BEAT = getBeatSec(); const pattern = generatePattern(); const playStart = now + (BEAT * 4);
             pattern.forEach(b => AudioEngine.play('teacher', now + b*BEAT));
-            pattern.forEach((b, idx) => {
-                const target = playStart + b*BEAT;
-                session.p1.notes.push({ target: target, hit: false, missed: false, index: idx });
-                if(config.players === 2) session.p2.notes.push({ target: target, hit: false, missed: false, index: idx });
-            });
-            timeouts.push(setTimeout(() => {
-                if(gameState!=='PLAYING') return;
-                session.round++; updateHUD();
-                notify("LISTEN", "var(--p1-color)");
-                AudioEngine.play('metro', AudioEngine.ctx.currentTime);
-            }, (now - AudioEngine.ctx.currentTime)*1000));
-            timeouts.push(setTimeout(() => {
-                if(gameState!=='PLAYING') return;
-                let col = config.mode.includes('vanishing') ? '#d946ef' : '#facc15';
-                if(config.mode === 'vanishing-survival') col = '#f87171';
-                notify("PLAY", col);
-                AudioEngine.play('metro', AudioEngine.ctx.currentTime);
-            }, (playStart - AudioEngine.ctx.currentTime)*1000));
-            session.nextTime += (BEAT * 8);
-            timeouts.push(setTimeout(schedule, (session.nextTime - AudioEngine.ctx.currentTime - 0.1)*1000));
+            pattern.forEach((b, idx) => { const target = playStart + b*BEAT; session.p1.notes.push({ target: target, hit: false, missed: false, index: idx }); if(config.players === 2) session.p2.notes.push({ target: target, hit: false, missed: false, index: idx }); });
+            timeouts.push(setTimeout(() => { if(gameState!=='PLAYING') return; session.round++; updateHUD(); notify("LISTEN", "var(--p1-color)"); AudioEngine.play('metro', AudioEngine.ctx.currentTime); }, (now - AudioEngine.ctx.currentTime)*1000));
+            timeouts.push(setTimeout(() => { if(gameState!=='PLAYING') return; let col = config.mode.includes('vanishing') ? '#d946ef' : '#facc15'; if(config.mode === 'vanishing-survival') col = '#f87171'; notify("PLAY", col); AudioEngine.play('metro', AudioEngine.ctx.currentTime); }, (playStart - AudioEngine.ctx.currentTime)*1000));
+            session.nextTime += (BEAT * 8); timeouts.push(setTimeout(schedule, (session.nextTime - AudioEngine.ctx.currentTime - 0.1)*1000));
         }
         function render() {
             if(gameState !== 'PLAYING') return;
-            ctx.clearRect(0, 0, width, height);
-            VFX.update(ctx);
-            const now = AudioEngine.ctx.currentTime;
-            const speed = getSpeed();
-            const beatSec = getBeatSec();
+            ctx.clearRect(0, 0, width, height); VFX.update(ctx);
+            const now = AudioEngine.ctx.currentTime; const speed = getSpeed(); const beatSec = getBeatSec();
             const isVanishing = config.mode.includes('vanishing');
-            const y1 = config.players === 1 ? height/2 : height*0.28;
-            const y2 = height*0.72;
-            drawTrack(ctx, y1, 'var(--p1-color)', 'P1');
+            const y1 = config.players === 1 ? height/2 : height*0.28; const y2 = height*0.72;
+            
+            // Update Bump Physics
+            if(session.p1.bump > 1) session.p1.bump = Math.max(1, 1 + (session.p1.bump - 1) * 0.8); // Smooth decay
+            if(session.p2.bump > 1) session.p2.bump = Math.max(1, 1 + (session.p2.bump - 1) * 0.8);
+
+            drawTrack(ctx, y1, 'var(--p1-color)', 'P1', session.p1.bump);
             drawNotes(ctx, session.p1.notes, y1, '#22d3ee', now, speed, beatSec, isVanishing, 1);
             if(config.players === 2) {
-                drawTrack(ctx, y2, 'var(--p2-color)', 'P2');
+                drawTrack(ctx, y2, 'var(--p2-color)', 'P2', session.p2.bump);
                 drawNotes(ctx, session.p2.notes, y2, '#f472b6', now, speed, beatSec, isVanishing, 2);
             }
             animId = requestAnimationFrame(render);
         }
-        function drawTrack(c, y, color, label) {
-            c.shadowBlur = 25; c.shadowColor = color;
-            c.fillStyle = "rgba(30, 41, 59, 0.8)"; c.fillRect(0, y-60, width, 120);
-            c.shadowBlur = 0;
-            c.strokeStyle = "rgba(255,255,255,0.15)"; c.lineWidth = 2;
+        function drawTrack(c, y, color, label, bump = 1) {
+            c.shadowBlur = 25; c.shadowColor = color; c.fillStyle = "rgba(30, 41, 59, 0.8)"; c.fillRect(0, y-60, width, 120);
+            c.shadowBlur = 0; c.strokeStyle = "rgba(255,255,255,0.15)"; c.lineWidth = 2;
             c.beginPath(); c.moveTo(0, y-60); c.lineTo(width, y-60); c.moveTo(0, y+60); c.lineTo(width, y+60); c.stroke();
-            c.beginPath(); c.arc(HIT_X, y, 45, 0, Math.PI*2);
+            // Judgment Circle with Beat Pulse
+            c.beginPath(); c.arc(HIT_X, y, 45 * bump, 0, Math.PI*2);
             c.strokeStyle = "white"; c.lineWidth = 4; c.stroke();
             c.fillStyle = "rgba(255,255,255,0.05)"; c.fill();
             c.fillStyle = "#94a3b8"; c.font = "bold 14px Segoe UI"; c.fillText(label, HIT_X - 8, y + 5);
         }
         function drawNotes(c, notes, y, color, now, speed, beatSec, vanish, pid) {
+            const trackDist = SPAWN_X - HIT_X;
             notes.forEach(n => {
                 if(n.hit) return;
-                const dt = n.target - now;
-                const x = HIT_X + (dt * speed);
-                if(vanish && n.index > 0) { /* Hidden */ } else {
-                    if(x > -50 && x < width && !n.missed) {
-                        const isIncoming = dt <= (BEATS_PHASE * beatSec);
-                        const noteColor = (vanish && isIncoming) ? '#d946ef' : (isIncoming ? color : '#64748b');
-                        c.shadowBlur = 25; c.shadowColor = noteColor;
-                        let grad = c.createRadialGradient(x, y, 10, x, y, 35);
-                        grad.addColorStop(0, 'rgba(255,255,255,0.9)');
-                        grad.addColorStop(0.7, noteColor);
-                        grad.addColorStop(1, noteColor);
-                        c.fillStyle = grad;
-                        c.beginPath(); c.arc(x, y, 35, 0, Math.PI*2); c.fill();
-                        c.strokeStyle = "white"; c.lineWidth = 2; c.stroke(); c.shadowBlur = 0;
-                        c.fillStyle = "rgba(255,255,255,0.5)";
-                        c.beginPath(); c.ellipse(x-12, y-12, 10, 15, Math.PI/4, 0, Math.PI*2); c.fill();
-                    }
+                const dt = n.target - now; const x = HIT_X + (dt * speed);
+                let alpha = 1;
+                if (vanish && n.index > 0) {
+                    // x from 1000 -> 180. 
+                    // ratio 1.0 = spawn, 0.0 = hit
+                    let ratio = (x - HIT_X) / trackDist;
+                    if (ratio <= 0.5) alpha = 0; // Halfway point -> invisible
+                    else if (ratio < 0.75) alpha = (ratio - 0.5) / 0.25; // Fade out
+                    else alpha = 1; // Visible
+                    if (alpha > 1) alpha = 1; if (alpha < 0) alpha = 0;
                 }
-                if(dt < -WINDOWS.MISS && !n.missed) {
-                    n.missed = true; handleResult(pid, 'MISS');
+                if (x > -50 && x < width && !n.missed && alpha > 0.01) {
+                    const isIncoming = dt <= (BEATS_PHASE * beatSec);
+                    const noteColor = (vanish && isIncoming) ? '#d946ef' : (isIncoming ? color : '#64748b');
+                    c.save(); c.globalAlpha = alpha;
+                    c.shadowBlur = 25; c.shadowColor = noteColor;
+                    let grad = c.createRadialGradient(x, y, 10, x, y, 35);
+                    grad.addColorStop(0, 'rgba(255,255,255,0.9)'); grad.addColorStop(0.7, noteColor); grad.addColorStop(1, noteColor);
+                    c.fillStyle = grad; c.beginPath(); c.arc(x, y, 35, 0, Math.PI*2); c.fill();
+                    c.strokeStyle = "white"; c.lineWidth = 2; c.stroke(); c.shadowBlur = 0;
+                    c.fillStyle = "rgba(255,255,255,0.5)"; c.beginPath(); c.ellipse(x-12, y-12, 10, 15, Math.PI/4, 0, Math.PI*2); c.fill();
+                    c.restore();
                 }
+                if(dt < -WINDOWS.MISS && !n.missed) { n.missed = true; handleResult(pid, 'MISS'); }
             });
         }
         function handleInput(pid) {
             if(gameState !== 'PLAYING') return;
             if(config.players === 1 && pid === 2) return;
-            const now = AudioEngine.ctx.currentTime;
-            const data = pid === 1 ? session.p1 : session.p2;
+            const now = AudioEngine.ctx.currentTime; const data = pid === 1 ? session.p1 : session.p2;
             const y = config.players === 1 ? height/2 : (pid===1 ? height*0.28 : height*0.72);
             AudioEngine.play(pid === 1 ? 'p1' : 'p2', now);
+            
+            // Visual Feedback Pulse
+            data.bump = 1.2; 
+
             let best = null, minDiff = Infinity;
             data.notes.forEach(n => {
-                if(!n.hit && !n.missed) {
-                    let d = Math.abs(n.target - now);
-                    if(d < minDiff) { minDiff = d; best = n; }
-                }
+                if(!n.hit && !n.missed) { let d = Math.abs(n.target - now); if(d < minDiff) { minDiff = d; best = n; } }
             });
             if(best && minDiff < WINDOWS.MISS) {
-                best.hit = true;
-                let rating = 'POOR', rCol = 'var(--rank-b)';
+                best.hit = true; let rating = 'POOR', rCol = 'var(--rank-b)';
                 if(minDiff < WINDOWS.PERF) { rating = 'PERFECT'; rCol = 'var(--rank-s)'; }
                 else if(minDiff < WINDOWS.GOOD) { rating = 'GOOD'; rCol = 'var(--rank-a)'; }
-                handleResult(pid, rating);
-                showFeedback(rating, HIT_X, y, rCol);
+                handleResult(pid, rating); showFeedback(rating, HIT_X, y, rCol);
             }
         }
         function handleResult(pid, rating) {
-            const data = pid === 1 ? session.p1 : session.p2;
-            const isSurvival = config.mode.includes('survival');
+            const data = pid === 1 ? session.p1 : session.p2; const isSurvival = config.mode.includes('survival');
             if(rating === 'PERFECT') { data.score += 100; data.stats.p++; }
             else if(rating === 'GOOD') { data.score += 50; data.stats.g++; }
             else { data.stats.m++; if(isSurvival) loseLife(pid); }
             updateHUD();
         }
         function loseLife(pid) {
-            const data = pid === 1 ? session.p1 : session.p2;
-            data.lives--;
-            const w = document.getElementById('game-wrapper');
-            w.style.transform = `translateX(${Math.random()*8-4}px)`;
-            setTimeout(()=>w.style.transform='none', 50);
+            const data = pid === 1 ? session.p1 : session.p2; data.lives--;
+            const w = document.getElementById('game-wrapper'); w.style.transform = `translateX(${Math.random()*8-4}px)`; setTimeout(()=>w.style.transform='none', 50);
             if(data.lives <= 0) endGame();
         }
-        
         function updateHUD() {
-            document.getElementById('p1-score').innerText = session.p1.score;
-            document.getElementById('p2-score').innerText = session.p2.score;
-            
+            document.getElementById('p1-score').innerText = session.p1.score; document.getElementById('p2-score').innerText = session.p2.score;
             const isSurvivalMode = config.mode.includes('survival');
-            
-            if(isSurvivalMode) {
-                document.getElementById('p1-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p1.lives));
-                document.getElementById('p2-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p2.lives));
-            } else {
-                document.getElementById('p1-lives').innerText = "";
-                document.getElementById('p2-lives').innerText = "";
-            }
-            
-            let rTxt = `ROUND ${session.round}`;
-            if(!config.mode.includes('survival')) rTxt += ` / ${config.rounds}`;
-            document.getElementById('round-info').innerText = rTxt;
+            if(isSurvivalMode) { document.getElementById('p1-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p1.lives)); document.getElementById('p2-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p2.lives)); } else { document.getElementById('p1-lives').innerText = ""; document.getElementById('p2-lives').innerText = ""; }
+            let rTxt = `ROUND ${session.round}`; if(!config.mode.includes('survival')) rTxt += ` / ${config.rounds}`; document.getElementById('round-info').innerText = rTxt;
         }
-        
         function showFeedback(text, x, y, color) {
-            const el = document.createElement('div');
-            el.className = 'hit-popup'; el.innerText = text;
+            const el = document.createElement('div'); el.className = 'hit-popup'; el.innerText = text;
             el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color;
-            document.getElementById('game-wrapper').appendChild(el);
-            setTimeout(()=>el.remove(), 500);
+            document.getElementById('game-wrapper').appendChild(el); setTimeout(()=>el.remove(), 500);
         }
         function notify(text, color) {
-            const el = document.getElementById('center-notify');
-            el.innerText = text; el.style.color = color; el.style.opacity = 1;
-            el.style.transform = "translate(-50%, -50%) scale(1.2)";
-            setTimeout(() => { el.style.opacity = 0; el.style.transform = "translate(-50%, -50%) scale(1)"; }, 600);
+            const el = document.getElementById('center-notify'); el.innerText = text; el.style.color = color; el.style.opacity = 1;
+            if (config.players === 1) { el.style.top = "75%"; } else { el.style.top = "50%"; }
+            el.style.transform = "translate(-50%, -50%) scale(1.2)"; setTimeout(() => { el.style.opacity = 0; el.style.transform = "translate(-50%, -50%) scale(1)"; }, 600);
         }
         function endGame() {
-            gameState = 'END';
-            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-            document.getElementById('result-screen').classList.add('active');
+            gameState = 'END'; document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('result-screen').classList.add('active');
             timeouts.forEach(clearTimeout);
             const mName = {fixed:'練習', vanishing:'消失', survival:'生存', 'vanishing-survival':'消失生存'}[config.mode];
-            document.getElementById('res-mode').innerText = mName;
-            document.getElementById('res-len').innerText = config.mode.includes('survival') ? "∞" : config.rounds + "R";
-            const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'};
-            document.getElementById('res-diff').innerText = dNames[config.diff];
-            const container = document.getElementById('result-content');
-            container.innerHTML = '';
-            container.className = config.players===1 ? 'result-flex single-layout' : 'result-flex';
-            container.appendChild(createResultCard(1, session.p1));
-            if(config.players === 2) container.appendChild(createResultCard(2, session.p2));
-            
-            const uploadUI = document.getElementById('upload-ui');
-            const submitBtn = document.getElementById('btn-submit');
-            
-            if(config.players === 1) {
-                // 重置上傳區域
-                document.getElementById('leaderboard-display-result').classList.add('active'); 
-                uploadUI.style.display = 'block';
-                document.getElementById('upload-success-msg').style.display = 'none';
-                
-                // 重置按鈕狀態
-                submitBtn.disabled = false;
-                submitBtn.innerText = "確認上傳";
-                
-                // 清空輸入
-                document.getElementById('up-sid').value = '';
-                document.getElementById('up-guest-name').value = '';
-                
-                // 預設切換回學生
-                setUploadRole('student');
-            } else {
-                document.getElementById('leaderboard-display-result').classList.remove('active');
-            }
+            document.getElementById('res-mode').innerText = mName; document.getElementById('res-len').innerText = config.mode.includes('survival') ? "∞" : config.rounds + "R";
+            const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; document.getElementById('res-diff').innerText = dNames[config.diff];
+            const container = document.getElementById('result-content'); container.innerHTML = ''; container.className = config.players===1 ? 'result-flex single-layout' : 'result-flex';
+            container.appendChild(createResultCard(1, session.p1)); if(config.players === 2) container.appendChild(createResultCard(2, session.p2));
+            const uploadUI = document.getElementById('upload-ui'); const submitBtn = document.getElementById('btn-submit');
+            if(config.players === 1) { document.getElementById('leaderboard-display-result').classList.add('active'); uploadUI.style.display = 'block'; document.getElementById('upload-success-msg').style.display = 'none'; submitBtn.disabled = false; submitBtn.innerText = "確認上傳"; document.getElementById('up-sid').value = ''; document.getElementById('up-guest-name').value = ''; setUploadRole('student'); } else { document.getElementById('leaderboard-display-result').classList.remove('active'); }
         }
         function createResultCard(pid, data) {
-            const total = data.stats.p + data.stats.g + data.stats.m;
-            const acc = total===0 ? 0 : Math.round(((data.stats.p + data.stats.g)/total)*100);
-            let rank='D', rCol='var(--rank-d)';
-            if(acc===100){rank='S';rCol='var(--rank-s)'}
-            else if(acc>=90){rank='A';rCol='var(--rank-a)'}
-            else if(acc>=76){rank='B';rCol='var(--rank-b)'}
-            else if(acc>=60){rank='C';rCol='var(--rank-c)'}
-            const div = document.createElement('div');
-            div.className = `res-card p${pid}`;
-            if(config.players === 1) {
-                div.innerHTML = `
-                <div class="main-circle" style="border-color:${rCol}">
-                <div class="score-percent">${acc}%</div>
-                <div class="score-label">ACCURACY</div>
-                <div class="circle-rank" style="color:${rCol}">${rank}</div>
-                </div>
-                <div class="res-score">${data.score}</div>
-                <div class="stats-table">
-                <div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num" style="color:var(--rank-s)">${data.stats.p}</span></div>
-                <div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num" style="color:var(--rank-a)">${data.stats.g}</span></div>
-                <div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num" style="color:var(--rank-d)">${data.stats.m}</span></div>
-                </div>
-                `;
-            } else {
-                div.innerHTML = `
-                <h2 style="color:var(--p${pid}-color)">PLAYER ${pid}</h2>
-                <div class="res-rank" style="color:${rCol}">${rank}</div>
-                <div class="res-score">${data.score}</div>
-                <div class="stats-table">
-                <div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num">${data.stats.p}</span></div>
-                <div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num">${data.stats.g}</span></div>
-                <div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num">${data.stats.m}</span></div>
-                <div class="stat-row" style="background:var(--glass-border)"><span class="stat-label" style="color:white">ACC</span><span class="stat-num">${acc}%</span></div>
-                </div>
-                `;
-            }
+            const total = data.stats.p + data.stats.g + data.stats.m; const acc = total===0 ? 0 : Math.round(((data.stats.p + data.stats.g)/total)*100);
+            let rank='D', rCol='var(--rank-d)'; if(acc===100){rank='S';rCol='var(--rank-s)'} else if(acc>=90){rank='A';rCol='var(--rank-a)'} else if(acc>=76){rank='B';rCol='var(--rank-b)'} else if(acc>=60){rank='C';rCol='var(--rank-c)'}
+            const div = document.createElement('div'); div.className = `res-card p${pid}`;
+            if(config.players === 1) { div.innerHTML = `<div class="main-circle" style="border-color:${rCol}"><div class="score-percent">${acc}%</div><div class="score-label">ACCURACY</div><div class="circle-rank" style="color:${rCol}">${rank}</div></div><div class="res-score">${data.score}</div><div class="stats-table"><div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num" style="color:var(--rank-s)">${data.stats.p}</span></div><div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num" style="color:var(--rank-a)">${data.stats.g}</span></div><div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num" style="color:var(--rank-d)">${data.stats.m}</span></div></div>`; }
+            else { div.innerHTML = `<h2 style="color:var(--p${pid}-color)">PLAYER ${pid}</h2><div class="res-rank" style="color:${rCol}">${rank}</div><div class="res-score">${data.score}</div><div class="stats-table"><div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num">${data.stats.p}</span></div><div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num">${data.stats.g}</span></div><div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num">${data.stats.m}</span></div><div class="stat-row" style="background:var(--glass-border)"><span class="stat-label" style="color:white">ACC</span><span class="stat-num">${acc}%</span></div></div>`; }
             return div;
         }
-        const handleTouch = (zone, e) => {
-            e.preventDefault();
-            if(config.players === 1) { handleInput(1); }
-            else { handleInput(zone); }
-        };
+        const handleTouch = (zone, e) => { e.preventDefault(); if(config.players === 1) { handleInput(1); } else { handleInput(zone); } };
+        
+        // ★★★ 修正：P1 按鍵支援 Code 與 Key 以防輸入法干擾 ★★★
         window.addEventListener('keydown', e => {
             const k = e.key.toLowerCase();
-            if(['f','j','d','k',' '].includes(k)) { e.preventDefault(); if(!e.repeat) handleInput(1); }
-            if(['arrowup','arrowdown','arrowleft','arrowright'].includes(k)) { e.preventDefault(); if(!e.repeat) handleInput(2); }
+            const code = e.code;
+            // P1: Space or 'a' key (by code "KeyA" or char "a")
+            if(code === 'Space' || code === 'KeyA' || k === 'a') { e.preventDefault(); if(!e.repeat) handleInput(1); }
+            if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(code)) { e.preventDefault(); if(!e.repeat) handleInput(2); }
         });
-        const t1 = document.getElementById('touch-p1');
-        const t2 = document.getElementById('touch-p2');
-        t1.addEventListener('touchstart', (e)=>handleTouch(1,e));
-        t1.addEventListener('mousedown', (e)=>handleTouch(1,e));
-        t2.addEventListener('touchstart', (e)=>handleTouch(2,e));
-        t2.addEventListener('mousedown', (e)=>handleTouch(2,e));
+        const t1 = document.getElementById('touch-p1'); const t2 = document.getElementById('touch-p2');
+        t1.addEventListener('touchstart', (e)=>handleTouch(1,e)); t1.addEventListener('mousedown', (e)=>handleTouch(1,e));
+        t2.addEventListener('touchstart', (e)=>handleTouch(2,e)); t2.addEventListener('mousedown', (e)=>handleTouch(2,e));
+        updateDescription();
     </script>
 </body>
 </html>
