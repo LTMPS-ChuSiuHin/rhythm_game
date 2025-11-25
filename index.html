@@ -156,6 +156,7 @@
             line-height: 1.4; margin-top: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
         
+        /* Toggle Button */
         .toggle-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); background: rgba(0,0,0,0.5); border-radius: 8px; padding: 3px; gap: 3px; border: 1px solid rgba(255,255,255,0.05); }
         .toggle-btn { padding: 6px 2px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 6px; font-weight: 600; transition: 0.2s; font-size: 12px; white-space: nowrap; }
         .toggle-btn:hover { color: white; background: rgba(255,255,255,0.05); }
@@ -167,10 +168,10 @@
         .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.15); }
 
         /* Footer & Horizontal Buttons */
-        .screen-footer { flex-shrink: 0; width: 100%; margin-top: 10px; }
+        .screen-footer { flex-shrink: 0; width: 100%; margin-top: 20px; }
         .btn-group { 
             display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 700px; margin: 0 auto; 
-            flex-wrap: nowrap; /* 強制橫向 */
+            flex-wrap: nowrap;
         }
         .btn-start {
             padding: 12px 5px; font-size: 18px; font-weight: 800; flex: 1.2; 
@@ -187,38 +188,25 @@
         .btn-secondary:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
         .btn-gold { border-color: var(--comp-gold); color: var(--comp-gold); }
         .btn-gold:hover { background: rgba(251, 191, 36, 0.1); color: #fff; border-color: #fff; box-shadow: 0 0 15px var(--comp-gold); }
-        .footer-tip { display: none; } /* Hiding footer tip as requested */
+        .footer-tip { display: none; }
 
         /* Result & Leaderboard */
         .scroll-content { flex: 1; width: 100%; overflow-y: auto; display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; }
         
-        /* ★★★ Single Player Result Layout (Side by Side) ★★★ */
+        /* Single Player Result Layout */
         .single-mode-layout {
-            flex-direction: row !important;
-            align-items: flex-start !important;
-            justify-content: center !important;
-            gap: 30px !important;
-            overflow: hidden !important; /* 禁止滾動 */
+            flex-direction: row !important; align-items: flex-start !important; justify-content: center !important;
+            gap: 30px !important; overflow: hidden !important;
         }
-        .single-mode-layout .result-flex {
-            flex: 0 0 auto; width: 320px; margin: 0; padding: 0; max-width: none;
-        }
-        .single-mode-layout .res-card {
-            padding: 15px;
-            height: 100%; box-sizing: border-box;
-            justify-content: center;
-        }
-        .single-mode-layout .main-circle {
-            width: 120px; height: 120px; margin-bottom: 15px;
-        }
+        .single-mode-layout .result-flex { flex: 0 0 auto; width: 320px; margin: 0; padding: 0; max-width: none; }
+        .single-mode-layout .res-card { padding: 15px; height: 100%; box-sizing: border-box; justify-content: center; }
+        .single-mode-layout .main-circle { width: 120px; height: 120px; margin-bottom: 15px; }
         .single-mode-layout .score-percent { font-size: 32px; }
         .single-mode-layout .circle-rank { font-size: 24px; bottom: -15px; }
-        .single-mode-layout #leaderboard-display-result {
-            flex: 1; margin: 0; width: auto; max-width: 450px;
-            height: 100%; display: flex; flex-direction: column;
-        }
+        .single-mode-layout #leaderboard-display-result { flex: 1; margin: 0; width: auto; max-width: 450px; height: 100%; display: flex; flex-direction: column; }
         .single-mode-layout #upload-ui { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 
+        /* Result Summary Bar */
         .summary-bar { display: flex; gap: 15px; margin-bottom: 10px; background: rgba(0,0,0,0.3); padding: 8px 20px; border-radius: 50px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); flex-wrap: wrap; justify-content: center; flex-shrink: 0; }
         .sum-item { text-align: center; }
         .sum-label { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
@@ -230,7 +218,7 @@
         .res-score { font-size: 32px; font-weight: 900; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
         .res-rank { font-size: 60px; font-weight: 900; line-height: 1; margin: 5px 0 15px 0; text-shadow: 0 0 30px currentColor; }
         
-        /* ★★★ 統計數據字體放大 ★★★ */
+        /* Stats */
         .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .stat-row { background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); }
         .stat-label { font-size: 14px; font-weight: 700; color: var(--text-secondary); }
@@ -269,15 +257,17 @@
         .lb-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; margin-right: 10px; }
         .lb-name { color: #e2e8f0; white-space: nowrap; text-overflow: ellipsis; font-weight: bold;}
         .lb-detail { font-size: 10px; color: var(--text-secondary); }
-        .lb-score { font-weight: 800; color: var(--p1-color); min-width: 60px; text-align: right; font-family: monospace; font-size: 14px; }
+        .lb-score { font-weight: 800; color: var(--p1-color); min-width: 50px; text-align: right; font-family: monospace; font-size: 14px; }
         .lb-title { color:white; font-size: 14px; margin-bottom: 10px; text-align:center; font-weight:bold; letter-spacing: 2px; text-transform: uppercase;}
+        
+        .lb-stats { display: flex; gap: 8px; align-items: center; }
+        .lb-meta { font-size: 11px; color: var(--text-secondary); text-align: right; margin-right: 5px; }
 
-        /* Competition Rank Grid */
         .comp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; max-height: 450px; overflow-y: auto; padding-right: 5px; }
         .comp-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px; }
         .comp-grade-title { text-align: center; font-size: 16px; font-weight: bold; color: var(--comp-gold); margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
-        .comp-item { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .comp-rank { width: 20px; font-weight: bold; text-align: center; }
+        .comp-item { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03); align-items: center; }
+        .comp-rank { width: 25px; font-weight: bold; text-align: center; }
         .comp-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 5px; color: #ddd; }
         .comp-score { color: var(--p1-color); font-weight: bold; font-family: monospace; }
 
@@ -285,10 +275,10 @@
         @keyframes popUp { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -120%) scale(1); } }
 
         @media (max-height: 600px) {
-            h1 { font-size: 32px; margin-bottom: 5px; }
-            .control-panel { padding: 10px; gap: 8px; margin: 5px 0; }
-            .btn-start { padding: 8px 20px; font-size: 16px; min-width: 0; }
-            .btn-secondary { padding: 8px 15px; font-size: 12px; min-width: 0; }
+            h1 { font-size: 32px; }
+            .control-panel { padding: 15px; gap: 8px; margin: 5px 0; }
+            .btn-start { padding: 10px 20px; font-size: 16px; min-width: 0; }
+            .btn-secondary { padding: 10px 15px; font-size: 12px; min-width: 0; }
             .res-rank { font-size: 40px; margin: 0 0 10px 0; }
             .single-layout .main-circle { width: 100px; height: 100px; margin-bottom: 20px; }
             .score-percent { font-size: 30px; }
@@ -377,14 +367,13 @@
                     <div class="control-group full">
                         <label>速度 (BPM)</label>
                         <select id="speed-select">
-                            <option value="70">慢板 Adagio (70)</option>
-                            <option value="95" selected>中板 Moderato (95)</option>
-                            <option value="120">快板 Allegro (120)</option>
+                            <option value="70">慢板 Adagio (70) - 分數 x0.8</option>
+                            <option value="95" selected>中板 Moderato (95) - 分數 x1.0</option>
+                            <option value="120">快板 Allegro (120) - 分數 x1.2</option>
                         </select>
                     </div>
                 </div>
             </div>
-            
             <div class="screen-footer">
                 <div class="btn-group">
                     <button class="btn btn-secondary" onclick="openLeaderboardMenu()">名人堂</button>
@@ -494,11 +483,11 @@
                 2: "雙人對戰：P1 點擊上半屏 [空白鍵/A]，P2 點擊下半屏 [↑, ↓]。",
             },
             modes: {
-                'fixed': "練習模式：標準音符顯示，熟悉節奏與按鍵的最佳起點。",
-                'vanishing': "消失模式：音符會在判定線前隱形，考驗您的絕對節奏感。",
-                'survival': "生存模式：MISS 即扣血，耗盡將失敗，挑戰您的持久力。",
-                'vanishing-survival': "消存模式：隱形音符 + 殘酷生存，大師級的終極試煉！",
-                'competition': "比賽模式：消存機制 (5命)，難度隨回合自動提升，成績記入龍虎榜！"
+                'fixed': "練習模式：標準玩法，適合體驗不同的速度及難度。",
+                'vanishing': "消失模式：音符會在途中消失，考驗你對節奏的記憶力。",
+                'survival': "生存模式：無盡挑戰直至出現3次失誤，挑戰你的集中力。",
+                'vanishing-survival': "消存模式：消失與生存的混合模式，大師級的終極試練！",
+                'competition': "比賽模式：無盡挑戰直至出現5次失誤，難度將逐漸提升，挑戰成為大賽冠軍！"
             }
         };
 
@@ -579,7 +568,26 @@
             updateDescription(); 
         }
 
-        // ★★★ 單一集合查詢邏輯 (Single Collection) ★★★
+        // ★★★ Score Multiplier Logic ★★★
+        function getScoreMultiplier() {
+            if (config.mode === 'competition') return 1.0; // Fixed speed in competition
+            if (config.bpm === 70) return 0.8;
+            if (config.bpm === 120) return 1.2;
+            return 1.0;
+        }
+
+        // ★★★ Helper for Difficulty Text ★★★
+        function getDiffText(d) {
+            const map = { 'easy': '簡單', 'normal': '普通', 'hard': '困難', 'master': '達人' };
+            return map[d] || d;
+        }
+        function getSpeedText(s) {
+            if (s === 70) return "慢板";
+            if (s === 95) return "中板";
+            if (s === 120) return "快板";
+            return s;
+        }
+
         async function submitScore() { 
             if (!db) { alert("請先設定 Firebase！"); return; } 
             const btn = document.getElementById('btn-submit'); 
@@ -606,6 +614,7 @@
                     name: name, 
                     score: session.p1.score, 
                     difficulty: config.diff, 
+                    bpm: config.bpm, // Save BPM
                     type: type, 
                     mode: config.mode, 
                     timestamp: firebase.firestore.FieldValue.serverTimestamp() 
@@ -679,16 +688,24 @@
                     let detailInfo = "訪客"; 
                     if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } 
                     
+                    // ★★★ Updated Metadata Display (Speed | Diff) ★★★
+                    const metaStr = `${getSpeedText(data.bpm || 95)} | ${getDiffText(data.difficulty)}`;
+
                     const item = document.createElement('li');
                     item.className = 'lb-item';
-                    item.innerHTML = `<span class="lb-rank" style="color:${rankColor}">${rank++}</span><div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div><span class="lb-score">${data.score}</span>`; 
+                    item.innerHTML = `
+                    <span class="lb-rank" style="color:${rankColor}">${rank++}</span>
+                    <div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div>
+                    <div class="lb-stats">
+                        <span class="lb-meta">${metaStr}</span>
+                        <span class="lb-score">${data.score}</span>
+                    </div>`; 
                     list.appendChild(item); 
                 }); 
             } catch (e) { 
                 console.error("Fetch Error:", e); 
                 if(e.message.includes('index')) { 
                     list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>'; 
-                    console.log("請點擊錯誤訊息中的連結來建立索引"); 
                 } else { 
                     list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>'; 
                 } 
@@ -736,18 +753,21 @@
                         const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score);
                         let rank = 1;
                         
-                        sortedList.slice(0, 3).forEach(data => {
+                        sortedList.slice(0, 5).forEach(data => {
                             let badge = rank;
                             let color = '#fff';
                             if(rank===1) { badge='🥇'; color='var(--comp-gold)'; }
-                            if(rank===2) { badge='🥈'; color='var(--comp-silver)'; }
-                            if(rank===3) { badge='🥉'; color='var(--comp-bronze)'; }
+                            else if(rank===2) { badge='🥈'; color='var(--comp-silver)'; }
+                            else if(rank===3) { badge='🥉'; color='var(--comp-bronze)'; }
+                            else { badge = rank + '.'; color='#94a3b8'; }
                             
                             cardHtml += `
                             <div class="comp-item">
-                                <span class="comp-rank">${badge}</span>
-                                <span class="comp-name">${data.classId} ${data.name}</span>
-                                <span class="comp-score">${data.score}</span>
+                                <span class="comp-rank" style="color:${color}">${badge}</span>
+                                <span class="comp-name" style="color:${color}">${data.classId} ${data.name}</span>
+                                <div style="text-align:right;">
+                                    <div class="comp-score">${data.score}</div>
+                                </div>
                             </div>
                             `;
                             rank++;
@@ -923,8 +943,12 @@
         }
         function handleResult(pid, rating) {
             const data = pid === 1 ? session.p1 : session.p2; const isSurvival = config.mode.includes('survival') || config.mode === 'competition';
-            if(rating === 'PERFECT') { data.score += 100; data.stats.p++; }
-            else if(rating === 'GOOD') { data.score += 50; data.stats.g++; }
+            
+            // ★★★ 應用分數加成 ★★★
+            let multiplier = getScoreMultiplier();
+
+            if(rating === 'PERFECT') { data.score += Math.round(100 * multiplier); data.stats.p++; }
+            else if(rating === 'GOOD') { data.score += Math.round(50 * multiplier); data.stats.g++; }
             else { data.stats.m++; if(isSurvival) loseLife(pid); }
             updateHUD();
         }
@@ -961,7 +985,6 @@
             const container = document.getElementById('result-content'); 
             container.innerHTML = ''; 
             
-            // ★★★ Single Player Layout Toggle ★★★
             if(config.players === 1) {
                 scrollContainer.classList.add('single-mode-layout');
                 container.className = 'result-flex single-layout';
