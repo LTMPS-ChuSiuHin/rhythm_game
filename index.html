@@ -15,6 +15,8 @@
             --glass-border: rgba(255, 255, 255, 0.1);
             --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
             --glass-blur: blur(12px);
+            
+            /* Colors */
             --p1-color: #22d3ee;
             --p2-color: #f472b6;
             --rank-s: #22d3ee;
@@ -22,24 +24,21 @@
             --rank-b: #facc15;
             --rank-c: #fb923c;
             --rank-d: #f87171;
+            
+            /* Competition Specific */
+            --comp-gold: #fbbf24;
+            
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
         }
         body {
-            margin: 0;
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
+            margin: 0; background-color: var(--bg-dark); color: var(--text-primary);
             font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            user-select: none;
-            touch-action: none;
-            position: relative;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden; user-select: none; touch-action: none; position: relative;
         }
 
+        /* Background */
         .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; background: #020617; }
         .cyber-grid {
             position: absolute; width: 200%; height: 200%; bottom: -50%; left: -50%;
@@ -57,6 +56,7 @@
         .p-4 { left: 90%; width: 4px; height: 4px; animation-duration: 6s; animation-delay: 0.5s; }
         @keyframes floatUp { 0% { bottom: -10px; opacity: 0; } 50% { opacity: 0.4; } 100% { bottom: 100%; opacity: 0; } }
 
+        /* Game Container */
         #game-wrapper {
             position: relative; width: 100%; max-width: 1100px; height: 100%; max-height: 680px;
             background: rgba(15, 23, 42, 0.4); border-radius: 24px;
@@ -67,6 +67,7 @@
         .touch-layer { position: absolute; left: 0; width: 100%; height: 50%; z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         #touch-p1 { top: 0; } #touch-p2 { top: 50%; }
         
+        /* UI Layer */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
             display: flex; flex-direction: column; justify-content: space-between; padding: 25px; box-sizing: border-box; z-index: 20;
@@ -92,82 +93,133 @@
             filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5)); transition: all 0.2s ease-out; z-index: 50;
         }
 
+        /* Screens - Main Layout */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(2, 6, 23, 0.96); backdrop-filter: blur(40px);
             z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
-            display: flex; flex-direction: column; align-items: center; box-sizing: border-box; padding: 20px;
+            /* 緊湊佈局 */
+            display: flex; flex-direction: column; align-items: center; 
+            box-sizing: border-box; padding: 20px 30px;
         }
         .screen.active { opacity: 1; pointer-events: auto; }
-        .screen-header { flex-shrink: 0; text-align: center; margin-bottom: 10px; width: 100%; }
-        .scroll-content {
-            flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center;
-            overflow-y: auto; overflow-x: hidden; margin-bottom: 10px;
-            scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;
-        }
-        .scroll-content::-webkit-scrollbar { width: 6px; }
-        .scroll-content::-webkit-scrollbar-track { background: transparent; }
-        .scroll-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
-        .screen-footer { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding-bottom: 5px; }
-
+        
+        /* Header Compact - Spacing Increased */
+        .screen-header { flex-shrink: 0; text-align: center; margin-bottom: 15px; width: 100%; }
         h1 {
-            font-size: 48px; margin: 0; font-weight: 900; letter-spacing: 4px; color: white; text-transform: uppercase;
+            font-size: 42px; margin: 0 0 10px 0; font-weight: 900; letter-spacing: 3px; color: white; text-transform: uppercase;
             text-shadow: 0 0 20px var(--p1-color), 0 0 40px rgba(34, 211, 238, 0.4); animation: titleFloat 3s ease-in-out infinite;
         }
         @keyframes titleFloat { 0%, 100% { transform: translateY(0); text-shadow: 0 0 20px var(--p1-color); } 50% { transform: translateY(-5px); text-shadow: 0 0 30px var(--p1-color), 0 0 10px white; } }
         .subtitle { 
-            color: var(--text-secondary); font-size: 14px; margin-top: 5px; margin-bottom: 5px;
-            letter-spacing: 4px; text-transform: uppercase; opacity: 0.8;
-            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; display: inline-block;
+            color: var(--text-secondary); font-size: 14px; margin-top: 0; margin-bottom: 15px;
+            letter-spacing: 2px; opacity: 0.9; display: block;
+        }
+        
+        /* Combined Banner */
+        .season-banner {
+            background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 50px; padding: 8px 25px; display: inline-flex; gap: 15px; align-items: center;
+            margin-bottom: 5px;
+        }
+        .season-text { color: #facc15; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+        .season-sep { color: rgba(255,255,255,0.2); }
+        .reward-text { color: #4ade80; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
+
+        /* Content Area - No Scroll */
+        .main-content-area {
+            flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden; /* 禁止滾動 */
         }
 
+        /* Control Panel Compact */
         .control-panel {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 90%; max-width: 600px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 650px;
             background: var(--glass-panel); backdrop-filter: var(--glass-blur);
             border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
-            padding: 20px; border-radius: 20px; margin: 10px 0; flex-shrink: 0; 
+            padding: 15px 25px; border-radius: 20px; margin: 5px 0; flex-shrink: 0; 
         }
         .control-group.full { grid-column: span 2; }
-        label { font-size: 11px; color: var(--p1-color); margin-bottom: 5px; font-weight: 800; text-transform: uppercase; display: block; letter-spacing: 1px; }
+        label { font-size: 10px; color: var(--p1-color); margin-bottom: 3px; font-weight: 800; text-transform: uppercase; display: block; letter-spacing: 1px; }
         select, .btn, input {
-            padding: 10px; border-radius: 10px; background: rgba(0, 0, 0, 0.3);
+            padding: 8px; border-radius: 8px; background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
-            color: white; font-family: inherit; font-size: 14px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
+            color: white; font-family: inherit; font-size: 13px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
         }
         select:hover, .btn:hover, input:focus { border-color: var(--p1-color); background: rgba(34, 211, 238, 0.1); box-shadow: 0 0 15px rgba(34,211,238,0.1); }
         .control-group.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
 
+        /* Description Box Compact */
         .mode-description {
             grid-column: span 2; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border);
-            border-radius: 12px; padding: 12px; font-size: 13px; color: #e2e8f0; text-align: center;
-            line-height: 1.6; margin-top: 5px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            border-radius: 10px; padding: 8px; font-size: 12px; color: #e2e8f0; text-align: center;
+            line-height: 1.4; margin-top: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
         
-        .toggle-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); background: rgba(0,0,0,0.5); border-radius: 12px; padding: 4px; gap: 4px; border: 1px solid rgba(255,255,255,0.05); }
-        .toggle-btn { padding: 8px 4px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.2s; font-size: 13px; white-space: nowrap; }
+        .toggle-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); background: rgba(0,0,0,0.5); border-radius: 8px; padding: 3px; gap: 3px; border: 1px solid rgba(255,255,255,0.05); }
+        .toggle-btn { padding: 6px 2px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 6px; font-weight: 600; transition: 0.2s; font-size: 12px; white-space: nowrap; }
         .toggle-btn:hover { color: white; background: rgba(255,255,255,0.05); }
         .toggle-btn.active { background: rgba(255,255,255,0.15); color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); text-shadow: 0 0 8px currentColor; border: 1px solid rgba(255,255,255,0.1); }
         .toggle-btn[data-mode="vanishing"].active { color: #d946ef; border-color: #d946ef; background: rgba(217, 70, 239, 0.15); }
         .toggle-btn[data-mode="survival"].active { color: #facc15; border-color: #facc15; background: rgba(250, 204, 21, 0.15); }
         .toggle-btn[data-mode="vanishing-survival"].active { color: #f87171; border-color: #f87171; background: rgba(248, 113, 113, 0.15); }
+        .toggle-btn[data-mode="competition"].active { color: var(--comp-gold); border-color: var(--comp-gold); background: rgba(251, 191, 36, 0.15); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
         .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.15); }
 
-        .btn-group { display: flex; gap: 15px; justify-content: center; width: 100%; max-width: 500px; }
+        /* Footer & Horizontal Buttons */
+        .screen-footer { flex-shrink: 0; width: 100%; margin-top: 10px; }
+        .btn-group { 
+            display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 700px; margin: 0 auto; 
+            flex-wrap: nowrap; /* 強制橫向 */
+        }
         .btn-start {
-            padding: 12px 24px; font-size: 20px; font-weight: 800; width: auto; flex: 2; min-width: 140px; 
+            padding: 12px 5px; font-size: 18px; font-weight: 800; flex: 1.2; 
             background: linear-gradient(90deg, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8));
             border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; 
-            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 2px; white-space: nowrap;
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 1px; white-space: nowrap;
+            min-width: 0;
         }
         .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(34, 211, 238, 0.5); border-color: white; }
         .btn-secondary {
-            width:auto; padding: 12px 20px; flex: 1; min-width: 100px; background: rgba(255,255,255,0.05); color: var(--text-secondary); 
-            border: 1px solid var(--glass-border); border-radius: 12px; white-space: nowrap;
+            padding: 12px 5px; flex: 1; min-width: 0; background: rgba(255,255,255,0.05); color: var(--text-secondary); 
+            border: 1px solid var(--glass-border); border-radius: 12px; white-space: nowrap; font-size: 14px; text-align: center;
         }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
+        .btn-gold { border-color: var(--comp-gold); color: var(--comp-gold); }
+        .btn-gold:hover { background: rgba(251, 191, 36, 0.1); color: #fff; border-color: #fff; box-shadow: 0 0 15px var(--comp-gold); }
+        .footer-tip { display: none; } /* Hiding footer tip as requested */
 
         /* Result & Leaderboard */
-        .summary-bar { display: flex; gap: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 8px 20px; border-radius: 50px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); flex-wrap: wrap; justify-content: center; flex-shrink: 0; }
+        .scroll-content { flex: 1; width: 100%; overflow-y: auto; display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; }
+        
+        /* ★★★ Single Player Result Layout (Side by Side) ★★★ */
+        .single-mode-layout {
+            flex-direction: row !important;
+            align-items: flex-start !important;
+            justify-content: center !important;
+            gap: 30px !important;
+            overflow: hidden !important; /* 禁止滾動 */
+        }
+        .single-mode-layout .result-flex {
+            flex: 0 0 auto; width: 320px; margin: 0; padding: 0; max-width: none;
+        }
+        .single-mode-layout .res-card {
+            padding: 15px;
+            height: 100%; box-sizing: border-box;
+            justify-content: center;
+        }
+        .single-mode-layout .main-circle {
+            width: 120px; height: 120px; margin-bottom: 15px;
+        }
+        .single-mode-layout .score-percent { font-size: 32px; }
+        .single-mode-layout .circle-rank { font-size: 24px; bottom: -15px; }
+        .single-mode-layout #leaderboard-display-result {
+            flex: 1; margin: 0; width: auto; max-width: 450px;
+            height: 100%; display: flex; flex-direction: column;
+        }
+        .single-mode-layout #upload-ui { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+        .summary-bar { display: flex; gap: 15px; margin-bottom: 10px; background: rgba(0,0,0,0.3); padding: 8px 20px; border-radius: 50px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); flex-wrap: wrap; justify-content: center; flex-shrink: 0; }
         .sum-item { text-align: center; }
         .sum-label { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
         .sum-val { font-size: 14px; font-weight: 700; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
@@ -177,11 +229,13 @@
         .res-card.p1 { border-top: 4px solid var(--p1-color); } .res-card.p2 { border-top: 4px solid var(--p2-color); }
         .res-score { font-size: 32px; font-weight: 900; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
         .res-rank { font-size: 60px; font-weight: 900; line-height: 1; margin: 5px 0 15px 0; text-shadow: 0 0 30px currentColor; }
-        .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        .stat-row { background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); }
-        .stat-label { font-size: 10px; font-weight: 700; color: var(--text-secondary); }
-        .stat-num { font-weight: 700; font-size: 13px; }
         
+        /* ★★★ 統計數據字體放大 ★★★ */
+        .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .stat-row { background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); }
+        .stat-label { font-size: 14px; font-weight: 700; color: var(--text-secondary); }
+        .stat-num { font-weight: 800; font-size: 20px; }
+
         .single-layout .res-card { background: none; border: none; box-shadow: none; max-width: 300px; margin: 0 auto; backdrop-filter: none; }
         .single-layout .main-circle { width: 140px; height: 140px; border-radius: 50%; border: 8px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 30px; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent); position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
         .score-percent { font-size: 40px; font-weight: 900; color: white; line-height: 1; margin-bottom: 5px; text-shadow: 0 0 20px white; }
@@ -190,6 +244,7 @@
         .leaderboard-section { width: 100%; max-width: 550px; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px; border: 1px solid var(--glass-border); display: none; backdrop-filter: blur(10px); margin: 0 auto; }
         .leaderboard-section.active { display: block; }
         #leaderboard-screen .leaderboard-section { display: block !important; }
+        #competition-screen .leaderboard-section { display: block !important; max-width: 800px; }
 
         .lb-category-container { display: flex; gap: 5px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px; }
         .cat-btn { background: transparent; border: none; color: var(--text-secondary); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; flex: 1; white-space: nowrap; text-align: center; }
@@ -217,14 +272,23 @@
         .lb-score { font-weight: 800; color: var(--p1-color); min-width: 60px; text-align: right; font-family: monospace; font-size: 14px; }
         .lb-title { color:white; font-size: 14px; margin-bottom: 10px; text-align:center; font-weight:bold; letter-spacing: 2px; text-transform: uppercase;}
 
+        /* Competition Rank Grid */
+        .comp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; max-height: 450px; overflow-y: auto; padding-right: 5px; }
+        .comp-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px; }
+        .comp-grade-title { text-align: center; font-size: 16px; font-weight: bold; color: var(--comp-gold); margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .comp-item { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .comp-rank { width: 20px; font-weight: bold; text-align: center; }
+        .comp-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 5px; color: #ddd; }
+        .comp-score { color: var(--p1-color); font-weight: bold; font-family: monospace; }
+
         .hit-popup { position: absolute; font-weight: 900; font-size: 48px; transform: translate(-50%, -50%); pointer-events: none; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; text-shadow: 0 0 20px currentColor; z-index: 25; }
         @keyframes popUp { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -120%) scale(1); } }
 
         @media (max-height: 600px) {
-            h1 { font-size: 32px; }
+            h1 { font-size: 32px; margin-bottom: 5px; }
             .control-panel { padding: 10px; gap: 8px; margin: 5px 0; }
-            .btn-start { padding: 8px 20px; font-size: 16px; min-width: 100px; }
-            .btn-secondary { padding: 8px 15px; font-size: 12px; min-width: 80px; }
+            .btn-start { padding: 8px 20px; font-size: 16px; min-width: 0; }
+            .btn-secondary { padding: 8px 15px; font-size: 12px; min-width: 0; }
             .res-rank { font-size: 40px; margin: 0 0 10px 0; }
             .single-layout .main-circle { width: 100px; height: 100px; margin-bottom: 20px; }
             .score-percent { font-size: 30px; }
@@ -232,6 +296,7 @@
             .upload-form-row { flex-wrap: wrap; }
             .lb-category-container { margin-bottom: 5px; }
             .cat-btn { padding: 5px 10px; font-size: 11px; }
+            .comp-grid { max-height: 250px; }
         }
     </style>
 </head>
@@ -264,9 +329,15 @@
         <div id="menu-screen" class="screen active">
             <div class="screen-header">
                 <h1>藍循節奏大師</h1>
-                <p class="subtitle">先聆聽四拍節奏，然後擊打出相同節奏。</p>
+                <p class="subtitle">先聆聽四拍節奏，然後擊打出相同的節奏。</p>
+                <div class="season-banner">
+                    <span class="season-text">第一賽季（比賽模式）：12月2日 - 12月31日</span>
+                    <span class="season-sep">|</span>
+                    <span class="reward-text">每級首三名可獲 AE 分 100分！</span>
+                </div>
             </div>
-            <div class="scroll-content">
+            
+            <div class="main-content-area">
                 <div class="control-panel">
                     <div class="control-group">
                         <label>玩家人數</label>
@@ -282,6 +353,7 @@
                             <button class="toggle-btn" data-mode="vanishing" onclick="setMode('vanishing')">消失</button>
                             <button class="toggle-btn" data-mode="survival" onclick="setMode('survival')">生存</button>
                             <button class="toggle-btn" data-mode="vanishing-survival" onclick="setMode('vanishing-survival')">消存</button>
+                            <button class="toggle-btn" data-mode="competition" onclick="setMode('competition')">比賽</button>
                         </div>
                     </div>
                     <div id="mode-desc" class="mode-description">載入說明中...</div>
@@ -312,10 +384,12 @@
                     </div>
                 </div>
             </div>
+            
             <div class="screen-footer">
                 <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="openLeaderboardMenu()">名人堂</button>
                     <button class="btn btn-start" onclick="startGame()">開始遊戲</button>
-                    <button class="btn btn-secondary" onclick="openLeaderboardMenu()">🏆 名人堂</button>
+                    <button class="btn btn-secondary btn-gold" onclick="openCompetitionRanking()">🏆 比賽龍虎榜</button>
                 </div>
             </div>
         </div>
@@ -333,7 +407,8 @@
                     </div>
                     <div class="lb-filter-row" id="lb-filters">
                         <select id="filter-grade" class="lb-filter-select" onchange="refreshLB()">
-                            <option value="1">一年級</option><option value="2">二年級</option><option value="3">三年級</option><option value="4">四年級</option><option value="5">五年級</option><option value="6">六年級</option>
+                            <option value="1">一年級</option><option value="2">二年級</option>
+                            <option value="3">三年級</option><option value="4">四年級</option><option value="5">五年級</option><option value="6">六年級</option>
                         </select>
                         <select id="filter-class" class="lb-filter-select" onchange="refreshLB()">
                             <option value="A">A班</option><option value="B">B班</option><option value="C">C班</option><option value="D">D班</option><option value="E">E班</option>
@@ -351,6 +426,21 @@
             <div class="screen-footer"><button class="btn btn-secondary" style="width:auto; padding: 12px 30px;" onclick="showMenu()">返回主選單</button></div>
         </div>
 
+        <div id="competition-screen" class="screen">
+            <div class="screen-header">
+                <h1 style="color:var(--comp-gold); text-shadow: 0 0 30px var(--comp-gold);">第一賽季龍虎榜</h1>
+                <p class="subtitle">每級首三名可獲 AE 分 100分</p>
+            </div>
+            <div class="scroll-content">
+                <div class="leaderboard-section active">
+                    <div class="comp-grid" id="comp-grid-container">
+                        <div style="text-align:center; padding:20px; grid-column:1/-1; color:#aaa;">讀取比賽數據中...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="screen-footer"><button class="btn btn-secondary" style="width:auto; padding: 12px 30px;" onclick="showMenu()">返回主選單</button></div>
+        </div>
+
         <div id="result-screen" class="screen">
             <div class="screen-header">
                 <h1>訓練結束</h1>
@@ -360,7 +450,8 @@
                     <div class="sum-item"><span class="sum-label">難度</span><span class="sum-val" id="res-diff">普通</span></div>
                 </div>
             </div>
-            <div class="scroll-content">
+            
+            <div class="scroll-content" id="result-scroll-container">
                 <div class="result-flex" id="result-content"></div>
                 <div id="leaderboard-display-result" class="leaderboard-section">
                     <div id="upload-ui">
@@ -378,15 +469,15 @@
                             <input type="text" id="up-guest-name" class="upload-input" placeholder="輸入訪客暱稱" maxlength="12">
                         </div>
                         <div class="upload-form-row"><button class="btn-upload" style="flex:1; padding:10px;" onclick="submitScore()" id="btn-submit">確認上傳</button></div>
-                        <div id="upload-actions-extra" style="margin-top:5px; text-align:center;"><button class="btn" onclick="location.reload()" style="background:transparent; font-size:12px; padding:6px; width:auto; border:none; color:#666;">略過上傳</button></div>
+                        <div id="upload-actions-extra" style="margin-top:5px; text-align:center;"><button class="btn" onclick="resetToMenu()" style="background:transparent; font-size:12px; padding:6px; width:auto; border:none; color:#666;">略過上傳</button></div>
                     </div>
                     <div id="upload-success-msg" style="display:none; text-align:center;">
                          <div style="color:var(--rank-a); font-weight:bold; margin-bottom:10px;">上傳成功！</div>
-                         <button class="btn-upload" style="background:linear-gradient(90deg, var(--p1-color), #3b82f6); color:#020617; width:100%; padding:10px;" onclick="location.reload()">完成並返回</button>
+                         <button class="btn-upload" style="background:linear-gradient(90deg, var(--p1-color), #3b82f6); color:#020617; width:100%; padding:10px;" onclick="resetToMenu()">完成並返回</button>
                     </div>
                 </div>
             </div>
-            <div class="screen-footer"><button class="btn btn-start" onclick="location.reload()">返回選單</button></div>
+            <div class="screen-footer"><button class="btn btn-start" onclick="resetToMenu()">返回選單</button></div>
         </div>
     </div>
     <script>
@@ -403,12 +494,29 @@
                 2: "雙人對戰：P1 點擊上半屏 [空白鍵/A]，P2 點擊下半屏 [↑, ↓]。",
             },
             modes: {
-                'fixed': "練習模式：標準演奏模式，熟悉節奏與玩法的最佳起點。",
+                'fixed': "練習模式：標準音符顯示，熟悉節奏與按鍵的最佳起點。",
                 'vanishing': "消失模式：音符會在判定線前隱形，考驗您的絕對節奏感。",
-                'survival': "生存模式：只有三次失誤的機會，無限回合挑戰您的集中力。",
-                'vanishing-survival': "消失＋生存模式：隱形音符 + 生存考驗的終極試煉！"
+                'survival': "生存模式：MISS 即扣血，耗盡將失敗，挑戰您的持久力。",
+                'vanishing-survival': "消存模式：隱形音符 + 殘酷生存，大師級的終極試煉！",
+                'competition': "比賽模式：消存機制 (5命)，難度隨回合自動提升，成績記入龍虎榜！"
             }
         };
+
+        function showMenu() { 
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); 
+            document.getElementById('menu-screen').classList.add('active'); 
+            updateDescription(); 
+        }
+
+        function resetToMenu() {
+            gameState = 'MENU';
+            timeouts.forEach(clearTimeout);
+            if (animId) cancelAnimationFrame(animId);
+            if(AudioEngine.ctx && AudioEngine.ctx.state === 'running') {
+                AudioEngine.ctx.suspend().then(()=>AudioEngine.ctx.resume());
+            }
+            showMenu();
+        }
 
         function updateDescription() {
             const pText = DESCRIPTIONS.players[config.players];
@@ -419,19 +527,241 @@
             if(config.mode.includes('vanishing')) mColor = '#d946ef';
             if(config.mode.includes('survival')) mColor = '#facc15';
             if(config.mode === 'vanishing-survival') mColor = '#f87171';
+            if(config.mode === 'competition') mColor = 'var(--comp-gold)';
             if(el) {
                 el.innerHTML = `<div><span style="color:${pColor}; font-weight:bold;">[${config.players}P]</span> ${pText}</div><div style="margin-top:3px;"><span style="color:${mColor}; font-weight:bold;">[${getModeName(config.mode)}]</span> ${mText}</div>`;
             }
         }
-        function getModeName(m) { const names = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存'}; return names[m] || m; }
+        function getModeName(m) { const names = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'比賽'}; return names[m] || m; }
         function setUploadRole(role) { uploadRole = role; document.getElementById('role-student').classList.toggle('active', role === 'student'); document.getElementById('role-guest').classList.toggle('active', role === 'guest'); document.getElementById('input-student-row').style.display = role === 'student' ? 'flex' : 'none'; document.getElementById('input-guest-row').style.display = role === 'guest' ? 'flex' : 'none'; }
         function switchLBCategory(cat) { currentLB.category = cat; document.querySelectorAll('#lb-category-tabs .cat-btn').forEach(b => b.classList.remove('active')); document.getElementById(`cat-${cat}`).classList.add('active'); const filters = document.getElementById('lb-filters'); const fGrade = document.getElementById('filter-grade'); const fClass = document.getElementById('filter-class'); if(cat === 'class') { filters.style.display = 'flex'; fGrade.style.display = 'block'; fClass.style.display = 'block'; } else if (cat === 'grade') { filters.style.display = 'flex'; fGrade.style.display = 'block'; fClass.style.display = 'none'; } else { filters.style.display = 'none'; } refreshLB(); }
         function switchLBMode(m) { currentLB.mode = m; document.querySelectorAll('#lb-mode-tabs .mode-tab').forEach(b => b.classList.remove('active')); document.getElementById(`menu-lb-${m}`).classList.add('active'); refreshLB(); }
         function refreshLB() { currentLB.filterGrade = document.getElementById('filter-grade').value; currentLB.filterClass = document.getElementById('filter-class').value; fetchLeaderboard(currentLB.mode, 'lb-list-menu'); }
         function openLeaderboardMenu() { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('leaderboard-screen').classList.add('active'); refreshLB(); }
-        function getCollectionName(mode) { const map = { 'fixed': 'lb_fixed', 'vanishing': 'lb_vanishing', 'survival': 'lb_survival', 'vanishing-survival': 'lb_vanishing_survival' }; return map[mode] || 'lb_fixed'; }
-        async function submitScore() { if (!db) { alert("請先設定 Firebase！"); return; } const btn = document.getElementById('btn-submit'); let name, grade, cls, classId, type; if (uploadRole === 'student') { grade = document.getElementById('up-grade').value; cls = document.getElementById('up-class').value; name = document.getElementById('up-sid').value.trim(); classId = grade + cls; type = 'student'; if (!name) { alert("請輸入學號或姓名！"); return; } } else { name = document.getElementById('up-guest-name').value.trim(); type = 'guest'; if (!name) { alert("請輸入訪客暱稱！"); return; } } btn.disabled = true; btn.innerText = "上傳中..."; const colName = getCollectionName(config.mode); try { let payload = { name: name, score: session.p1.score, difficulty: config.diff, type: type, timestamp: firebase.firestore.FieldValue.serverTimestamp() }; if(type === 'student') { payload.grade = grade; payload.class = cls; payload.classId = classId; } await db.collection(colName).add(payload); document.getElementById('upload-ui').style.display = 'none'; document.getElementById('upload-success-msg').style.display = 'block'; } catch (e) { console.error("Upload Error:", e); alert("上傳失敗：" + e.message); btn.disabled = false; btn.innerText = "確認上傳"; } }
-        async function fetchLeaderboard(mode, targetId) { const list = document.getElementById(targetId); if (!db) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">資料庫未連接</li>'; return; } list.innerHTML = '<li class="lb-item" style="justify-content:center;">讀取中...</li>'; const colName = getCollectionName(mode); let q = db.collection(colName); try { if (currentLB.category === 'class') { const cid = currentLB.filterGrade + currentLB.filterClass; q = q.where('classId', '==', cid).orderBy('score', 'desc'); } else if (currentLB.category === 'grade') { q = q.where('grade', '==', currentLB.filterGrade).orderBy('score', 'desc'); } else if (currentLB.category === 'school') { q = q.where('type', '==', 'student').orderBy('score', 'desc'); } else { q = q.orderBy('score', 'desc'); } const querySnapshot = await q.limit(20).get(); list.innerHTML = ''; let rank = 1; if (querySnapshot.empty) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>'; return; } querySnapshot.forEach((doc) => { const data = doc.data(); const item = document.createElement('li'); item.className = 'lb-item'; const safeName = data.name.replace(/</g, "&lt;").replace(/>/g, "&gt;"); let rankColor = 'var(--rank-b)'; if(rank===1) rankColor = 'var(--rank-s)'; if(rank===2) rankColor = 'var(--rank-a)'; if(rank===3) rankColor = '#fff'; let detailInfo = "訪客"; if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } item.innerHTML = `<span class="lb-rank" style="color:${rankColor}">${rank++}</span><div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div><span class="lb-score">${data.score}</span>`; list.appendChild(item); }); } catch (e) { console.error("Fetch Error:", e); if(e.message.includes('index')) { list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>'; console.log("請點擊錯誤訊息中的連結來建立索引"); } else { list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>'; } } }
+        
+        function setMode(m) { 
+            config.mode = m; 
+            document.querySelectorAll('.toggle-btn[data-mode]').forEach(b => b.classList.remove('active')); 
+            document.querySelector(`.toggle-btn[data-mode="${m}"]`).classList.add('active'); 
+            
+            // Logic for locking controls
+            const rg = document.getElementById('round-group'); 
+            const ds = document.getElementById('diff-select');
+            const ss = document.getElementById('speed-select');
+            const pBtns = document.querySelectorAll('.toggle-btn[data-val]');
+            
+            // Reset all first
+            rg.classList.remove('disabled');
+            ds.parentElement.classList.remove('disabled'); 
+            ss.parentElement.classList.remove('disabled'); 
+            pBtns.forEach(b => b.parentElement.classList.remove('disabled'));
+
+            if(m === 'competition') {
+                rg.classList.add('disabled');
+                ds.parentElement.classList.add('disabled');
+                ss.parentElement.classList.add('disabled');
+                pBtns.forEach(b => b.parentElement.classList.add('disabled'));
+                setPlayers(1);
+                document.getElementById('speed-select').value = "95";
+                document.getElementById('diff-select').value = "easy";
+            } else if(m.includes('survival')) { 
+                rg.classList.add('disabled'); 
+            }
+            updateDescription(); 
+        }
+        function setPlayers(n) { 
+            if (n === 2 && config.mode === 'competition') {
+                setMode('fixed'); // Force non-comp mode if 2P clicked
+            }
+            config.players = n; 
+            document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active')); 
+            document.querySelector(`.toggle-btn[data-val="${n}"]`).classList.add('active'); 
+            updateDescription(); 
+        }
+
+        // ★★★ 單一集合查詢邏輯 (Single Collection) ★★★
+        async function submitScore() { 
+            if (!db) { alert("請先設定 Firebase！"); return; } 
+            const btn = document.getElementById('btn-submit'); 
+            let name, grade, cls, classId, type; 
+            
+            if (uploadRole === 'student') { 
+                grade = document.getElementById('up-grade').value; 
+                cls = document.getElementById('up-class').value; 
+                name = document.getElementById('up-sid').value.trim(); 
+                classId = grade + cls; 
+                type = 'student'; 
+                if (!name) { alert("請輸入學號或姓名！"); return; } 
+            } else { 
+                name = document.getElementById('up-guest-name').value.trim(); 
+                type = 'guest'; 
+                if (!name) { alert("請輸入訪客暱稱！"); return; } 
+            } 
+            
+            btn.disabled = true; 
+            btn.innerText = "上傳中..."; 
+            
+            try { 
+                let payload = { 
+                    name: name, 
+                    score: session.p1.score, 
+                    difficulty: config.diff, 
+                    type: type, 
+                    mode: config.mode, 
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp() 
+                }; 
+                
+                if(type === 'student') { 
+                    payload.grade = grade; 
+                    payload.class = cls; 
+                    payload.classId = classId; 
+                } 
+                
+                let colName = config.mode === 'competition' ? 'lb_competition' : 'leaderboard';
+                await db.collection(colName).add(payload); 
+                
+                document.getElementById('upload-ui').style.display = 'none'; 
+                document.getElementById('upload-success-msg').style.display = 'block'; 
+            } catch (e) { 
+                console.error("Upload Error:", e); 
+                alert("上傳失敗：" + e.message); 
+                btn.disabled = false; 
+                btn.innerText = "確認上傳"; 
+            } 
+        }
+
+        async function fetchLeaderboard(mode, targetId) { 
+            const list = document.getElementById(targetId); 
+            if (!db) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">資料庫未連接</li>'; return; } 
+            list.innerHTML = '<li class="lb-item" style="justify-content:center;">讀取中...</li>'; 
+            
+            let q = db.collection('leaderboard').where('mode', '==', mode);
+            
+            try { 
+                if (currentLB.category === 'class') { 
+                    const cid = currentLB.filterGrade + currentLB.filterClass; 
+                    q = q.where('classId', '==', cid).orderBy('score', 'desc'); 
+                } else if (currentLB.category === 'grade') { 
+                    q = q.where('grade', '==', currentLB.filterGrade).orderBy('score', 'desc'); 
+                } else if (currentLB.category === 'school') { 
+                    q = q.where('type', '==', 'student').orderBy('score', 'desc'); 
+                } else { 
+                    q = q.orderBy('score', 'desc'); 
+                } 
+                
+                const querySnapshot = await q.limit(50).get(); 
+                list.innerHTML = ''; 
+                
+                if (querySnapshot.empty) { 
+                    list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>'; 
+                    return; 
+                } 
+                
+                // Deduplication
+                const uniqueData = new Map();
+                querySnapshot.forEach(doc => {
+                    const d = doc.data();
+                    const key = d.type === 'student' ? (d.classId + '_' + d.name) : ('guest_' + d.name);
+                    if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) {
+                        uniqueData.set(key, d);
+                    }
+                });
+                
+                const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score);
+                let rank = 1;
+                
+                sortedList.slice(0, 20).forEach((data) => { 
+                    const safeName = data.name.replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
+                    let rankColor = 'var(--rank-b)'; 
+                    if(rank===1) rankColor = 'var(--rank-s)'; 
+                    if(rank===2) rankColor = 'var(--rank-a)'; 
+                    if(rank===3) rankColor = '#fff'; 
+                    let detailInfo = "訪客"; 
+                    if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } 
+                    
+                    const item = document.createElement('li');
+                    item.className = 'lb-item';
+                    item.innerHTML = `<span class="lb-rank" style="color:${rankColor}">${rank++}</span><div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div><span class="lb-score">${data.score}</span>`; 
+                    list.appendChild(item); 
+                }); 
+            } catch (e) { 
+                console.error("Fetch Error:", e); 
+                if(e.message.includes('index')) { 
+                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>'; 
+                    console.log("請點擊錯誤訊息中的連結來建立索引"); 
+                } else { 
+                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>'; 
+                } 
+            } 
+        }
+
+        // ★★★ 比賽龍虎榜專用邏輯 + 去重 ★★★
+        function openCompetitionRanking() {
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+            document.getElementById('competition-screen').classList.add('active');
+            fetchCompetitionWinners();
+        }
+
+        async function fetchCompetitionWinners() {
+            const container = document.getElementById('comp-grid-container');
+            if(!db) { container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1;">資料庫未連接</div>'; return; }
+            container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1;">正在讀取各級戰況...</div>';
+            
+            let html = '';
+            
+            try {
+                for (let g = 1; g <= 6; g++) {
+                    const gradeCode = g.toString();
+                    const q = db.collection('lb_competition')
+                                .where('grade', '==', gradeCode)
+                                .orderBy('score', 'desc')
+                                .limit(50);
+                    
+                    const snapshot = await q.get();
+                    
+                    let cardHtml = `<div class="comp-card"><div class="comp-grade-title">${gradeCode} 年級</div>`;
+                    
+                    if (snapshot.empty) {
+                        cardHtml += `<div style="text-align:center; color:#666; padding:10px; font-size:12px;">暫無紀錄</div>`;
+                    } else {
+                        const uniqueData = new Map();
+                        snapshot.forEach(doc => {
+                            const d = doc.data();
+                            const key = d.classId + '_' + d.name;
+                            if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) {
+                                uniqueData.set(key, d);
+                            }
+                        });
+                        
+                        const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score);
+                        let rank = 1;
+                        
+                        sortedList.slice(0, 3).forEach(data => {
+                            let badge = rank;
+                            let color = '#fff';
+                            if(rank===1) { badge='🥇'; color='var(--comp-gold)'; }
+                            if(rank===2) { badge='🥈'; color='var(--comp-silver)'; }
+                            if(rank===3) { badge='🥉'; color='var(--comp-bronze)'; }
+                            
+                            cardHtml += `
+                            <div class="comp-item">
+                                <span class="comp-rank">${badge}</span>
+                                <span class="comp-name">${data.classId} ${data.name}</span>
+                                <span class="comp-score">${data.score}</span>
+                            </div>
+                            `;
+                            rank++;
+                        });
+                    }
+                    cardHtml += `</div>`;
+                    html += cardHtml;
+                }
+                container.innerHTML = html;
+            } catch(e) {
+                console.error(e);
+                container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1; color:red;">讀取失敗，請檢查索引設定</div>';
+            }
+        }
 
         // Game Engine
         const VFX = {
@@ -470,40 +800,64 @@
                 let choice = valid[Math.floor(Math.random()*valid.length)]; choice.forEach(d => { beats.push(filled); filled += d; });
             } return beats;
         }
-        function setPlayers(n) { config.players = n; document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active')); document.querySelector(`.toggle-btn[data-val="${n}"]`).classList.add('active'); updateDescription(); }
-        function setMode(m) { config.mode = m; document.querySelectorAll('.toggle-btn[data-mode]').forEach(b => b.classList.remove('active')); document.querySelector(`.toggle-btn[data-mode="${m}"]`).classList.add('active'); const rg = document.getElementById('round-group'); if(m.includes('survival')) { rg.classList.add('disabled'); } else { rg.classList.remove('disabled'); } updateDescription(); }
-        function showMenu() { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('menu-screen').classList.add('active'); updateDescription(); }
         
         function startGame() {
             if(document.activeElement) document.activeElement.blur(); AudioEngine.init(); VFX.init();
-            config.bpm = parseInt(document.getElementById('speed-select').value); config.diff = document.getElementById('diff-select').value;
-            config.rounds = config.mode.includes('survival') ? Infinity : parseInt(document.getElementById('round-select').value);
-            // Add bump property for visual feedback
-            const initP = () => ({ score: 0, lives: 3, notes: [], stats: {p:0,g:0,m:0}, bump: 1 });
+            
+            if (config.mode === 'competition') {
+                config.bpm = 95;
+                config.rounds = Infinity;
+                config.players = 1;
+                config.diff = 'easy'; 
+            } else {
+                config.bpm = parseInt(document.getElementById('speed-select').value); 
+                config.diff = document.getElementById('diff-select').value;
+                config.rounds = config.mode.includes('survival') ? Infinity : parseInt(document.getElementById('round-select').value);
+            }
+
+            const initLives = config.mode === 'competition' ? 5 : 3;
+            const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1 });
             session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 1.0, p1: initP(), p2: initP() };
+            
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('hud-p2').style.opacity = config.players === 2 ? 1 : 0;
             updateHUD(); gameState = 'PLAYING'; timeouts.forEach(clearTimeout); timeouts = []; if(animId) cancelAnimationFrame(animId);
             schedule(); render();
         }
         function schedule() {
             if(gameState !== 'PLAYING') return;
-            if(!config.mode.includes('survival') && session.round >= config.rounds) { endGame(); return; }
+            if(!config.mode.includes('survival') && config.mode !== 'competition' && session.round >= config.rounds) { endGame(); return; }
+            
+            if(config.mode === 'competition') {
+                if(session.round < 4) config.diff = 'easy';
+                else if(session.round < 8) config.diff = 'normal';
+                else if(session.round < 12) config.diff = 'hard';
+                else config.diff = 'master';
+            }
+
             const now = session.nextTime; const BEAT = getBeatSec(); const pattern = generatePattern(); const playStart = now + (BEAT * 4);
             pattern.forEach(b => AudioEngine.play('teacher', now + b*BEAT));
             pattern.forEach((b, idx) => { const target = playStart + b*BEAT; session.p1.notes.push({ target: target, hit: false, missed: false, index: idx }); if(config.players === 2) session.p2.notes.push({ target: target, hit: false, missed: false, index: idx }); });
+            
             timeouts.push(setTimeout(() => { if(gameState!=='PLAYING') return; session.round++; updateHUD(); notify("LISTEN", "var(--p1-color)"); AudioEngine.play('metro', AudioEngine.ctx.currentTime); }, (now - AudioEngine.ctx.currentTime)*1000));
-            timeouts.push(setTimeout(() => { if(gameState!=='PLAYING') return; let col = config.mode.includes('vanishing') ? '#d946ef' : '#facc15'; if(config.mode === 'vanishing-survival') col = '#f87171'; notify("PLAY", col); AudioEngine.play('metro', AudioEngine.ctx.currentTime); }, (playStart - AudioEngine.ctx.currentTime)*1000));
+            
+            timeouts.push(setTimeout(() => { 
+                if(gameState!=='PLAYING') return; 
+                let col = config.mode.includes('vanishing') ? '#d946ef' : '#facc15'; 
+                if(config.mode === 'vanishing-survival') col = '#f87171'; 
+                if(config.mode === 'competition') col = 'var(--comp-gold)';
+                notify("PLAY", col); AudioEngine.play('metro', AudioEngine.ctx.currentTime); 
+            }, (playStart - AudioEngine.ctx.currentTime)*1000));
+            
             session.nextTime += (BEAT * 8); timeouts.push(setTimeout(schedule, (session.nextTime - AudioEngine.ctx.currentTime - 0.1)*1000));
         }
         function render() {
             if(gameState !== 'PLAYING') return;
             ctx.clearRect(0, 0, width, height); VFX.update(ctx);
             const now = AudioEngine.ctx.currentTime; const speed = getSpeed(); const beatSec = getBeatSec();
-            const isVanishing = config.mode.includes('vanishing');
+            const isVanishing = config.mode.includes('vanishing') || config.mode === 'competition';
             const y1 = config.players === 1 ? height/2 : height*0.28; const y2 = height*0.72;
             
-            // Update Bump Physics
-            if(session.p1.bump > 1) session.p1.bump = Math.max(1, 1 + (session.p1.bump - 1) * 0.8); // Smooth decay
+            if(session.p1.bump > 1) session.p1.bump = Math.max(1, 1 + (session.p1.bump - 1) * 0.8); 
             if(session.p2.bump > 1) session.p2.bump = Math.max(1, 1 + (session.p2.bump - 1) * 0.8);
 
             drawTrack(ctx, y1, 'var(--p1-color)', 'P1', session.p1.bump);
@@ -518,7 +872,6 @@
             c.shadowBlur = 25; c.shadowColor = color; c.fillStyle = "rgba(30, 41, 59, 0.8)"; c.fillRect(0, y-60, width, 120);
             c.shadowBlur = 0; c.strokeStyle = "rgba(255,255,255,0.15)"; c.lineWidth = 2;
             c.beginPath(); c.moveTo(0, y-60); c.lineTo(width, y-60); c.moveTo(0, y+60); c.lineTo(width, y+60); c.stroke();
-            // Judgment Circle with Beat Pulse
             c.beginPath(); c.arc(HIT_X, y, 45 * bump, 0, Math.PI*2);
             c.strokeStyle = "white"; c.lineWidth = 4; c.stroke();
             c.fillStyle = "rgba(255,255,255,0.05)"; c.fill();
@@ -531,12 +884,8 @@
                 const dt = n.target - now; const x = HIT_X + (dt * speed);
                 let alpha = 1;
                 if (vanish && n.index > 0) {
-                    // x from 1000 -> 180. 
-                    // ratio 1.0 = spawn, 0.0 = hit
                     let ratio = (x - HIT_X) / trackDist;
-                    if (ratio <= 0.5) alpha = 0; // Halfway point -> invisible
-                    else if (ratio < 0.75) alpha = (ratio - 0.5) / 0.25; // Fade out
-                    else alpha = 1; // Visible
+                    if (ratio <= 0.5) alpha = 0; else if (ratio < 0.75) alpha = (ratio - 0.5) / 0.25; else alpha = 1;
                     if (alpha > 1) alpha = 1; if (alpha < 0) alpha = 0;
                 }
                 if (x > -50 && x < width && !n.missed && alpha > 0.01) {
@@ -560,10 +909,7 @@
             const now = AudioEngine.ctx.currentTime; const data = pid === 1 ? session.p1 : session.p2;
             const y = config.players === 1 ? height/2 : (pid===1 ? height*0.28 : height*0.72);
             AudioEngine.play(pid === 1 ? 'p1' : 'p2', now);
-            
-            // Visual Feedback Pulse
             data.bump = 1.2; 
-
             let best = null, minDiff = Infinity;
             data.notes.forEach(n => {
                 if(!n.hit && !n.missed) { let d = Math.abs(n.target - now); if(d < minDiff) { minDiff = d; best = n; } }
@@ -576,7 +922,7 @@
             }
         }
         function handleResult(pid, rating) {
-            const data = pid === 1 ? session.p1 : session.p2; const isSurvival = config.mode.includes('survival');
+            const data = pid === 1 ? session.p1 : session.p2; const isSurvival = config.mode.includes('survival') || config.mode === 'competition';
             if(rating === 'PERFECT') { data.score += 100; data.stats.p++; }
             else if(rating === 'GOOD') { data.score += 50; data.stats.g++; }
             else { data.stats.m++; if(isSurvival) loseLife(pid); }
@@ -589,9 +935,9 @@
         }
         function updateHUD() {
             document.getElementById('p1-score').innerText = session.p1.score; document.getElementById('p2-score').innerText = session.p2.score;
-            const isSurvivalMode = config.mode.includes('survival');
+            const isSurvivalMode = config.mode.includes('survival') || config.mode === 'competition';
             if(isSurvivalMode) { document.getElementById('p1-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p1.lives)); document.getElementById('p2-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p2.lives)); } else { document.getElementById('p1-lives').innerText = ""; document.getElementById('p2-lives').innerText = ""; }
-            let rTxt = `ROUND ${session.round}`; if(!config.mode.includes('survival')) rTxt += ` / ${config.rounds}`; document.getElementById('round-info').innerText = rTxt;
+            let rTxt = `ROUND ${session.round}`; if(!config.mode.includes('survival') && config.mode !== 'competition') rTxt += ` / ${config.rounds}`; document.getElementById('round-info').innerText = rTxt;
         }
         function showFeedback(text, x, y, color) {
             const el = document.createElement('div'); el.className = 'hit-popup'; el.innerText = text;
@@ -606,10 +952,24 @@
         function endGame() {
             gameState = 'END'; document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('result-screen').classList.add('active');
             timeouts.forEach(clearTimeout);
-            const mName = {fixed:'練習', vanishing:'消失', survival:'生存', 'vanishing-survival':'消失生存'}[config.mode];
-            document.getElementById('res-mode').innerText = mName; document.getElementById('res-len').innerText = config.mode.includes('survival') ? "∞" : config.rounds + "R";
-            const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; document.getElementById('res-diff').innerText = dNames[config.diff];
-            const container = document.getElementById('result-content'); container.innerHTML = ''; container.className = config.players===1 ? 'result-flex single-layout' : 'result-flex';
+            const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'比賽'}[config.mode];
+            document.getElementById('res-mode').innerText = mName; document.getElementById('res-len').innerText = (config.mode.includes('survival') || config.mode === 'competition') ? "∞" : config.rounds + "R";
+            const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; 
+            document.getElementById('res-diff').innerText = config.mode === 'competition' ? '自動晉級' : dNames[config.diff];
+            
+            const scrollContainer = document.getElementById('result-scroll-container');
+            const container = document.getElementById('result-content'); 
+            container.innerHTML = ''; 
+            
+            // ★★★ Single Player Layout Toggle ★★★
+            if(config.players === 1) {
+                scrollContainer.classList.add('single-mode-layout');
+                container.className = 'result-flex single-layout';
+            } else {
+                scrollContainer.classList.remove('single-mode-layout');
+                container.className = 'result-flex';
+            }
+            
             container.appendChild(createResultCard(1, session.p1)); if(config.players === 2) container.appendChild(createResultCard(2, session.p2));
             const uploadUI = document.getElementById('upload-ui'); const submitBtn = document.getElementById('btn-submit');
             if(config.players === 1) { document.getElementById('leaderboard-display-result').classList.add('active'); uploadUI.style.display = 'block'; document.getElementById('upload-success-msg').style.display = 'none'; submitBtn.disabled = false; submitBtn.innerText = "確認上傳"; document.getElementById('up-sid').value = ''; document.getElementById('up-guest-name').value = ''; setUploadRole('student'); } else { document.getElementById('leaderboard-display-result').classList.remove('active'); }
@@ -623,12 +983,8 @@
             return div;
         }
         const handleTouch = (zone, e) => { e.preventDefault(); if(config.players === 1) { handleInput(1); } else { handleInput(zone); } };
-        
-        // ★★★ 修正：P1 按鍵支援 Code 與 Key 以防輸入法干擾 ★★★
         window.addEventListener('keydown', e => {
-            const k = e.key.toLowerCase();
-            const code = e.code;
-            // P1: Space or 'a' key (by code "KeyA" or char "a")
+            const k = e.key.toLowerCase(); const code = e.code;
             if(code === 'Space' || code === 'KeyA' || k === 'a') { e.preventDefault(); if(!e.repeat) handleInput(1); }
             if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(code)) { e.preventDefault(); if(!e.repeat) handleInput(2); }
         });
