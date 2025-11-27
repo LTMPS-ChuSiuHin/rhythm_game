@@ -80,7 +80,17 @@
         }
         .p1-hud { border-left: 4px solid var(--p1-color); color: var(--p1-color); }
         .p2-hud { border-left: 4px solid var(--p2-color); color: var(--p2-color); opacity: 0; }
-        .lives { letter-spacing: 2px; font-size: 22px; min-width: 100px; text-align: right; }
+        
+        /* Hearts FX */
+        .lives { letter-spacing: 2px; font-size: 22px; min-width: 100px; text-align: right; display: flex; justify-content: flex-end; gap: 5px; }
+        .heart { color: #f43f5e; text-shadow: 0 0 5px rgba(244, 63, 94, 0.6); transition: transform 0.2s; display: inline-block; }
+        @keyframes heartBreakAnim {
+            0% { transform: scale(1); opacity: 1; color: #f43f5e; }
+            50% { transform: scale(1.5); opacity: 0.8; color: #fff; text-shadow: 0 0 20px white; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .heart-breaking { animation: heartBreakAnim 0.4s ease-out forwards; }
+
         .hud-center {
             position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
             color: var(--text-secondary); font-size: 14px; font-weight: 700; letter-spacing: 2px;
@@ -93,72 +103,88 @@
             filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5)); transition: all 0.2s ease-out; z-index: 50;
         }
 
+        /* ★★★ Combo Text FX ★★★ */
+        .combo-popup {
+            position: absolute; font-weight: 900; font-size: 48px; 
+            color: #facc15; /* Gold */
+            text-shadow: 0 0 10px #b45309, 0 0 20px #facc15;
+            transform: translate(-50%, -50%); pointer-events: none;
+            opacity: 0; z-index: 40;
+            font-family: 'Segoe UI', sans-serif; font-style: italic;
+            animation: comboPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes comboPop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -60%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -80%) scale(1.0); }
+        }
+
+        .hit-popup { position: absolute; font-weight: 900; font-size: 48px; transform: translate(-50%, -50%); pointer-events: none; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; text-shadow: 0 0 20px currentColor; z-index: 25; }
+        @keyframes popUp { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -120%) scale(1); } }
+
         /* Screens - Main Layout */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(2, 6, 23, 0.96); backdrop-filter: blur(40px);
             z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
-            /* 緊湊佈局 */
             display: flex; flex-direction: column; align-items: center; 
             box-sizing: border-box; padding: 20px 30px;
         }
         .screen.active { opacity: 1; pointer-events: auto; }
         
-        /* Header Compact - Spacing Increased */
+        /* Header */
         .screen-header { flex-shrink: 0; text-align: center; margin-bottom: 15px; width: 100%; }
         h1 {
-            font-size: 42px; margin: 0 0 10px 0; font-weight: 900; letter-spacing: 3px; color: white; text-transform: uppercase;
+            font-size: 46px; margin: 0 0 5px 0; font-weight: 900; letter-spacing: 3px; color: white; text-transform: uppercase;
             text-shadow: 0 0 20px var(--p1-color), 0 0 40px rgba(34, 211, 238, 0.4); animation: titleFloat 3s ease-in-out infinite;
         }
         @keyframes titleFloat { 0%, 100% { transform: translateY(0); text-shadow: 0 0 20px var(--p1-color); } 50% { transform: translateY(-5px); text-shadow: 0 0 30px var(--p1-color), 0 0 10px white; } }
         .subtitle { 
-            color: var(--text-secondary); font-size: 14px; margin-top: 0; margin-bottom: 15px;
+            color: var(--text-secondary); font-size: 13px; margin-top: 0; margin-bottom: 15px;
             letter-spacing: 2px; opacity: 0.9; display: block;
         }
         
-        /* Combined Banner */
         .season-banner {
             background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);
-            border-radius: 50px; padding: 8px 25px; display: inline-flex; gap: 15px; align-items: center;
+            border-radius: 50px; padding: 6px 20px; display: inline-flex; gap: 10px; align-items: center;
             margin-bottom: 5px;
         }
-        .season-text { color: #facc15; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+        .season-text { color: #facc15; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
         .season-sep { color: rgba(255,255,255,0.2); }
-        .reward-text { color: #4ade80; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
+        .reward-text { color: #4ade80; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
 
-        /* Content Area - No Scroll */
         .main-content-area {
             flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
             overflow: hidden; 
         }
 
-        /* Control Panel Compact */
+        /* Control Panel */
         .control-panel {
             display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 650px;
             background: var(--glass-panel); backdrop-filter: var(--glass-blur);
             border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
-            padding: 15px 25px; border-radius: 20px; margin: 5px 0; flex-shrink: 0; 
+            padding: 20px 30px; border-radius: 20px; margin: 5px 0; flex-shrink: 0; 
         }
         .control-group.full { grid-column: span 2; }
-        label { font-size: 10px; color: var(--p1-color); margin-bottom: 3px; font-weight: 800; text-transform: uppercase; display: block; letter-spacing: 1px; }
+        
+        label { font-size: 12px; color: var(--p1-color); margin-bottom: 4px; font-weight: 800; text-transform: uppercase; display: block; letter-spacing: 1px; }
         select, .btn, input {
-            padding: 8px; border-radius: 8px; background: rgba(0, 0, 0, 0.3);
+            padding: 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
-            color: white; font-family: inherit; font-size: 13px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
+            color: white; font-family: inherit; font-size: 14px; 
+            cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
         }
         select:hover, .btn:hover, input:focus { border-color: var(--p1-color); background: rgba(34, 211, 238, 0.1); box-shadow: 0 0 15px rgba(34,211,238,0.1); }
         .control-group.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
 
-        /* Description Box Compact */
         .mode-description {
             grid-column: span 2; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border);
-            border-radius: 10px; padding: 8px; font-size: 12px; color: #e2e8f0; text-align: center;
+            border-radius: 10px; padding: 10px; font-size: 13px; color: #e2e8f0; text-align: center;
             line-height: 1.4; margin-top: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
         
-        /* Toggle Button */
         .toggle-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); background: rgba(0,0,0,0.5); border-radius: 8px; padding: 3px; gap: 3px; border: 1px solid rgba(255,255,255,0.05); }
-        .toggle-btn { padding: 6px 2px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 6px; font-weight: 600; transition: 0.2s; font-size: 12px; white-space: nowrap; }
+        .toggle-btn { padding: 6px 2px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 6px; font-weight: 600; transition: 0.2s; font-size: 13px; white-space: nowrap; }
         .toggle-btn:hover { color: white; background: rgba(255,255,255,0.05); }
         .toggle-btn.active { background: rgba(255,255,255,0.15); color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); text-shadow: 0 0 8px currentColor; border: 1px solid rgba(255,255,255,0.1); }
         .toggle-btn[data-mode="vanishing"].active { color: #d946ef; border-color: #d946ef; background: rgba(217, 70, 239, 0.15); }
@@ -167,22 +193,18 @@
         .toggle-btn[data-mode="competition"].active { color: var(--comp-gold); border-color: var(--comp-gold); background: rgba(251, 191, 36, 0.15); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
         .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.15); }
 
-        /* Footer & Horizontal Buttons */
+        /* Footer */
         .screen-footer { flex-shrink: 0; width: 100%; margin-top: 20px; }
-        .btn-group { 
-            display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 700px; margin: 0 auto; 
-            flex-wrap: nowrap;
-        }
+        .btn-group { display: flex; gap: 15px; justify-content: center; width: 100%; max-width: 800px; margin: 0 auto; flex-wrap: nowrap; }
         .btn-start {
-            padding: 12px 5px; font-size: 18px; font-weight: 800; flex: 1.2; 
+            padding: 12px 10px; font-size: 20px; font-weight: 800; flex: 1.2; 
             background: linear-gradient(90deg, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8));
             border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; 
-            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 1px; white-space: nowrap;
-            min-width: 0;
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 1px; white-space: nowrap; min-width: 0;
         }
         .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(34, 211, 238, 0.5); border-color: white; }
         .btn-secondary {
-            padding: 12px 5px; flex: 1; min-width: 0; background: rgba(255,255,255,0.05); color: var(--text-secondary); 
+            padding: 12px 10px; flex: 1; min-width: 0; background: rgba(255,255,255,0.05); color: var(--text-secondary); 
             border: 1px solid var(--glass-border); border-radius: 12px; white-space: nowrap; font-size: 14px; text-align: center;
         }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
@@ -200,13 +222,13 @@
         }
         .single-mode-layout .result-flex { flex: 0 0 auto; width: 320px; margin: 0; padding: 0; max-width: none; }
         .single-mode-layout .res-card { padding: 15px; height: 100%; box-sizing: border-box; justify-content: center; }
-        .single-mode-layout .main-circle { width: 120px; height: 120px; margin-bottom: 15px; }
+        .single-mode-layout .main-circle { width: 120px; height: 120px; margin-bottom: 20px; } /* ★★★ 增加圓圈下間距 ★★★ */
         .single-mode-layout .score-percent { font-size: 32px; }
         .single-mode-layout .circle-rank { font-size: 24px; bottom: -15px; }
         .single-mode-layout #leaderboard-display-result { flex: 1; margin: 0; width: auto; max-width: 450px; height: 100%; display: flex; flex-direction: column; }
         .single-mode-layout #upload-ui { flex: 1; display: flex; flex-direction: column; justify-content: center; }
         
-        .input-instruction { text-align: center; color: var(--text-secondary); font-size: 12px; margin-bottom: 5px; font-weight: bold; }
+        .input-instruction { text-align: center; color: var(--text-secondary); font-size: 14px; margin-bottom: 5px; font-weight: bold; }
 
         .summary-bar { display: flex; gap: 15px; margin-bottom: 10px; background: rgba(0,0,0,0.3); padding: 8px 20px; border-radius: 50px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); flex-wrap: wrap; justify-content: center; flex-shrink: 0; }
         .sum-item { text-align: center; }
@@ -217,17 +239,14 @@
         .res-card { flex: 1; background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); text-align: center; display: flex; flex-direction: column; align-items: center; }
         .res-card.p1 { border-top: 4px solid var(--p1-color); } .res-card.p2 { border-top: 4px solid var(--p2-color); }
         .res-score { font-size: 32px; font-weight: 900; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
-        .res-rank { font-size: 60px; font-weight: 900; line-height: 1; margin: 5px 0 15px 0; text-shadow: 0 0 30px currentColor; }
+        
+        /* ★★★ Rank spacing increased ★★★ */
+        .res-rank { font-size: 60px; font-weight: 900; line-height: 1; margin: 15px 0 25px 0; text-shadow: 0 0 30px currentColor; }
         
         .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .stat-row { background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); }
         .stat-label { font-size: 14px; font-weight: 700; color: var(--text-secondary); }
         .stat-num { font-weight: 800; font-size: 20px; }
-
-        .single-layout .res-card { background: none; border: none; box-shadow: none; max-width: 300px; margin: 0 auto; backdrop-filter: none; }
-        .single-layout .main-circle { width: 140px; height: 140px; border-radius: 50%; border: 8px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 30px; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent); position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
-        .score-percent { font-size: 40px; font-weight: 900; color: white; line-height: 1; margin-bottom: 5px; text-shadow: 0 0 20px white; }
-        .circle-rank { position: absolute; bottom: -20px; background: var(--bg-dark); color: white; padding: 4px 25px; border-radius: 40px; font-weight: 900; font-size: 30px; border: 3px solid currentColor; box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px currentColor; z-index: 2; }
 
         .leaderboard-section { width: 100%; max-width: 550px; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px; border: 1px solid var(--glass-border); display: none; backdrop-filter: blur(10px); margin: 0 auto; }
         .leaderboard-section.active { display: block; }
@@ -271,9 +290,6 @@
         .comp-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 5px; color: #ddd; }
         .comp-score { color: var(--p1-color); font-weight: bold; font-family: monospace; }
 
-        .hit-popup { position: absolute; font-weight: 900; font-size: 48px; transform: translate(-50%, -50%); pointer-events: none; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; text-shadow: 0 0 20px currentColor; z-index: 25; }
-        @keyframes popUp { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -120%) scale(1); } }
-
         @media (max-height: 600px) {
             h1 { font-size: 32px; }
             .control-panel { padding: 15px; gap: 8px; margin: 5px 0; }
@@ -306,13 +322,13 @@
         <div id="ui-layer">
             <div class="hud-bar p1-hud" id="hud-p1">
                 <div>P1 SCORE <span id="p1-score" style="margin-left:10px; color:white;">0</span></div>
-                <div id="p1-lives" class="lives">  ❤❤❤  </div>
+                <div id="p1-lives" class="lives"></div> 
             </div>
             <div class="hud-center" id="round-info">ROUND 1</div>
             <div id="center-notify"></div>
             <div class="hud-bar p2-hud" id="hud-p2" style="margin-top: auto;">
                 <div>P2 SCORE <span id="p2-score" style="margin-left:10px; color:white;">0</span></div>
-                <div id="p2-lives" class="lives">  ❤❤❤  </div>
+                <div id="p2-lives" class="lives"></div>
             </div>
         </div>
 
@@ -449,16 +465,16 @@
                             <button class="btn role-btn active" id="role-student" onclick="setUploadRole('student')">我是學生</button>
                             <button class="btn role-btn" id="role-guest" onclick="setUploadRole('guest')">訪客遊玩</button>
                         </div>
-                        <div class="input-instruction">請選擇年級及班別</div> <div id="input-student-row" class="upload-form-row">
+                        <div class="input-instruction">請選擇年級及班別</div>
+                        <div id="input-student-row" class="upload-form-row">
                             <select id="up-grade" class="upload-input" style="flex:0.5;">
                                 <option value="" disabled selected>年級</option>
-                                <option value="1">一年級</option><option value="2">二年級</option><option value="3">三年級</option>
-                                <option value="4">四年級</option><option value="5">五年級</option><option value="6">六年級</option>
+                                <option value="1">一年級</option><option value="2">二年級</option>
+                                <option value="3">三年級</option><option value="4">四年級</option><option value="5">五年級</option><option value="6">六年級</option>
                             </select>
                             <select id="up-class" class="upload-input" style="flex:0.5;">
                                 <option value="" disabled selected>班別</option>
-                                <option value="A">A班</option><option value="B">B班</option><option value="C">C班</option>
-                                <option value="D">D班</option><option value="E">E班</option>
+                                <option value="A">A班</option><option value="B">B班</option><option value="C">C班</option><option value="D">D班</option><option value="E">E班</option>
                             </select>
                             <input type="number" id="up-sid" class="upload-input" style="flex:1.5;" placeholder="學號 (1-40)" min="1" max="40">
                         </div>
@@ -541,13 +557,11 @@
             document.querySelectorAll('.toggle-btn[data-mode]').forEach(b => b.classList.remove('active')); 
             document.querySelector(`.toggle-btn[data-mode="${m}"]`).classList.add('active'); 
             
-            // Logic for locking controls
             const rg = document.getElementById('round-group'); 
             const ds = document.getElementById('diff-select');
             const ss = document.getElementById('speed-select');
             const pBtns = document.querySelectorAll('.toggle-btn[data-val]');
             
-            // Reset all first
             rg.classList.remove('disabled');
             ds.parentElement.classList.remove('disabled'); 
             ss.parentElement.classList.remove('disabled'); 
@@ -568,7 +582,7 @@
         }
         function setPlayers(n) { 
             if (n === 2 && config.mode === 'competition') {
-                setMode('fixed'); // Force non-comp mode if 2P clicked
+                setMode('fixed'); 
             }
             config.players = n; 
             document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active')); 
@@ -576,15 +590,13 @@
             updateDescription(); 
         }
 
-        // ★★★ Score Multiplier Logic ★★★
         function getScoreMultiplier() {
-            if (config.mode === 'competition') return 1.0; // Fixed speed in competition
+            if (config.mode === 'competition') return 1.0;
             if (config.bpm === 70) return 0.8;
             if (config.bpm === 120) return 1.2;
             return 1.0;
         }
 
-        // ★★★ Helper for Difficulty Text ★★★
         function getDiffText(d) {
             const map = { 'easy': '簡單', 'normal': '普通', 'hard': '困難', 'master': '達人' };
             return map[d] || d;
@@ -604,23 +616,13 @@
             if (uploadRole === 'student') { 
                 grade = document.getElementById('up-grade').value; 
                 cls = document.getElementById('up-class').value; 
-                let rawSid = document.getElementById('up-sid').value.trim(); // Get input value
-
-                // ★★★ Validation Logic ★★★
+                let rawSid = document.getElementById('up-sid').value.trim(); 
                 if (!grade || grade === "") { alert("請選擇年級！"); return; }
                 if (!cls || cls === "") { alert("請選擇班別！"); return; }
                 if (!rawSid) { alert("請輸入學號！"); return; }
-                
-                // Check number range
                 let sidNum = parseInt(rawSid, 10);
-                if (isNaN(sidNum) || sidNum < 1 || sidNum > 40) {
-                    alert("學號必須為 1 到 40 之間的數字！");
-                    return;
-                }
-
-                // ★★★ Formatting Logic (e.g. 6 -> "06") ★★★
+                if (isNaN(sidNum) || sidNum < 1 || sidNum > 40) { alert("學號必須為 1 到 40 之間的數字！"); return; }
                 name = sidNum.toString().padStart(2, '0');
-                
                 classId = grade + cls; 
                 type = 'student'; 
             } else { 
@@ -637,7 +639,7 @@
                     name: name, 
                     score: session.p1.score, 
                     difficulty: config.diff, 
-                    bpm: config.bpm, // Save BPM
+                    bpm: config.bpm, 
                     type: type, 
                     mode: config.mode, 
                     timestamp: firebase.firestore.FieldValue.serverTimestamp() 
@@ -684,19 +686,13 @@
                 const querySnapshot = await q.limit(50).get(); 
                 list.innerHTML = ''; 
                 
-                if (querySnapshot.empty) { 
-                    list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>'; 
-                    return; 
-                } 
+                if (querySnapshot.empty) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>'; return; } 
                 
-                // Deduplication
                 const uniqueData = new Map();
                 querySnapshot.forEach(doc => {
                     const d = doc.data();
                     const key = d.type === 'student' ? (d.classId + '_' + d.name) : ('guest_' + d.name);
-                    if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) {
-                        uniqueData.set(key, d);
-                    }
+                    if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) { uniqueData.set(key, d); }
                 });
                 
                 const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score);
@@ -710,27 +706,15 @@
                     if(rank===3) rankColor = '#fff'; 
                     let detailInfo = "訪客"; 
                     if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } 
-                    
                     const metaStr = `${getSpeedText(data.bpm || 95)} | ${getDiffText(data.difficulty)}`;
-
                     const item = document.createElement('li');
                     item.className = 'lb-item';
-                    item.innerHTML = `
-                    <span class="lb-rank" style="color:${rankColor}">${rank++}</span>
-                    <div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div>
-                    <div class="lb-stats">
-                        <span class="lb-meta">${metaStr}</span>
-                        <span class="lb-score">${data.score}</span>
-                    </div>`; 
+                    item.innerHTML = `<span class="lb-rank" style="color:${rankColor}">${rank++}</span><div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div><div class="lb-stats"><span class="lb-meta">${metaStr}</span><span class="lb-score">${data.score}</span></div>`; 
                     list.appendChild(item); 
                 }); 
             } catch (e) { 
                 console.error("Fetch Error:", e); 
-                if(e.message.includes('index')) { 
-                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>'; 
-                } else { 
-                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>'; 
-                } 
+                if(e.message.includes('index')) { list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>'; } else { list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>'; } 
             } 
         }
 
@@ -744,21 +728,13 @@
             const container = document.getElementById('comp-grid-container');
             if(!db) { container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1;">資料庫未連接</div>'; return; }
             container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1;">正在讀取各級戰況...</div>';
-            
             let html = '';
-            
             try {
                 for (let g = 1; g <= 6; g++) {
                     const gradeCode = g.toString();
-                    const q = db.collection('lb_competition')
-                                .where('grade', '==', gradeCode)
-                                .orderBy('score', 'desc')
-                                .limit(50);
-                    
+                    const q = db.collection('lb_competition').where('grade', '==', gradeCode).orderBy('score', 'desc').limit(50);
                     const snapshot = await q.get();
-                    
                     let cardHtml = `<div class="comp-card"><div class="comp-grade-title">${gradeCode} 年級</div>`;
-                    
                     if (snapshot.empty) {
                         cardHtml += `<div style="text-align:center; color:#666; padding:10px; font-size:12px;">暫無紀錄</div>`;
                     } else {
@@ -766,14 +742,10 @@
                         snapshot.forEach(doc => {
                             const d = doc.data();
                             const key = d.classId + '_' + d.name;
-                            if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) {
-                                uniqueData.set(key, d);
-                            }
+                            if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) { uniqueData.set(key, d); }
                         });
-                        
                         const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score);
                         let rank = 1;
-                        
                         sortedList.slice(0, 5).forEach(data => {
                             let badge = rank;
                             let color = '#fff';
@@ -781,16 +753,7 @@
                             else if(rank===2) { badge='🥈'; color='var(--comp-silver)'; }
                             else if(rank===3) { badge='🥉'; color='var(--comp-bronze)'; }
                             else { badge = rank + '.'; color='#94a3b8'; }
-                            
-                            cardHtml += `
-                            <div class="comp-item">
-                                <span class="comp-rank" style="color:${color}">${badge}</span>
-                                <span class="comp-name" style="color:${color}">${data.classId} ${data.name}</span>
-                                <div style="text-align:right;">
-                                    <div class="comp-score">${data.score}</div>
-                                </div>
-                            </div>
-                            `;
+                            cardHtml += `<div class="comp-item"><span class="comp-rank" style="color:${color}">${badge}</span><span class="comp-name" style="color:${color}">${data.classId} ${data.name}</span><div style="text-align:right;"><div class="comp-score">${data.score}</div></div></div>`;
                             rank++;
                         });
                     }
@@ -798,13 +761,9 @@
                     html += cardHtml;
                 }
                 container.innerHTML = html;
-            } catch(e) {
-                console.error(e);
-                container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1; color:red;">讀取失敗，請檢查索引設定</div>';
-            }
+            } catch(e) { console.error(e); container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1; color:red;">讀取失敗，請檢查索引設定</div>'; }
         }
 
-        // Game Engine
         const VFX = {
             particles: [],
             init() { this.particles = []; for(let i=0; i<100; i++) { this.particles.push({ x: Math.random() * 1100, y: Math.random() * 680, size: Math.random() * 2 + 0.5, speed: Math.random() * 4 + 1, alpha: Math.random() * 0.6 + 0.1, color: Math.random() > 0.5 ? '#22d3ee' : '#f472b6' }); } },
@@ -857,7 +816,8 @@
             }
 
             const initLives = config.mode === 'competition' ? 5 : 3;
-            const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1 });
+            // ★★★ Combo Init ★★★
+            const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1, combo: 0, maxCombo: 0 });
             session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 1.0, p1: initP(), p2: initP() };
             
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('hud-p2').style.opacity = config.players === 2 ? 1 : 0;
@@ -904,6 +864,19 @@
             drawTrack(ctx, y1, 'var(--p1-color)', 'P1', session.p1.bump);
             drawNotes(ctx, session.p1.notes, y1, '#22d3ee', now, speed, beatSec, isVanishing, 1);
             if(config.players === 2) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+                ctx.lineWidth = 4;
+                ctx.setLineDash([15, 15]);
+                ctx.moveTo(0, height / 2);
+                ctx.lineTo(width, height / 2);
+                ctx.stroke();
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "rgba(255, 255, 255, 0.5)";
+                ctx.stroke();
+                ctx.restore();
+
                 drawTrack(ctx, y2, 'var(--p2-color)', 'P2', session.p2.bump);
                 drawNotes(ctx, session.p2.notes, y2, '#f472b6', now, speed, beatSec, isVanishing, 2);
             }
@@ -941,7 +914,11 @@
                     c.fillStyle = "rgba(255,255,255,0.5)"; c.beginPath(); c.ellipse(x-12, y-12, 10, 15, Math.PI/4, 0, Math.PI*2); c.fill();
                     c.restore();
                 }
-                if(dt < -WINDOWS.MISS && !n.missed) { n.missed = true; handleResult(pid, 'MISS'); }
+                if(dt < -WINDOWS.MISS && !n.missed) { 
+                    n.missed = true; 
+                    handleResult(pid, 'MISS'); 
+                    showFeedback('MISS', HIT_X, y, 'var(--rank-d)'); 
+                }
             });
         }
         function handleInput(pid) {
@@ -965,25 +942,93 @@
         function handleResult(pid, rating) {
             const data = pid === 1 ? session.p1 : session.p2; const isSurvival = config.mode.includes('survival') || config.mode === 'competition';
             
-            // ★★★ 應用分數加成 ★★★
             let multiplier = getScoreMultiplier();
 
-            if(rating === 'PERFECT') { data.score += Math.round(100 * multiplier); data.stats.p++; }
-            else if(rating === 'GOOD') { data.score += Math.round(50 * multiplier); data.stats.g++; }
-            else { data.stats.m++; if(isSurvival) loseLife(pid); }
+            if(rating === 'PERFECT' || rating === 'GOOD') { 
+                // ★★★ Combo Logic ★★★
+                data.combo++;
+                if(data.combo > data.maxCombo) data.maxCombo = data.combo;
+                
+                // ★★★ Combo Effect every 10 ★★★
+                if(data.combo >= 10 && data.combo % 10 === 0) {
+                    const y = config.players === 1 ? height/2 : (pid===1 ? height*0.28 : height*0.72);
+                    showCombo(data.combo, HIT_X, y - 50); // Show slightly above track
+                }
+
+                if(rating === 'PERFECT') { data.score += Math.round(100 * multiplier); data.stats.p++; }
+                else { data.score += Math.round(50 * multiplier); data.stats.g++; }
+            }
+            else { 
+                // MISS
+                data.stats.m++; 
+                data.combo = 0; // Reset combo
+                if(isSurvival) loseLife(pid); 
+            }
             updateHUD();
         }
+        
+        // ★★★ Combo Effect Function ★★★
+        function showCombo(count, x, y) {
+            const el = document.createElement('div'); 
+            el.className = 'combo-popup'; 
+            el.innerText = count + " COMBO!";
+            el.style.left = x + 'px'; 
+            el.style.top = y + 'px'; 
+            document.getElementById('game-wrapper').appendChild(el); 
+            setTimeout(()=>el.remove(), 600);
+        }
+
         function loseLife(pid) {
-            const data = pid === 1 ? session.p1 : session.p2; data.lives--;
-            const w = document.getElementById('game-wrapper'); w.style.transform = `translateX(${Math.random()*8-4}px)`; setTimeout(()=>w.style.transform='none', 50);
-            if(data.lives <= 0) endGame();
+            const data = pid === 1 ? session.p1 : session.p2; 
+            
+            // ★★★ Fix for Hearts: Animate specific DOM element ★★★
+            const hudId = pid === 1 ? 'p1-lives' : 'p2-lives';
+            const container = document.getElementById(hudId);
+            const hearts = container.querySelectorAll('.heart');
+            
+            if (hearts.length >= data.lives) {
+                const targetHeart = hearts[data.lives - 1];
+                if (targetHeart) {
+                    targetHeart.classList.add('heart-breaking');
+                }
+            }
+
+            data.lives--;
+            
+            // Wait for animation before ending or updating
+            setTimeout(() => {
+                if(data.lives <= 0) endGame();
+                else updateHUD(); 
+            }, 300);
         }
         function updateHUD() {
-            document.getElementById('p1-score').innerText = session.p1.score; document.getElementById('p2-score').innerText = session.p2.score;
+            document.getElementById('p1-score').innerText = session.p1.score; 
+            document.getElementById('p2-score').innerText = session.p2.score;
+            
             const isSurvivalMode = config.mode.includes('survival') || config.mode === 'competition';
-            if(isSurvivalMode) { document.getElementById('p1-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p1.lives)); document.getElementById('p2-lives').innerText = "  ❤  ".repeat(Math.max(0, session.p2.lives)); } else { document.getElementById('p1-lives').innerText = ""; document.getElementById('p2-lives').innerText = ""; }
-            let rTxt = `ROUND ${session.round}`; if(!config.mode.includes('survival') && config.mode !== 'competition') rTxt += ` / ${config.rounds}`; document.getElementById('round-info').innerText = rTxt;
+            
+            if(isSurvivalMode) {
+                renderHearts('p1-lives', session.p1.lives);
+                renderHearts('p2-lives', session.p2.lives);
+            } else {
+                document.getElementById('p1-lives').innerHTML = "";
+                document.getElementById('p2-lives').innerHTML = "";
+            }
+            
+            let rTxt = `ROUND ${session.round}`; 
+            if(!config.mode.includes('survival') && config.mode !== 'competition') rTxt += ` / ${config.rounds}`; 
+            document.getElementById('round-info').innerText = rTxt;
         }
+
+        function renderHearts(elementId, count) {
+            const container = document.getElementById(elementId);
+            let html = '';
+            for(let i=0; i<Math.max(0, count); i++) {
+                html += '<span class="heart">❤</span>';
+            }
+            container.innerHTML = html;
+        }
+
         function showFeedback(text, x, y, color) {
             const el = document.createElement('div'); el.className = 'hit-popup'; el.innerText = text;
             el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color;
@@ -1022,8 +1067,8 @@
             const total = data.stats.p + data.stats.g + data.stats.m; const acc = total===0 ? 0 : Math.round(((data.stats.p + data.stats.g)/total)*100);
             let rank='D', rCol='var(--rank-d)'; if(acc===100){rank='S';rCol='var(--rank-s)'} else if(acc>=90){rank='A';rCol='var(--rank-a)'} else if(acc>=76){rank='B';rCol='var(--rank-b)'} else if(acc>=60){rank='C';rCol='var(--rank-c)'}
             const div = document.createElement('div'); div.className = `res-card p${pid}`;
-            if(config.players === 1) { div.innerHTML = `<div class="main-circle" style="border-color:${rCol}"><div class="score-percent">${acc}%</div><div class="score-label">ACCURACY</div><div class="circle-rank" style="color:${rCol}">${rank}</div></div><div class="res-score">${data.score}</div><div class="stats-table"><div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num" style="color:var(--rank-s)">${data.stats.p}</span></div><div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num" style="color:var(--rank-a)">${data.stats.g}</span></div><div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num" style="color:var(--rank-d)">${data.stats.m}</span></div></div>`; }
-            else { div.innerHTML = `<h2 style="color:var(--p${pid}-color)">PLAYER ${pid}</h2><div class="res-rank" style="color:${rCol}">${rank}</div><div class="res-score">${data.score}</div><div class="stats-table"><div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num">${data.stats.p}</span></div><div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num">${data.stats.g}</span></div><div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num">${data.stats.m}</span></div><div class="stat-row" style="background:var(--glass-border)"><span class="stat-label" style="color:white">ACC</span><span class="stat-num">${acc}%</span></div></div>`; }
+            if(config.players === 1) { div.innerHTML = `<div class="main-circle" style="border-color:${rCol}"><div class="score-percent">${acc}%</div><div class="score-label">ACCURACY</div><div class="circle-rank" style="color:${rCol}">${rank}</div></div><div class="res-score">${data.score}</div><div class="stats-table"><div class="stat-row"><span class="stat-label">MAX COMBO</span><span class="stat-num" style="color:#facc15">${data.maxCombo}</span></div><div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num" style="color:var(--rank-s)">${data.stats.p}</span></div><div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num" style="color:var(--rank-a)">${data.stats.g}</span></div><div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num" style="color:var(--rank-d)">${data.stats.m}</span></div></div>`; }
+            else { div.innerHTML = `<h2 style="color:var(--p${pid}-color)">PLAYER ${pid}</h2><div class="res-rank" style="color:${rCol}">${rank}</div><div class="res-score">${data.score}</div><div class="stats-table"><div class="stat-row"><span class="stat-label">MAX COMBO</span><span class="stat-num">${data.maxCombo}</span></div><div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num">${data.stats.p}</span></div><div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num">${data.stats.g}</span></div><div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num">${data.stats.m}</span></div><div class="stat-row" style="background:var(--glass-border)"><span class="stat-label" style="color:white">ACC</span><span class="stat-num">${acc}%</span></div></div>`; }
             return div;
         }
         const handleTouch = (zone, e) => { e.preventDefault(); if(config.players === 1) { handleInput(1); } else { handleInput(zone); } };
