@@ -35,7 +35,11 @@
             margin: 0; background-color: var(--bg-dark); color: var(--text-primary);
             font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden; user-select: none; touch-action: none; position: relative;
+            height: 100vh; overflow: hidden; 
+            /* ★★★ 禁止選取與預設觸控行為，防止縮放 ★★★ */
+            user-select: none; -webkit-user-select: none;
+            touch-action: none; -webkit-touch-callout: none;
+            position: relative;
         }
 
         /* Background */
@@ -64,7 +68,7 @@
             overflow: hidden; z-index: 10; backdrop-filter: blur(5px);
         }
         canvas { display: block; width: 100%; height: 100%; }
-        .touch-layer { position: absolute; left: 0; width: 100%; height: 50%; z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .touch-layer { position: absolute; left: 0; width: 100%; height: 50%; z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: none; }
         #touch-p1 { top: 0; } #touch-p2 { top: 50%; }
         
         /* UI Layer */
@@ -103,7 +107,7 @@
             filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5)); transition: all 0.2s ease-out; z-index: 50;
         }
 
-        /* ★★★ Combo Text FX ★★★ */
+        /* Combo Text FX */
         .combo-popup {
             position: absolute; font-weight: 900; font-size: 48px; 
             color: #facc15; /* Gold */
@@ -132,7 +136,7 @@
         }
         .screen.active { opacity: 1; pointer-events: auto; }
         
-        /* Header */
+        /* Header Compact */
         .screen-header { flex-shrink: 0; text-align: center; margin-bottom: 15px; width: 100%; }
         h1 {
             font-size: 46px; margin: 0 0 5px 0; font-weight: 900; letter-spacing: 3px; color: white; text-transform: uppercase;
@@ -144,6 +148,7 @@
             letter-spacing: 2px; opacity: 0.9; display: block;
         }
         
+        /* Combined Banner */
         .season-banner {
             background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);
             border-radius: 50px; padding: 6px 20px; display: inline-flex; gap: 10px; align-items: center;
@@ -158,7 +163,7 @@
             overflow: hidden; 
         }
 
-        /* Control Panel */
+        /* Control Panel Compact */
         .control-panel {
             display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 650px;
             background: var(--glass-panel); backdrop-filter: var(--glass-blur);
@@ -177,12 +182,14 @@
         select:hover, .btn:hover, input:focus { border-color: var(--p1-color); background: rgba(34, 211, 238, 0.1); box-shadow: 0 0 15px rgba(34,211,238,0.1); }
         .control-group.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
 
+        /* Description Box Compact */
         .mode-description {
             grid-column: span 2; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border);
-            border-radius: 10px; padding: 10px; font-size: 13px; color: #e2e8f0; text-align: center;
+            border-radius: 10px; padding: 8px; font-size: 12px; color: #e2e8f0; text-align: center;
             line-height: 1.4; margin-top: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
         
+        /* Toggle Button */
         .toggle-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); background: rgba(0,0,0,0.5); border-radius: 8px; padding: 3px; gap: 3px; border: 1px solid rgba(255,255,255,0.05); }
         .toggle-btn { padding: 6px 2px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 6px; font-weight: 600; transition: 0.2s; font-size: 13px; white-space: nowrap; }
         .toggle-btn:hover { color: white; background: rgba(255,255,255,0.05); }
@@ -193,19 +200,23 @@
         .toggle-btn[data-mode="competition"].active { color: var(--comp-gold); border-color: var(--comp-gold); background: rgba(251, 191, 36, 0.15); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
         .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.15); }
 
-        /* Footer */
+        /* Footer & Horizontal Buttons */
         .screen-footer { flex-shrink: 0; width: 100%; margin-top: 20px; }
-        .btn-group { display: flex; gap: 15px; justify-content: center; width: 100%; max-width: 800px; margin: 0 auto; flex-wrap: nowrap; }
+        .btn-group { 
+            display: flex; gap: 15px; justify-content: center; width: 100%; max-width: 800px; margin: 0 auto; 
+            flex-wrap: nowrap;
+        }
         .btn-start {
-            padding: 12px 10px; font-size: 20px; font-weight: 800; flex: 1.2; 
+            padding: 18px 10px; font-size: 24px; font-weight: 800; flex: 1.2; 
             background: linear-gradient(90deg, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8));
             border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; 
-            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 1px; white-space: nowrap; min-width: 0;
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 1px; white-space: nowrap;
+            min-width: 0;
         }
         .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(34, 211, 238, 0.5); border-color: white; }
         .btn-secondary {
-            padding: 12px 10px; flex: 1; min-width: 0; background: rgba(255,255,255,0.05); color: var(--text-secondary); 
-            border: 1px solid var(--glass-border); border-radius: 12px; white-space: nowrap; font-size: 14px; text-align: center;
+            padding: 18px 10px; flex: 1; min-width: 0; background: rgba(255,255,255,0.05); color: var(--text-secondary); 
+            border: 1px solid var(--glass-border); border-radius: 12px; white-space: nowrap; font-size: 18px; text-align: center;
         }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
         .btn-gold { border-color: var(--comp-gold); color: var(--comp-gold); }
@@ -222,7 +233,7 @@
         }
         .single-mode-layout .result-flex { flex: 0 0 auto; width: 320px; margin: 0; padding: 0; max-width: none; }
         .single-mode-layout .res-card { padding: 15px; height: 100%; box-sizing: border-box; justify-content: center; }
-        .single-mode-layout .main-circle { width: 120px; height: 120px; margin-bottom: 20px; } /* ★★★ 增加圓圈下間距 ★★★ */
+        .single-mode-layout .main-circle { width: 120px; height: 120px; margin-bottom: 15px; }
         .single-mode-layout .score-percent { font-size: 32px; }
         .single-mode-layout .circle-rank { font-size: 24px; bottom: -15px; }
         .single-mode-layout #leaderboard-display-result { flex: 1; margin: 0; width: auto; max-width: 450px; height: 100%; display: flex; flex-direction: column; }
@@ -239,9 +250,7 @@
         .res-card { flex: 1; background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); text-align: center; display: flex; flex-direction: column; align-items: center; }
         .res-card.p1 { border-top: 4px solid var(--p1-color); } .res-card.p2 { border-top: 4px solid var(--p2-color); }
         .res-score { font-size: 32px; font-weight: 900; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
-        
-        /* ★★★ Rank spacing increased ★★★ */
-        .res-rank { font-size: 60px; font-weight: 900; line-height: 1; margin: 15px 0 25px 0; text-shadow: 0 0 30px currentColor; }
+        .res-rank { font-size: 60px; font-weight: 900; line-height: 1; margin: 5px 0 15px 0; text-shadow: 0 0 30px currentColor; }
         
         .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .stat-row { background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); }
@@ -337,7 +346,7 @@
                 <h1>藍循節奏大師</h1>
                 <p class="subtitle">先聆聽四拍節奏，然後擊打出相同的節奏。</p>
                 <div class="season-banner">
-                    <span class="season-text">第一賽季（比賽模式）：12月2日 - 12月31日</span>
+                    <span class="season-text">第一賽季（比賽模式）：12月2日 - 12月18日</span>
                     <span class="season-sep">|</span>
                     <span class="reward-text">每級首三名可獲 AE 分 100分！</span>
                 </div>
@@ -465,8 +474,7 @@
                             <button class="btn role-btn active" id="role-student" onclick="setUploadRole('student')">我是學生</button>
                             <button class="btn role-btn" id="role-guest" onclick="setUploadRole('guest')">訪客遊玩</button>
                         </div>
-                        <div class="input-instruction">請選擇年級及班別</div>
-                        <div id="input-student-row" class="upload-form-row">
+                        <div class="input-instruction">請選擇年級及班別</div> <div id="input-student-row" class="upload-form-row">
                             <select id="up-grade" class="upload-input" style="flex:0.5;">
                                 <option value="" disabled selected>年級</option>
                                 <option value="1">一年級</option><option value="2">二年級</option>
@@ -557,11 +565,13 @@
             document.querySelectorAll('.toggle-btn[data-mode]').forEach(b => b.classList.remove('active')); 
             document.querySelector(`.toggle-btn[data-mode="${m}"]`).classList.add('active'); 
             
+            // Logic for locking controls
             const rg = document.getElementById('round-group'); 
             const ds = document.getElementById('diff-select');
             const ss = document.getElementById('speed-select');
             const pBtns = document.querySelectorAll('.toggle-btn[data-val]');
             
+            // Reset all first
             rg.classList.remove('disabled');
             ds.parentElement.classList.remove('disabled'); 
             ss.parentElement.classList.remove('disabled'); 
@@ -582,7 +592,7 @@
         }
         function setPlayers(n) { 
             if (n === 2 && config.mode === 'competition') {
-                setMode('fixed'); 
+                setMode('fixed'); // Force non-comp mode if 2P clicked
             }
             config.players = n; 
             document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active')); 
@@ -590,13 +600,15 @@
             updateDescription(); 
         }
 
+        // ★★★ Score Multiplier Logic ★★★
         function getScoreMultiplier() {
-            if (config.mode === 'competition') return 1.0;
+            if (config.mode === 'competition') return 1.0; // Fixed speed in competition
             if (config.bpm === 70) return 0.8;
             if (config.bpm === 120) return 1.2;
             return 1.0;
         }
 
+        // ★★★ Helper for Difficulty Text ★★★
         function getDiffText(d) {
             const map = { 'easy': '簡單', 'normal': '普通', 'hard': '困難', 'master': '達人' };
             return map[d] || d;
@@ -616,13 +628,23 @@
             if (uploadRole === 'student') { 
                 grade = document.getElementById('up-grade').value; 
                 cls = document.getElementById('up-class').value; 
-                let rawSid = document.getElementById('up-sid').value.trim(); 
+                let rawSid = document.getElementById('up-sid').value.trim(); // Get input value
+
+                // ★★★ Validation Logic ★★★
                 if (!grade || grade === "") { alert("請選擇年級！"); return; }
                 if (!cls || cls === "") { alert("請選擇班別！"); return; }
                 if (!rawSid) { alert("請輸入學號！"); return; }
+                
+                // Check number range
                 let sidNum = parseInt(rawSid, 10);
-                if (isNaN(sidNum) || sidNum < 1 || sidNum > 40) { alert("學號必須為 1 到 40 之間的數字！"); return; }
+                if (isNaN(sidNum) || sidNum < 1 || sidNum > 40) {
+                    alert("學號必須為 1 到 40 之間的數字！");
+                    return;
+                }
+
+                // ★★★ Formatting Logic (e.g. 6 -> "06") ★★★
                 name = sidNum.toString().padStart(2, '0');
+                
                 classId = grade + cls; 
                 type = 'student'; 
             } else { 
@@ -639,7 +661,7 @@
                     name: name, 
                     score: session.p1.score, 
                     difficulty: config.diff, 
-                    bpm: config.bpm, 
+                    bpm: config.bpm, // Save BPM
                     type: type, 
                     mode: config.mode, 
                     timestamp: firebase.firestore.FieldValue.serverTimestamp() 
@@ -686,13 +708,19 @@
                 const querySnapshot = await q.limit(50).get(); 
                 list.innerHTML = ''; 
                 
-                if (querySnapshot.empty) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>'; return; } 
+                if (querySnapshot.empty) { 
+                    list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>'; 
+                    return; 
+                } 
                 
+                // Deduplication
                 const uniqueData = new Map();
                 querySnapshot.forEach(doc => {
                     const d = doc.data();
                     const key = d.type === 'student' ? (d.classId + '_' + d.name) : ('guest_' + d.name);
-                    if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) { uniqueData.set(key, d); }
+                    if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) {
+                        uniqueData.set(key, d);
+                    }
                 });
                 
                 const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score);
@@ -706,15 +734,27 @@
                     if(rank===3) rankColor = '#fff'; 
                     let detailInfo = "訪客"; 
                     if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } 
+                    
                     const metaStr = `${getSpeedText(data.bpm || 95)} | ${getDiffText(data.difficulty)}`;
+
                     const item = document.createElement('li');
                     item.className = 'lb-item';
-                    item.innerHTML = `<span class="lb-rank" style="color:${rankColor}">${rank++}</span><div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div><div class="lb-stats"><span class="lb-meta">${metaStr}</span><span class="lb-score">${data.score}</span></div>`; 
+                    item.innerHTML = `
+                    <span class="lb-rank" style="color:${rankColor}">${rank++}</span>
+                    <div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div>
+                    <div class="lb-stats">
+                        <span class="lb-meta">${metaStr}</span>
+                        <span class="lb-score">${data.score}</span>
+                    </div>`; 
                     list.appendChild(item); 
                 }); 
             } catch (e) { 
                 console.error("Fetch Error:", e); 
-                if(e.message.includes('index')) { list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>'; } else { list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>'; } 
+                if(e.message.includes('index')) { 
+                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>'; 
+                } else { 
+                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>'; 
+                } 
             } 
         }
 
@@ -728,13 +768,21 @@
             const container = document.getElementById('comp-grid-container');
             if(!db) { container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1;">資料庫未連接</div>'; return; }
             container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1;">正在讀取各級戰況...</div>';
+            
             let html = '';
+            
             try {
                 for (let g = 1; g <= 6; g++) {
                     const gradeCode = g.toString();
-                    const q = db.collection('lb_competition').where('grade', '==', gradeCode).orderBy('score', 'desc').limit(50);
+                    const q = db.collection('lb_competition')
+                                .where('grade', '==', gradeCode)
+                                .orderBy('score', 'desc')
+                                .limit(50);
+                    
                     const snapshot = await q.get();
+                    
                     let cardHtml = `<div class="comp-card"><div class="comp-grade-title">${gradeCode} 年級</div>`;
+                    
                     if (snapshot.empty) {
                         cardHtml += `<div style="text-align:center; color:#666; padding:10px; font-size:12px;">暫無紀錄</div>`;
                     } else {
@@ -742,10 +790,14 @@
                         snapshot.forEach(doc => {
                             const d = doc.data();
                             const key = d.classId + '_' + d.name;
-                            if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) { uniqueData.set(key, d); }
+                            if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) {
+                                uniqueData.set(key, d);
+                            }
                         });
+                        
                         const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score);
                         let rank = 1;
+                        
                         sortedList.slice(0, 5).forEach(data => {
                             let badge = rank;
                             let color = '#fff';
@@ -753,7 +805,16 @@
                             else if(rank===2) { badge='🥈'; color='var(--comp-silver)'; }
                             else if(rank===3) { badge='🥉'; color='var(--comp-bronze)'; }
                             else { badge = rank + '.'; color='#94a3b8'; }
-                            cardHtml += `<div class="comp-item"><span class="comp-rank" style="color:${color}">${badge}</span><span class="comp-name" style="color:${color}">${data.classId} ${data.name}</span><div style="text-align:right;"><div class="comp-score">${data.score}</div></div></div>`;
+                            
+                            cardHtml += `
+                            <div class="comp-item">
+                                <span class="comp-rank" style="color:${color}">${badge}</span>
+                                <span class="comp-name" style="color:${color}">${data.classId} ${data.name}</span>
+                                <div style="text-align:right;">
+                                    <div class="comp-score">${data.score}</div>
+                                </div>
+                            </div>
+                            `;
                             rank++;
                         });
                     }
@@ -761,9 +822,13 @@
                     html += cardHtml;
                 }
                 container.innerHTML = html;
-            } catch(e) { console.error(e); container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1; color:red;">讀取失敗，請檢查索引設定</div>'; }
+            } catch(e) {
+                console.error(e);
+                container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1; color:red;">讀取失敗，請檢查索引設定</div>';
+            }
         }
 
+        // Game Engine
         const VFX = {
             particles: [],
             init() { this.particles = []; for(let i=0; i<100; i++) { this.particles.push({ x: Math.random() * 1100, y: Math.random() * 680, size: Math.random() * 2 + 0.5, speed: Math.random() * 4 + 1, alpha: Math.random() * 0.6 + 0.1, color: Math.random() > 0.5 ? '#22d3ee' : '#f472b6' }); } },
@@ -776,10 +841,11 @@
                 if(!this.ctx) return; t = t || this.ctx.currentTime;
                 const o = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
                 o.connect(f); f.connect(g); g.connect(this.ctx.destination);
-                if(type === 'teacher') { o.type = 'sine'; f.type = 'bandpass'; f.frequency.value = 800; f.Q.value = 5; o.frequency.setValueAtTime(850, t); o.frequency.exponentialRampToValueAtTime(800, t+0.1); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.7, t+0.01); g.gain.exponentialRampToValueAtTime(0.001, t+0.2); o.start(t); o.stop(t+0.25); }
-                else if(type === 'p1') { o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1000; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t+0.15); g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.25); o.start(t); o.stop(t+0.3); }
-                else if(type === 'p2') { o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 1500; o.frequency.setValueAtTime(400, t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.6, t+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+0.3); o.start(t); o.stop(t+0.35); }
-                else if(type === 'metro') { o.type = 'square'; f.type = 'highpass'; f.frequency.value = 2500; o.frequency.setValueAtTime(800, t); g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.05); o.start(t); o.stop(t+0.05); }
+                // ★★★ Lower Gain to Prevent Clipping ★★★
+                if(type === 'teacher') { o.type = 'sine'; f.type = 'bandpass'; f.frequency.value = 800; f.Q.value = 5; o.frequency.setValueAtTime(850, t); o.frequency.exponentialRampToValueAtTime(800, t+0.1); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.4, t+0.01); g.gain.exponentialRampToValueAtTime(0.001, t+0.2); o.start(t); o.stop(t+0.25); }
+                else if(type === 'p1') { o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1000; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t+0.15); g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.25); o.start(t); o.stop(t+0.3); }
+                else if(type === 'p2') { o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 1500; o.frequency.setValueAtTime(400, t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.3, t+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+0.3); o.start(t); o.stop(t+0.35); }
+                else if(type === 'metro') { o.type = 'square'; f.type = 'highpass'; f.frequency.value = 2500; o.frequency.setValueAtTime(800, t); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.05); o.start(t); o.stop(t+0.05); }
             }
         };
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
@@ -864,6 +930,7 @@
             drawTrack(ctx, y1, 'var(--p1-color)', 'P1', session.p1.bump);
             drawNotes(ctx, session.p1.notes, y1, '#22d3ee', now, speed, beatSec, isVanishing, 1);
             if(config.players === 2) {
+                // ★★★ Draw Divider Line ★★★
                 ctx.save();
                 ctx.beginPath();
                 ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
@@ -886,6 +953,7 @@
             c.shadowBlur = 25; c.shadowColor = color; c.fillStyle = "rgba(30, 41, 59, 0.8)"; c.fillRect(0, y-60, width, 120);
             c.shadowBlur = 0; c.strokeStyle = "rgba(255,255,255,0.15)"; c.lineWidth = 2;
             c.beginPath(); c.moveTo(0, y-60); c.lineTo(width, y-60); c.moveTo(0, y+60); c.lineTo(width, y+60); c.stroke();
+            // Judgment Circle with Bump
             c.beginPath(); c.arc(HIT_X, y, 45 * bump, 0, Math.PI*2);
             c.strokeStyle = "white"; c.lineWidth = 4; c.stroke();
             c.fillStyle = "rgba(255,255,255,0.05)"; c.fill();
@@ -914,6 +982,7 @@
                     c.fillStyle = "rgba(255,255,255,0.5)"; c.beginPath(); c.ellipse(x-12, y-12, 10, 15, Math.PI/4, 0, Math.PI*2); c.fill();
                     c.restore();
                 }
+                // ★★★ MISS Logic Update ★★★
                 if(dt < -WINDOWS.MISS && !n.missed) { 
                     n.missed = true; 
                     handleResult(pid, 'MISS'); 
@@ -1008,6 +1077,7 @@
             const isSurvivalMode = config.mode.includes('survival') || config.mode === 'competition';
             
             if(isSurvivalMode) {
+                // ★★★ Render Hearts as Spans ★★★
                 renderHearts('p1-lives', session.p1.lives);
                 renderHearts('p2-lives', session.p2.lives);
             } else {
