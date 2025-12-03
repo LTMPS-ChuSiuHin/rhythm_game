@@ -120,8 +120,10 @@
             text-shadow: 0 0 20px var(--p1-color), 0 0 40px rgba(34, 211, 238, 0.4); animation: titleFloat 3s ease-in-out infinite;
         }
         @keyframes titleFloat { 0%, 100% { transform: translateY(0); text-shadow: 0 0 20px var(--p1-color); } 50% { transform: translateY(-5px); text-shadow: 0 0 30px var(--p1-color), 0 0 10px white; } }
-        .subtitle { color: var(--text-secondary); font-size: 13px; margin-top: 0; margin-bottom: 15px; letter-spacing: 2px; opacity: 0.9; display: block; }
-        
+        .subtitle { 
+            color: var(--text-secondary); font-size: 13px; margin-top: 0; margin-bottom: 15px;
+            letter-spacing: 2px; opacity: 0.9; display: block;
+        }
         .season-banner { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 50px; padding: 6px 20px; display: inline-flex; gap: 10px; align-items: center; margin-bottom: 5px; }
         .season-text { color: #facc15; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
         .season-sep { color: rgba(255,255,255,0.2); }
@@ -175,7 +177,6 @@
         .res-card.p1 { border-top: 4px solid var(--p1-color); } .res-card.p2 { border-top: 4px solid var(--p2-color); }
         .res-score { font-size: 32px; font-weight: 900; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
         .res-rank { font-size: 60px; font-weight: 900; line-height: 1; margin: 5px 0 15px 0; text-shadow: 0 0 30px currentColor; }
-        
         .stats-table { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .stat-row { background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); }
         .stat-label { font-size: 14px; font-weight: 700; color: var(--text-secondary); }
@@ -274,7 +275,7 @@
             
             <div class="main-content-area">
                 <div class="control-panel">
-                    <div class="control-group">
+                    <div class="control-group" id="player-group">
                         <label>玩家人數</label>
                         <div class="toggle-wrapper">
                             <button class="toggle-btn active" data-val="1" onclick="setPlayers(1)">單人 (1P)</button>
@@ -292,7 +293,7 @@
                         </div>
                     </div>
                     <div id="mode-desc" class="mode-description">載入說明中...</div>
-
+                    
                     <div class="control-group" id="round-group">
                         <label>長度</label>
                         <select id="round-select">
@@ -395,7 +396,8 @@
                             <button class="btn role-btn active" id="role-student" onclick="setUploadRole('student')">我是學生</button>
                             <button class="btn role-btn" id="role-guest" onclick="setUploadRole('guest')">訪客遊玩</button>
                         </div>
-                        <div class="input-instruction">請選擇年級及班別</div> <div id="input-student-row" class="upload-form-row">
+                        <div class="input-instruction">請選擇年級及班別</div>
+                        <div id="input-student-row" class="upload-form-row">
                             <select id="up-grade" class="upload-input" style="flex:0.5;">
                                 <option value="" disabled selected>年級</option>
                                 <option value="1">一年級</option><option value="2">二年級</option>
@@ -431,7 +433,7 @@
         let uploadRole = 'student';
 
         // ★★★ Cache Variables ★★★
-        const CACHE_DURATION = 120 * 60 * 1000; // 120 minutes
+        const CACHE_DURATION = 60 * 60 * 1000; // 60 minutes
         let lbCache = {}; // Format: { "key": { timestamp: 123, data: [] } }
 
         const DESCRIPTIONS = {
@@ -493,26 +495,24 @@
             document.querySelector(`.toggle-btn[data-mode="${m}"]`).classList.add('active'); 
             
             const rg = document.getElementById('round-group'); 
-            const ds = document.getElementById('diff-select');
-            const ss = document.getElementById('speed-select');
+            const ds = document.getElementById('diff-select').parentElement; 
+            const ss = document.getElementById('speed-select').parentElement; 
             const pBtns = document.querySelectorAll('.toggle-btn[data-val]');
-            const songGroup = document.getElementById('song-select-group');
-
-            rg.style.display = 'block';
-            ds.parentElement.style.display = 'block';
-            ss.parentElement.style.display = 'block';
-            songGroup.style.display = 'none';
+            const pGroup = document.getElementById('player-group');
             
+            // Reset logic
             rg.classList.remove('disabled');
-            ds.parentElement.classList.remove('disabled'); 
-            ss.parentElement.classList.remove('disabled'); 
-            pBtns.forEach(b => b.parentElement.classList.remove('disabled'));
+            ds.classList.remove('disabled'); 
+            ss.classList.remove('disabled'); 
+            pGroup.classList.remove('disabled');
 
             if(m === 'competition') {
+                // Competition Mode: Lock everything, Force 1P
                 rg.classList.add('disabled');
-                ds.parentElement.classList.add('disabled');
-                ss.parentElement.classList.add('disabled');
-                pBtns.forEach(b => b.parentElement.classList.add('disabled'));
+                ds.classList.add('disabled');
+                ss.classList.add('disabled');
+                pGroup.classList.add('disabled');
+                
                 setPlayers(1);
                 document.getElementById('speed-select').value = "95";
                 document.getElementById('diff-select').value = "easy";
@@ -521,9 +521,11 @@
             }
             updateDescription(); 
         }
+        
         function setPlayers(n) { 
+            // Conflict Resolution: If Competition Mode is active, switching to 2P forces mode change
             if (n === 2 && config.mode === 'competition') {
-                setMode('fixed'); 
+                setMode('fixed'); // Force non-comp mode if 2P clicked
             }
             config.players = n; 
             document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active')); 
@@ -531,13 +533,15 @@
             updateDescription(); 
         }
 
+        // ★★★ Score Multiplier Logic ★★★
         function getScoreMultiplier() {
-            if (config.mode === 'competition') return 1.0; 
+            if (config.mode === 'competition') return 1.0; // Fixed speed in competition
             if (config.bpm === 70) return 0.8;
             if (config.bpm === 120) return 1.2;
             return 1.0;
         }
 
+        // ★★★ Helper for Difficulty Text ★★★
         function getDiffText(d) {
             const map = { 'easy': '簡單', 'normal': '普通', 'hard': '困難', 'master': '達人' };
             return map[d] || d;
@@ -547,19 +551,6 @@
             if (s === 95) return "中板";
             if (s === 120) return "快板";
             return s;
-        }
-
-        function parseChart(chart) {
-            let beats = [];
-            let currentTime = 0;
-            chart.forEach(str => {
-                let durations = str.split(' ').map(Number);
-                durations.forEach(d => {
-                    beats.push(currentTime);
-                    currentTime += d;
-                });
-            });
-            return beats;
         }
 
         async function submitScore() { 
@@ -801,6 +792,7 @@
                 if(!this.ctx) return; t = t || this.ctx.currentTime;
                 const o = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
                 o.connect(f); f.connect(g); g.connect(this.ctx.destination);
+                // ★★★ Lower Gain to Prevent Clipping ★★★
                 if(type === 'teacher') { o.type = 'sine'; f.type = 'bandpass'; f.frequency.value = 800; f.Q.value = 5; o.frequency.setValueAtTime(850, t); o.frequency.exponentialRampToValueAtTime(800, t+0.1); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.4, t+0.01); g.gain.exponentialRampToValueAtTime(0.001, t+0.2); o.start(t); o.stop(t+0.25); }
                 else if(type === 'p1') { o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1000; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t+0.15); g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.25); o.start(t); o.stop(t+0.3); }
                 else if(type === 'p2') { o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 1500; o.frequency.setValueAtTime(400, t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.3, t+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+0.3); o.start(t); o.stop(t+0.35); }
@@ -818,7 +810,6 @@
         function getBeatSec() { return 60 / config.bpm; }
         function getSpeed() { return (SPAWN_X - HIT_X) / (BEATS_PHASE * getBeatSec()); }
         function generatePattern() {
-            if (config.mode === 'taiko') return []; 
             let beats = [], filled = 0; const pool = PATTERNS[config.diff];
             while(filled < 4) {
                 let rem = 4 - filled; let valid = pool.filter(b => b.reduce((a,c)=>a+c,0) <= rem + 0.01);
@@ -833,13 +824,17 @@
             config.bpm = parseInt(document.getElementById('speed-select').value);
 
             if (config.mode === 'competition') {
-                config.bpm = 95; config.rounds = Infinity; config.players = 1; config.diff = 'easy'; 
+                config.bpm = 95;
+                config.rounds = Infinity;
+                config.players = 1;
+                config.diff = 'easy'; 
             } else {
                 config.diff = document.getElementById('diff-select').value;
                 config.rounds = config.mode.includes('survival') ? Infinity : parseInt(document.getElementById('round-select').value);
             }
 
             const initLives = config.mode === 'competition' ? 5 : 3;
+            // ★★★ Combo Init ★★★
             const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1, combo: 0, maxCombo: 0 });
             session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 2.0, p1: initP(), p2: initP() };
             
@@ -851,8 +846,12 @@
         function schedule() {
             if(gameState !== 'PLAYING') return;
             if(!config.mode.includes('survival') && config.mode !== 'competition' && session.round >= config.rounds) { endGame(); return; }
+            
             if(config.mode === 'competition') {
-                if(session.round < 4) config.diff = 'easy'; else if(session.round < 8) config.diff = 'normal'; else if(session.round < 12) config.diff = 'hard'; else config.diff = 'master';
+                if(session.round < 4) config.diff = 'easy';
+                else if(session.round < 8) config.diff = 'normal';
+                else if(session.round < 12) config.diff = 'hard';
+                else config.diff = 'master';
             }
 
             const now = session.nextTime; const BEAT = getBeatSec(); const pattern = generatePattern(); const playStart = now + (BEAT * 4);
@@ -860,6 +859,7 @@
             pattern.forEach((b, idx) => { const target = playStart + b*BEAT; session.p1.notes.push({ target: target, hit: false, missed: false, index: idx }); if(config.players === 2) session.p2.notes.push({ target: target, hit: false, missed: false, index: idx }); });
             
             timeouts.push(setTimeout(() => { if(gameState!=='PLAYING') return; session.round++; updateHUD(); notify("LISTEN", "var(--p1-color)"); AudioEngine.play('metro', AudioEngine.ctx.currentTime); }, (now - AudioEngine.ctx.currentTime)*1000));
+            
             timeouts.push(setTimeout(() => { 
                 if(gameState!=='PLAYING') return; 
                 let col = config.mode.includes('vanishing') ? '#d946ef' : '#facc15'; 
@@ -873,9 +873,7 @@
         function render() {
             if(gameState !== 'PLAYING') return;
             ctx.clearRect(0, 0, width, height); VFX.update(ctx);
-            const now = AudioEngine.ctx.currentTime; 
-            
-            const speed = getSpeed(); const beatSec = getBeatSec();
+            const now = AudioEngine.ctx.currentTime; const speed = getSpeed(); const beatSec = getBeatSec();
             const isVanishing = config.mode.includes('vanishing') || config.mode === 'competition';
             const y1 = config.players === 1 ? height/2 : height*0.28; const y2 = height*0.72;
             
@@ -885,7 +883,20 @@
             drawTrack(ctx, y1, 'var(--p1-color)', 'P1', session.p1.bump);
             drawNotes(ctx, session.p1.notes, y1, '#22d3ee', now, speed, beatSec, isVanishing, 1);
             if(config.players === 2) {
-                ctx.save(); ctx.beginPath(); ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 4; ctx.setLineDash([15, 15]); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke(); ctx.shadowBlur = 15; ctx.shadowColor = "rgba(255, 255, 255, 0.5)"; ctx.stroke(); ctx.restore();
+                // ★★★ Draw Divider Line ★★★
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+                ctx.lineWidth = 4;
+                ctx.setLineDash([15, 15]);
+                ctx.moveTo(0, height / 2);
+                ctx.lineTo(width, height / 2);
+                ctx.stroke();
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "rgba(255, 255, 255, 0.5)";
+                ctx.stroke();
+                ctx.restore();
+
                 drawTrack(ctx, y2, 'var(--p2-color)', 'P2', session.p2.bump);
                 drawNotes(ctx, session.p2.notes, y2, '#f472b6', now, speed, beatSec, isVanishing, 2);
             }
@@ -975,14 +986,16 @@
             document.getElementById('p1-score').innerText = session.p1.score; document.getElementById('p2-score').innerText = session.p2.score;
             const isSurvivalMode = config.mode.includes('survival') || config.mode === 'competition';
             if(isSurvivalMode) { renderHearts('p1-lives', session.p1.lives); renderHearts('p2-lives', session.p2.lives); } else { document.getElementById('p1-lives').innerHTML = ""; document.getElementById('p2-lives').innerHTML = ""; }
-            let rTxt = `ROUND ${session.round}`; if(!config.mode.includes('survival') && config.mode !== 'competition') rTxt += ` / ${config.rounds}`; document.getElementById('round-info').innerText = rTxt;
+            let rTxt = config.mode === 'taiko' ? "TAIKO" : `ROUND ${session.round}`; 
+            if(!config.mode.includes('survival') && config.mode !== 'competition' && config.mode !== 'taiko') rTxt += ` / ${config.rounds}`; 
+            document.getElementById('round-info').innerText = rTxt;
         }
         function renderHearts(elementId, count) { const container = document.getElementById(elementId); let html = ''; for(let i=0; i<Math.max(0, count); i++) { html += '<span class="heart">❤</span>'; } container.innerHTML = html; }
         function showFeedback(text, x, y, color) { const el = document.createElement('div'); el.className = 'hit-popup'; el.innerText = text; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color; document.getElementById('game-wrapper').appendChild(el); setTimeout(()=>el.remove(), 500); }
         function notify(text, color) { const el = document.getElementById('center-notify'); el.innerText = text; el.style.color = color; el.style.opacity = 1; if (config.players === 1) { el.style.top = "75%"; } else { el.style.top = "50%"; } el.style.transform = "translate(-50%, -50%) scale(1.2)"; setTimeout(() => { el.style.opacity = 0; el.style.transform = "translate(-50%, -50%) scale(1)"; }, 600); }
         function endGame() {
             gameState = 'END'; document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('result-screen').classList.add('active'); timeouts.forEach(clearTimeout);
-            const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'比賽'}[config.mode];
+            const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'比賽', 'taiko':'太鼓'}[config.mode];
             document.getElementById('res-mode').innerText = mName; document.getElementById('res-len').innerText = (config.mode.includes('survival') || config.mode === 'competition') ? "∞" : config.rounds + "R";
             const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; document.getElementById('res-diff').innerText = config.mode === 'competition' ? '自動晉級' : dNames[config.diff];
             const scrollContainer = document.getElementById('result-scroll-container'); const container = document.getElementById('result-content'); container.innerHTML = ''; 
