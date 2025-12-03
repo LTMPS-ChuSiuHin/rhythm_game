@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>藍循節奏大師：1.0正式版</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -19,30 +20,20 @@
             /* Colors */
             --p1-color: #22d3ee;
             --p2-color: #f472b6;
-            --rank-s: #22d3ee;
-            --rank-a: #4ade80;
-            --rank-b: #facc15;
-            --rank-c: #fb923c;
-            --rank-d: #f87171;
-            
-            /* Competition Specific */
+            --rank-s: #22d3ee; --rank-a: #4ade80; --rank-b: #facc15; --rank-c: #fb923c; --rank-d: #f87171;
             --comp-gold: #fbbf24;
-            
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
+            --text-primary: #f8fafc; --text-secondary: #94a3b8;
         }
         body {
             margin: 0; background-color: var(--bg-dark); color: var(--text-primary);
             font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
             display: flex; justify-content: center; align-items: center;
             height: 100vh; overflow: hidden; 
-            /* ★★★ 禁止選取與預設觸控行為，防止縮放 ★★★ */
-            user-select: none; -webkit-user-select: none;
+            user-select: none; -webkit-user-select: none; 
             touch-action: none; -webkit-touch-callout: none;
             position: relative;
         }
 
-        /* Background */
         .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; background: #020617; }
         .cyber-grid {
             position: absolute; width: 200%; height: 200%; bottom: -50%; left: -50%;
@@ -60,7 +51,6 @@
         .p-4 { left: 90%; width: 4px; height: 4px; animation-duration: 6s; animation-delay: 0.5s; }
         @keyframes floatUp { 0% { bottom: -10px; opacity: 0; } 50% { opacity: 0.4; } 100% { bottom: 100%; opacity: 0; } }
 
-        /* Game Container */
         #game-wrapper {
             position: relative; width: 100%; max-width: 1100px; height: 100%; max-height: 680px;
             background: rgba(15, 23, 42, 0.4); border-radius: 24px;
@@ -68,10 +58,9 @@
             overflow: hidden; z-index: 10; backdrop-filter: blur(5px);
         }
         canvas { display: block; width: 100%; height: 100%; }
-        .touch-layer { position: absolute; left: 0; width: 100%; height: 50%; z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: none; }
+        .touch-layer { position: absolute; left: 0; width: 100%; height: 50%; z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         #touch-p1 { top: 0; } #touch-p2 { top: 50%; }
         
-        /* UI Layer */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
             display: flex; flex-direction: column; justify-content: space-between; padding: 25px; box-sizing: border-box; z-index: 20;
@@ -84,8 +73,6 @@
         }
         .p1-hud { border-left: 4px solid var(--p1-color); color: var(--p1-color); }
         .p2-hud { border-left: 4px solid var(--p2-color); color: var(--p2-color); opacity: 0; }
-        
-        /* Hearts FX */
         .lives { letter-spacing: 2px; font-size: 22px; min-width: 100px; text-align: right; display: flex; justify-content: flex-end; gap: 5px; }
         .heart { color: #f43f5e; text-shadow: 0 0 5px rgba(244, 63, 94, 0.6); transition: transform 0.2s; display: inline-block; }
         @keyframes heartBreakAnim {
@@ -106,27 +93,19 @@
             font-size: 90px; font-weight: 900; text-transform: uppercase; opacity: 0; white-space: nowrap;
             filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5)); transition: all 0.2s ease-out; z-index: 50;
         }
-
-        /* Combo Text FX */
         .combo-popup {
-            position: absolute; font-weight: 900; font-size: 48px; 
-            color: #facc15; /* Gold */
-            text-shadow: 0 0 10px #b45309, 0 0 20px #facc15;
-            transform: translate(-50%, -50%); pointer-events: none;
-            opacity: 0; z-index: 40;
-            font-family: 'Segoe UI', sans-serif; font-style: italic;
-            animation: comboPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            position: absolute; font-weight: 900; font-size: 48px; color: #facc15; text-shadow: 0 0 10px #b45309, 0 0 20px #facc15;
+            transform: translate(-50%, -50%); pointer-events: none; opacity: 0; z-index: 40;
+            font-family: 'Segoe UI', sans-serif; font-style: italic; animation: comboPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         @keyframes comboPop {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
             20% { opacity: 1; transform: translate(-50%, -60%) scale(1.2); }
             100% { opacity: 0; transform: translate(-50%, -80%) scale(1.0); }
         }
-
         .hit-popup { position: absolute; font-weight: 900; font-size: 48px; transform: translate(-50%, -50%); pointer-events: none; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; text-shadow: 0 0 20px currentColor; z-index: 25; }
         @keyframes popUp { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -120%) scale(1); } }
 
-        /* Screens - Main Layout */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(2, 6, 23, 0.96); backdrop-filter: blur(40px);
@@ -135,61 +114,28 @@
             box-sizing: border-box; padding: 20px 30px;
         }
         .screen.active { opacity: 1; pointer-events: auto; }
-        
-        /* Header Compact */
         .screen-header { flex-shrink: 0; text-align: center; margin-bottom: 15px; width: 100%; }
         h1 {
             font-size: 46px; margin: 0 0 5px 0; font-weight: 900; letter-spacing: 3px; color: white; text-transform: uppercase;
             text-shadow: 0 0 20px var(--p1-color), 0 0 40px rgba(34, 211, 238, 0.4); animation: titleFloat 3s ease-in-out infinite;
         }
         @keyframes titleFloat { 0%, 100% { transform: translateY(0); text-shadow: 0 0 20px var(--p1-color); } 50% { transform: translateY(-5px); text-shadow: 0 0 30px var(--p1-color), 0 0 10px white; } }
-        .subtitle { 
-            color: var(--text-secondary); font-size: 13px; margin-top: 0; margin-bottom: 15px;
-            letter-spacing: 2px; opacity: 0.9; display: block;
-        }
+        .subtitle { color: var(--text-secondary); font-size: 13px; margin-top: 0; margin-bottom: 15px; letter-spacing: 2px; opacity: 0.9; display: block; }
         
-        /* Combined Banner */
-        .season-banner {
-            background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);
-            border-radius: 50px; padding: 6px 20px; display: inline-flex; gap: 10px; align-items: center;
-            margin-bottom: 5px;
-        }
+        .season-banner { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 50px; padding: 6px 20px; display: inline-flex; gap: 10px; align-items: center; margin-bottom: 5px; }
         .season-text { color: #facc15; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
         .season-sep { color: rgba(255,255,255,0.2); }
         .reward-text { color: #4ade80; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
 
-        .main-content-area {
-            flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            overflow: hidden; 
-        }
-
-        /* Control Panel Compact */
-        .control-panel {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 650px;
-            background: var(--glass-panel); backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
-            padding: 20px 30px; border-radius: 20px; margin: 5px 0; flex-shrink: 0; 
-        }
+        .main-content-area { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+        .control-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 650px; background: var(--glass-panel); backdrop-filter: var(--glass-blur); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); padding: 20px 30px; border-radius: 20px; margin: 5px 0; flex-shrink: 0; }
         .control-group.full { grid-column: span 2; }
-        
         label { font-size: 12px; color: var(--p1-color); margin-bottom: 4px; font-weight: 800; text-transform: uppercase; display: block; letter-spacing: 1px; }
-        select, .btn, input {
-            padding: 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
-            color: white; font-family: inherit; font-size: 14px; 
-            cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
-        }
+        select, .btn, input { padding: 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); color: white; font-family: inherit; font-size: 14px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%; }
         select:hover, .btn:hover, input:focus { border-color: var(--p1-color); background: rgba(34, 211, 238, 0.1); box-shadow: 0 0 15px rgba(34,211,238,0.1); }
         .control-group.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
 
-        /* Description Box Compact */
-        .mode-description {
-            grid-column: span 2; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border);
-            border-radius: 10px; padding: 8px; font-size: 12px; color: #e2e8f0; text-align: center;
-            line-height: 1.4; margin-top: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-        }
-        
-        /* Toggle Button */
+        .mode-description { grid-column: span 2; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); border-radius: 10px; padding: 8px; font-size: 12px; color: #e2e8f0; text-align: center; line-height: 1.4; margin-top: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
         .toggle-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); background: rgba(0,0,0,0.5); border-radius: 8px; padding: 3px; gap: 3px; border: 1px solid rgba(255,255,255,0.05); }
         .toggle-btn { padding: 6px 2px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 6px; font-weight: 600; transition: 0.2s; font-size: 13px; white-space: nowrap; }
         .toggle-btn:hover { color: white; background: rgba(255,255,255,0.05); }
@@ -200,37 +146,18 @@
         .toggle-btn[data-mode="competition"].active { color: var(--comp-gold); border-color: var(--comp-gold); background: rgba(251, 191, 36, 0.15); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
         .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.15); }
 
-        /* Footer & Horizontal Buttons */
         .screen-footer { flex-shrink: 0; width: 100%; margin-top: 20px; }
-        .btn-group { 
-            display: flex; gap: 15px; justify-content: center; width: 100%; max-width: 800px; margin: 0 auto; 
-            flex-wrap: nowrap;
-        }
-        .btn-start {
-            padding: 18px 10px; font-size: 24px; font-weight: 800; flex: 1.2; 
-            background: linear-gradient(90deg, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8));
-            border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; 
-            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 1px; white-space: nowrap;
-            min-width: 0;
-        }
+        .btn-group { display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 700px; margin: 0 auto; flex-wrap: nowrap; }
+        .btn-start { padding: 12px 5px; font-size: 18px; font-weight: 800; flex: 1.2; background: linear-gradient(90deg, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8)); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 1px; white-space: nowrap; min-width: 0; }
         .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(34, 211, 238, 0.5); border-color: white; }
-        .btn-secondary {
-            padding: 18px 10px; flex: 1; min-width: 0; background: rgba(255,255,255,0.05); color: var(--text-secondary); 
-            border: 1px solid var(--glass-border); border-radius: 12px; white-space: nowrap; font-size: 18px; text-align: center;
-        }
+        .btn-secondary { padding: 12px 5px; flex: 1; min-width: 0; background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--glass-border); border-radius: 12px; white-space: nowrap; font-size: 14px; text-align: center; }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
         .btn-gold { border-color: var(--comp-gold); color: var(--comp-gold); }
         .btn-gold:hover { background: rgba(251, 191, 36, 0.1); color: #fff; border-color: #fff; box-shadow: 0 0 15px var(--comp-gold); }
         .footer-tip { display: none; }
 
-        /* Result & Leaderboard */
         .scroll-content { flex: 1; width: 100%; overflow-y: auto; display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; }
-        
-        /* Single Player Result Layout */
-        .single-mode-layout {
-            flex-direction: row !important; align-items: flex-start !important; justify-content: center !important;
-            gap: 30px !important; overflow: hidden !important;
-        }
+        .single-mode-layout { flex-direction: row !important; align-items: flex-start !important; justify-content: center !important; gap: 30px !important; overflow: hidden !important; }
         .single-mode-layout .result-flex { flex: 0 0 auto; width: 320px; margin: 0; padding: 0; max-width: none; }
         .single-mode-layout .res-card { padding: 15px; height: 100%; box-sizing: border-box; justify-content: center; }
         .single-mode-layout .main-circle { width: 120px; height: 120px; margin-bottom: 15px; }
@@ -238,14 +165,11 @@
         .single-mode-layout .circle-rank { font-size: 24px; bottom: -15px; }
         .single-mode-layout #leaderboard-display-result { flex: 1; margin: 0; width: auto; max-width: 450px; height: 100%; display: flex; flex-direction: column; }
         .single-mode-layout #upload-ui { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        
         .input-instruction { text-align: center; color: var(--text-secondary); font-size: 14px; margin-bottom: 5px; font-weight: bold; }
-
         .summary-bar { display: flex; gap: 15px; margin-bottom: 10px; background: rgba(0,0,0,0.3); padding: 8px 20px; border-radius: 50px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); flex-wrap: wrap; justify-content: center; flex-shrink: 0; }
         .sum-item { text-align: center; }
         .sum-label { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
         .sum-val { font-size: 14px; font-weight: 700; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
-        
         .result-flex { display: flex; justify-content: center; gap: 20px; width: 100%; max-width: 800px; padding: 0 10px; margin-bottom: 10px; flex-shrink: 0; }
         .res-card { flex: 1; background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); text-align: center; display: flex; flex-direction: column; align-items: center; }
         .res-card.p1 { border-top: 4px solid var(--p1-color); } .res-card.p2 { border-top: 4px solid var(--p2-color); }
@@ -256,22 +180,18 @@
         .stat-row { background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); }
         .stat-label { font-size: 14px; font-weight: 700; color: var(--text-secondary); }
         .stat-num { font-weight: 800; font-size: 20px; }
-
         .leaderboard-section { width: 100%; max-width: 550px; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px; border: 1px solid var(--glass-border); display: none; backdrop-filter: blur(10px); margin: 0 auto; }
         .leaderboard-section.active { display: block; }
         #leaderboard-screen .leaderboard-section { display: block !important; }
         #competition-screen .leaderboard-section { display: block !important; max-width: 800px; }
-
         .lb-category-container { display: flex; gap: 5px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px; }
         .cat-btn { background: transparent; border: none; color: var(--text-secondary); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; flex: 1; white-space: nowrap; text-align: center; }
         .cat-btn:hover { background: rgba(255,255,255,0.05); color: white; }
         .cat-btn.active { background: var(--p1-color); color: #000; box-shadow: 0 2px 10px rgba(34,211,238,0.3); }
-
         .lb-mode-container { display: flex; gap: 5px; margin-top: 15px; justify-content: center; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
         .mode-tab { background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.2s; }
         .mode-tab:hover { border-color: white; color: white; }
         .mode-tab.active { border-color: var(--p1-color); color: var(--p1-color); background: rgba(34,211,238,0.1); font-weight: bold; }
-        
         .role-switch { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
         .role-btn { padding: 8px 15px; opacity: 0.6; border: 1px solid transparent; background: rgba(0,0,0,0.3); }
         .role-btn.active { opacity: 1; background: var(--p1-color); color:black; font-weight:bold; box-shadow: 0 0 10px var(--p1-color); }
@@ -287,10 +207,8 @@
         .lb-detail { font-size: 10px; color: var(--text-secondary); }
         .lb-score { font-weight: 800; color: var(--p1-color); min-width: 50px; text-align: right; font-family: monospace; font-size: 14px; }
         .lb-title { color:white; font-size: 14px; margin-bottom: 10px; text-align:center; font-weight:bold; letter-spacing: 2px; text-transform: uppercase;}
-        
         .lb-stats { display: flex; gap: 8px; align-items: center; }
         .lb-meta { font-size: 11px; color: var(--text-secondary); text-align: right; margin-right: 5px; }
-
         .comp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; max-height: 450px; overflow-y: auto; padding-right: 5px; }
         .comp-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px; }
         .comp-grade-title { text-align: center; font-size: 16px; font-weight: bold; color: var(--comp-gold); margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
@@ -316,6 +234,8 @@
     </style>
 </head>
 <body>
+    <audio id="bgmPlayer" style="display:none;"></audio>
+
     <div class="bg-layer">
         <div class="cyber-grid"></div>
         <div class="particle p-1"></div>
@@ -372,6 +292,7 @@
                         </div>
                     </div>
                     <div id="mode-desc" class="mode-description">載入說明中...</div>
+
                     <div class="control-group" id="round-group">
                         <label>長度</label>
                         <select id="round-select">
@@ -509,6 +430,10 @@
         let currentLB = { mode: 'fixed', category: 'class', filterGrade: '1', filterClass: 'A' };
         let uploadRole = 'student';
 
+        // ★★★ Cache Variables ★★★
+        const CACHE_DURATION = 120 * 60 * 1000; // 120 minutes
+        let lbCache = {}; // Format: { "key": { timestamp: 123, data: [] } }
+
         const DESCRIPTIONS = {
             players: {
                 1: "單人模式：全螢幕判定，使用 [空白鍵]、[A] 或 點擊螢幕。",
@@ -536,6 +461,8 @@
             if(AudioEngine.ctx && AudioEngine.ctx.state === 'running') {
                 AudioEngine.ctx.suspend().then(()=>AudioEngine.ctx.resume());
             }
+            const bgm = document.getElementById('bgmPlayer');
+            if(bgm) { bgm.pause(); bgm.currentTime = 0; }
             showMenu();
         }
 
@@ -565,13 +492,17 @@
             document.querySelectorAll('.toggle-btn[data-mode]').forEach(b => b.classList.remove('active')); 
             document.querySelector(`.toggle-btn[data-mode="${m}"]`).classList.add('active'); 
             
-            // Logic for locking controls
             const rg = document.getElementById('round-group'); 
             const ds = document.getElementById('diff-select');
             const ss = document.getElementById('speed-select');
             const pBtns = document.querySelectorAll('.toggle-btn[data-val]');
+            const songGroup = document.getElementById('song-select-group');
+
+            rg.style.display = 'block';
+            ds.parentElement.style.display = 'block';
+            ss.parentElement.style.display = 'block';
+            songGroup.style.display = 'none';
             
-            // Reset all first
             rg.classList.remove('disabled');
             ds.parentElement.classList.remove('disabled'); 
             ss.parentElement.classList.remove('disabled'); 
@@ -592,7 +523,7 @@
         }
         function setPlayers(n) { 
             if (n === 2 && config.mode === 'competition') {
-                setMode('fixed'); // Force non-comp mode if 2P clicked
+                setMode('fixed'); 
             }
             config.players = n; 
             document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active')); 
@@ -600,15 +531,13 @@
             updateDescription(); 
         }
 
-        // ★★★ Score Multiplier Logic ★★★
         function getScoreMultiplier() {
-            if (config.mode === 'competition') return 1.0; // Fixed speed in competition
+            if (config.mode === 'competition') return 1.0; 
             if (config.bpm === 70) return 0.8;
             if (config.bpm === 120) return 1.2;
             return 1.0;
         }
 
-        // ★★★ Helper for Difficulty Text ★★★
         function getDiffText(d) {
             const map = { 'easy': '簡單', 'normal': '普通', 'hard': '困難', 'master': '達人' };
             return map[d] || d;
@@ -620,6 +549,19 @@
             return s;
         }
 
+        function parseChart(chart) {
+            let beats = [];
+            let currentTime = 0;
+            chart.forEach(str => {
+                let durations = str.split(' ').map(Number);
+                durations.forEach(d => {
+                    beats.push(currentTime);
+                    currentTime += d;
+                });
+            });
+            return beats;
+        }
+
         async function submitScore() { 
             if (!db) { alert("請先設定 Firebase！"); return; } 
             const btn = document.getElementById('btn-submit'); 
@@ -628,23 +570,13 @@
             if (uploadRole === 'student') { 
                 grade = document.getElementById('up-grade').value; 
                 cls = document.getElementById('up-class').value; 
-                let rawSid = document.getElementById('up-sid').value.trim(); // Get input value
-
-                // ★★★ Validation Logic ★★★
+                let rawSid = document.getElementById('up-sid').value.trim(); 
                 if (!grade || grade === "") { alert("請選擇年級！"); return; }
                 if (!cls || cls === "") { alert("請選擇班別！"); return; }
                 if (!rawSid) { alert("請輸入學號！"); return; }
-                
-                // Check number range
                 let sidNum = parseInt(rawSid, 10);
-                if (isNaN(sidNum) || sidNum < 1 || sidNum > 40) {
-                    alert("學號必須為 1 到 40 之間的數字！");
-                    return;
-                }
-
-                // ★★★ Formatting Logic (e.g. 6 -> "06") ★★★
+                if (isNaN(sidNum) || sidNum < 1 || sidNum > 40) { alert("學號必須為 1 到 40 之間的數字！"); return; }
                 name = sidNum.toString().padStart(2, '0');
-                
                 classId = grade + cls; 
                 type = 'student'; 
             } else { 
@@ -661,7 +593,7 @@
                     name: name, 
                     score: session.p1.score, 
                     difficulty: config.diff, 
-                    bpm: config.bpm, // Save BPM
+                    bpm: config.bpm, 
                     type: type, 
                     mode: config.mode, 
                     timestamp: firebase.firestore.FieldValue.serverTimestamp() 
@@ -676,6 +608,9 @@
                 let colName = config.mode === 'competition' ? 'lb_competition' : 'leaderboard';
                 await db.collection(colName).add(payload); 
                 
+                // ★★★ Clear Cache on Submit ★★★
+                lbCache = {};
+
                 document.getElementById('upload-ui').style.display = 'none'; 
                 document.getElementById('upload-success-msg').style.display = 'block'; 
             } catch (e) { 
@@ -689,6 +624,15 @@
         async function fetchLeaderboard(mode, targetId) { 
             const list = document.getElementById(targetId); 
             if (!db) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">資料庫未連接</li>'; return; } 
+            
+            // ★★★ Cache Check ★★★
+            const cacheKey = `LB_${mode}_${currentLB.category}_${currentLB.filterGrade}_${currentLB.filterClass}`;
+            const now = Date.now();
+            if (lbCache[cacheKey] && (now - lbCache[cacheKey].timestamp < CACHE_DURATION)) {
+                renderLBList(list, lbCache[cacheKey].data);
+                return;
+            }
+
             list.innerHTML = '<li class="lb-item" style="justify-content:center;">讀取中...</li>'; 
             
             let q = db.collection('leaderboard').where('mode', '==', mode);
@@ -706,14 +650,12 @@
                 } 
                 
                 const querySnapshot = await q.limit(50).get(); 
-                list.innerHTML = ''; 
                 
                 if (querySnapshot.empty) { 
                     list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>'; 
                     return; 
                 } 
                 
-                // Deduplication
                 const uniqueData = new Map();
                 querySnapshot.forEach(doc => {
                     const d = doc.data();
@@ -723,31 +665,13 @@
                     }
                 });
                 
-                const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score);
-                let rank = 1;
+                const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score).slice(0, 20);
                 
-                sortedList.slice(0, 20).forEach((data) => { 
-                    const safeName = data.name.replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
-                    let rankColor = 'var(--rank-b)'; 
-                    if(rank===1) rankColor = 'var(--rank-s)'; 
-                    if(rank===2) rankColor = 'var(--rank-a)'; 
-                    if(rank===3) rankColor = '#fff'; 
-                    let detailInfo = "訪客"; 
-                    if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } 
-                    
-                    const metaStr = `${getSpeedText(data.bpm || 95)} | ${getDiffText(data.difficulty)}`;
-
-                    const item = document.createElement('li');
-                    item.className = 'lb-item';
-                    item.innerHTML = `
-                    <span class="lb-rank" style="color:${rankColor}">${rank++}</span>
-                    <div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div>
-                    <div class="lb-stats">
-                        <span class="lb-meta">${metaStr}</span>
-                        <span class="lb-score">${data.score}</span>
-                    </div>`; 
-                    list.appendChild(item); 
-                }); 
+                // ★★★ Save to Cache ★★★
+                lbCache[cacheKey] = { timestamp: now, data: sortedList };
+                
+                renderLBList(list, sortedList);
+                
             } catch (e) { 
                 console.error("Fetch Error:", e); 
                 if(e.message.includes('index')) { 
@@ -758,6 +682,25 @@
             } 
         }
 
+        function renderLBList(listElement, dataList) {
+            listElement.innerHTML = '';
+            let rank = 1;
+            dataList.forEach((data) => { 
+                const safeName = data.name.replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
+                let rankColor = 'var(--rank-b)'; 
+                if(rank===1) rankColor = 'var(--rank-s)'; 
+                if(rank===2) rankColor = 'var(--rank-a)'; 
+                if(rank===3) rankColor = '#fff'; 
+                let detailInfo = "訪客"; 
+                if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } 
+                const metaStr = `${getSpeedText(data.bpm || 95)} | ${getDiffText(data.difficulty)}`;
+                const item = document.createElement('li');
+                item.className = 'lb-item';
+                item.innerHTML = `<span class="lb-rank" style="color:${rankColor}">${rank++}</span><div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div><div class="lb-stats"><span class="lb-meta">${metaStr}</span><span class="lb-score">${data.score}</span></div>`; 
+                listElement.appendChild(item); 
+            });
+        }
+
         function openCompetitionRanking() {
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
             document.getElementById('competition-screen').classList.add('active');
@@ -766,10 +709,20 @@
 
         async function fetchCompetitionWinners() {
             const container = document.getElementById('comp-grid-container');
+            
+            // ★★★ Cache Check ★★★
+            const cacheKey = 'COMP_ALL';
+            const now = Date.now();
+            if (lbCache[cacheKey] && (now - lbCache[cacheKey].timestamp < CACHE_DURATION)) {
+                renderCompGrid(container, lbCache[cacheKey].data);
+                return;
+            }
+
             if(!db) { container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1;">資料庫未連接</div>'; return; }
             container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1;">正在讀取各級戰況...</div>';
             
-            let html = '';
+            // Collect all data first
+            let allGradesData = {};
             
             try {
                 for (let g = 1; g <= 6; g++) {
@@ -780,12 +733,9 @@
                                 .limit(50);
                     
                     const snapshot = await q.get();
-                    
-                    let cardHtml = `<div class="comp-card"><div class="comp-grade-title">${gradeCode} 年級</div>`;
-                    
-                    if (snapshot.empty) {
-                        cardHtml += `<div style="text-align:center; color:#666; padding:10px; font-size:12px;">暫無紀錄</div>`;
-                    } else {
+                    let gradeList = [];
+
+                    if (!snapshot.empty) {
                         const uniqueData = new Map();
                         snapshot.forEach(doc => {
                             const d = doc.data();
@@ -794,38 +744,48 @@
                                 uniqueData.set(key, d);
                             }
                         });
-                        
-                        const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score);
-                        let rank = 1;
-                        
-                        sortedList.slice(0, 5).forEach(data => {
-                            let badge = rank;
-                            let color = '#fff';
-                            if(rank===1) { badge='🥇'; color='var(--comp-gold)'; }
-                            else if(rank===2) { badge='🥈'; color='var(--comp-silver)'; }
-                            else if(rank===3) { badge='🥉'; color='var(--comp-bronze)'; }
-                            else { badge = rank + '.'; color='#94a3b8'; }
-                            
-                            cardHtml += `
-                            <div class="comp-item">
-                                <span class="comp-rank" style="color:${color}">${badge}</span>
-                                <span class="comp-name" style="color:${color}">${data.classId} ${data.name}</span>
-                                <div style="text-align:right;">
-                                    <div class="comp-score">${data.score}</div>
-                                </div>
-                            </div>
-                            `;
-                            rank++;
-                        });
+                        gradeList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score).slice(0, 5);
                     }
-                    cardHtml += `</div>`;
-                    html += cardHtml;
+                    allGradesData[g] = gradeList;
                 }
-                container.innerHTML = html;
+                
+                // ★★★ Save to Cache ★★★
+                lbCache[cacheKey] = { timestamp: now, data: allGradesData };
+                
+                renderCompGrid(container, allGradesData);
+
             } catch(e) {
                 console.error(e);
                 container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1; color:red;">讀取失敗，請檢查索引設定</div>';
             }
+        }
+
+        function renderCompGrid(container, allGradesData) {
+            let html = '';
+            for (let g = 1; g <= 6; g++) {
+                let gradeList = allGradesData[g];
+                let cardHtml = `<div class="comp-card"><div class="comp-grade-title">${g} 年級</div>`;
+                
+                if (gradeList.length === 0) {
+                    cardHtml += `<div style="text-align:center; color:#666; padding:10px; font-size:12px;">暫無紀錄</div>`;
+                } else {
+                    let rank = 1;
+                    gradeList.forEach(data => {
+                        let badge = rank;
+                        let color = '#fff';
+                        if(rank===1) { badge='🥇'; color='var(--comp-gold)'; }
+                        else if(rank===2) { badge='🥈'; color='var(--comp-silver)'; }
+                        else if(rank===3) { badge='🥉'; color='var(--comp-bronze)'; }
+                        else { badge = rank + '.'; color='#94a3b8'; }
+                        
+                        cardHtml += `<div class="comp-item"><span class="comp-rank" style="color:${color}">${badge}</span><span class="comp-name" style="color:${color}">${data.classId} ${data.name}</span><div style="text-align:right;"><div class="comp-score">${data.score}</div></div></div>`;
+                        rank++;
+                    });
+                }
+                cardHtml += `</div>`;
+                html += cardHtml;
+            }
+            container.innerHTML = html;
         }
 
         // Game Engine
@@ -841,7 +801,6 @@
                 if(!this.ctx) return; t = t || this.ctx.currentTime;
                 const o = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
                 o.connect(f); f.connect(g); g.connect(this.ctx.destination);
-                // ★★★ Lower Gain to Prevent Clipping ★★★
                 if(type === 'teacher') { o.type = 'sine'; f.type = 'bandpass'; f.frequency.value = 800; f.Q.value = 5; o.frequency.setValueAtTime(850, t); o.frequency.exponentialRampToValueAtTime(800, t+0.1); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.4, t+0.01); g.gain.exponentialRampToValueAtTime(0.001, t+0.2); o.start(t); o.stop(t+0.25); }
                 else if(type === 'p1') { o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1000; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t+0.15); g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.25); o.start(t); o.stop(t+0.3); }
                 else if(type === 'p2') { o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 1500; o.frequency.setValueAtTime(400, t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.3, t+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+0.3); o.start(t); o.stop(t+0.35); }
@@ -859,6 +818,7 @@
         function getBeatSec() { return 60 / config.bpm; }
         function getSpeed() { return (SPAWN_X - HIT_X) / (BEATS_PHASE * getBeatSec()); }
         function generatePattern() {
+            if (config.mode === 'taiko') return []; 
             let beats = [], filled = 0; const pool = PATTERNS[config.diff];
             while(filled < 4) {
                 let rem = 4 - filled; let valid = pool.filter(b => b.reduce((a,c)=>a+c,0) <= rem + 0.01);
@@ -870,35 +830,29 @@
         function startGame() {
             if(document.activeElement) document.activeElement.blur(); AudioEngine.init(); VFX.init();
             
+            config.bpm = parseInt(document.getElementById('speed-select').value);
+
             if (config.mode === 'competition') {
-                config.bpm = 95;
-                config.rounds = Infinity;
-                config.players = 1;
-                config.diff = 'easy'; 
+                config.bpm = 95; config.rounds = Infinity; config.players = 1; config.diff = 'easy'; 
             } else {
-                config.bpm = parseInt(document.getElementById('speed-select').value); 
                 config.diff = document.getElementById('diff-select').value;
                 config.rounds = config.mode.includes('survival') ? Infinity : parseInt(document.getElementById('round-select').value);
             }
 
             const initLives = config.mode === 'competition' ? 5 : 3;
-            // ★★★ Combo Init ★★★
             const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1, combo: 0, maxCombo: 0 });
-            session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 1.0, p1: initP(), p2: initP() };
+            session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 2.0, p1: initP(), p2: initP() };
             
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('hud-p2').style.opacity = config.players === 2 ? 1 : 0;
             updateHUD(); gameState = 'PLAYING'; timeouts.forEach(clearTimeout); timeouts = []; if(animId) cancelAnimationFrame(animId);
+            
             schedule(); render();
         }
         function schedule() {
             if(gameState !== 'PLAYING') return;
             if(!config.mode.includes('survival') && config.mode !== 'competition' && session.round >= config.rounds) { endGame(); return; }
-            
             if(config.mode === 'competition') {
-                if(session.round < 4) config.diff = 'easy';
-                else if(session.round < 8) config.diff = 'normal';
-                else if(session.round < 12) config.diff = 'hard';
-                else config.diff = 'master';
+                if(session.round < 4) config.diff = 'easy'; else if(session.round < 8) config.diff = 'normal'; else if(session.round < 12) config.diff = 'hard'; else config.diff = 'master';
             }
 
             const now = session.nextTime; const BEAT = getBeatSec(); const pattern = generatePattern(); const playStart = now + (BEAT * 4);
@@ -906,7 +860,6 @@
             pattern.forEach((b, idx) => { const target = playStart + b*BEAT; session.p1.notes.push({ target: target, hit: false, missed: false, index: idx }); if(config.players === 2) session.p2.notes.push({ target: target, hit: false, missed: false, index: idx }); });
             
             timeouts.push(setTimeout(() => { if(gameState!=='PLAYING') return; session.round++; updateHUD(); notify("LISTEN", "var(--p1-color)"); AudioEngine.play('metro', AudioEngine.ctx.currentTime); }, (now - AudioEngine.ctx.currentTime)*1000));
-            
             timeouts.push(setTimeout(() => { 
                 if(gameState!=='PLAYING') return; 
                 let col = config.mode.includes('vanishing') ? '#d946ef' : '#facc15'; 
@@ -920,7 +873,9 @@
         function render() {
             if(gameState !== 'PLAYING') return;
             ctx.clearRect(0, 0, width, height); VFX.update(ctx);
-            const now = AudioEngine.ctx.currentTime; const speed = getSpeed(); const beatSec = getBeatSec();
+            const now = AudioEngine.ctx.currentTime; 
+            
+            const speed = getSpeed(); const beatSec = getBeatSec();
             const isVanishing = config.mode.includes('vanishing') || config.mode === 'competition';
             const y1 = config.players === 1 ? height/2 : height*0.28; const y2 = height*0.72;
             
@@ -930,20 +885,7 @@
             drawTrack(ctx, y1, 'var(--p1-color)', 'P1', session.p1.bump);
             drawNotes(ctx, session.p1.notes, y1, '#22d3ee', now, speed, beatSec, isVanishing, 1);
             if(config.players === 2) {
-                // ★★★ Draw Divider Line ★★★
-                ctx.save();
-                ctx.beginPath();
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-                ctx.lineWidth = 4;
-                ctx.setLineDash([15, 15]);
-                ctx.moveTo(0, height / 2);
-                ctx.lineTo(width, height / 2);
-                ctx.stroke();
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = "rgba(255, 255, 255, 0.5)";
-                ctx.stroke();
-                ctx.restore();
-
+                ctx.save(); ctx.beginPath(); ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 4; ctx.setLineDash([15, 15]); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke(); ctx.shadowBlur = 15; ctx.shadowColor = "rgba(255, 255, 255, 0.5)"; ctx.stroke(); ctx.restore();
                 drawTrack(ctx, y2, 'var(--p2-color)', 'P2', session.p2.bump);
                 drawNotes(ctx, session.p2.notes, y2, '#f472b6', now, speed, beatSec, isVanishing, 2);
             }
@@ -953,7 +895,6 @@
             c.shadowBlur = 25; c.shadowColor = color; c.fillStyle = "rgba(30, 41, 59, 0.8)"; c.fillRect(0, y-60, width, 120);
             c.shadowBlur = 0; c.strokeStyle = "rgba(255,255,255,0.15)"; c.lineWidth = 2;
             c.beginPath(); c.moveTo(0, y-60); c.lineTo(width, y-60); c.moveTo(0, y+60); c.lineTo(width, y+60); c.stroke();
-            // Judgment Circle with Bump
             c.beginPath(); c.arc(HIT_X, y, 45 * bump, 0, Math.PI*2);
             c.strokeStyle = "white"; c.lineWidth = 4; c.stroke();
             c.fillStyle = "rgba(255,255,255,0.05)"; c.fill();
@@ -982,7 +923,6 @@
                     c.fillStyle = "rgba(255,255,255,0.5)"; c.beginPath(); c.ellipse(x-12, y-12, 10, 15, Math.PI/4, 0, Math.PI*2); c.fill();
                     c.restore();
                 }
-                // ★★★ MISS Logic Update ★★★
                 if(dt < -WINDOWS.MISS && !n.missed) { 
                     n.missed = true; 
                     handleResult(pid, 'MISS'); 
@@ -1010,125 +950,43 @@
         }
         function handleResult(pid, rating) {
             const data = pid === 1 ? session.p1 : session.p2; const isSurvival = config.mode.includes('survival') || config.mode === 'competition';
-            
             let multiplier = getScoreMultiplier();
-
             if(rating === 'PERFECT' || rating === 'GOOD') { 
-                // ★★★ Combo Logic ★★★
-                data.combo++;
-                if(data.combo > data.maxCombo) data.maxCombo = data.combo;
-                
-                // ★★★ Combo Effect every 10 ★★★
-                if(data.combo >= 10 && data.combo % 10 === 0) {
-                    const y = config.players === 1 ? height/2 : (pid===1 ? height*0.28 : height*0.72);
-                    showCombo(data.combo, HIT_X, y - 50); // Show slightly above track
-                }
-
-                if(rating === 'PERFECT') { data.score += Math.round(100 * multiplier); data.stats.p++; }
-                else { data.score += Math.round(50 * multiplier); data.stats.g++; }
-            }
-            else { 
-                // MISS
-                data.stats.m++; 
-                data.combo = 0; // Reset combo
-                if(isSurvival) loseLife(pid); 
-            }
+                data.combo++; if(data.combo > data.maxCombo) data.maxCombo = data.combo;
+                if(data.combo >= 10 && data.combo % 10 === 0) { const y = config.players === 1 ? height/2 : (pid===1 ? height*0.28 : height*0.72); showCombo(data.combo, HIT_X, y - 50); }
+                if(rating === 'PERFECT') { data.score += Math.round(100 * multiplier); data.stats.p++; } else { data.score += Math.round(50 * multiplier); data.stats.g++; }
+            } else { data.stats.m++; data.combo = 0; if(isSurvival) loseLife(pid); }
             updateHUD();
         }
-        
-        // ★★★ Combo Effect Function ★★★
         function showCombo(count, x, y) {
-            const el = document.createElement('div'); 
-            el.className = 'combo-popup'; 
-            el.innerText = count + " COMBO!";
-            el.style.left = x + 'px'; 
-            el.style.top = y + 'px'; 
-            document.getElementById('game-wrapper').appendChild(el); 
-            setTimeout(()=>el.remove(), 600);
+            const el = document.createElement('div'); el.className = 'combo-popup'; el.innerText = count + " COMBO!";
+            el.style.left = x + 'px'; el.style.top = y + 'px'; document.getElementById('game-wrapper').appendChild(el); setTimeout(()=>el.remove(), 600);
         }
-
         function loseLife(pid) {
             const data = pid === 1 ? session.p1 : session.p2; 
-            
-            // ★★★ Fix for Hearts: Animate specific DOM element ★★★
             const hudId = pid === 1 ? 'p1-lives' : 'p2-lives';
             const container = document.getElementById(hudId);
             const hearts = container.querySelectorAll('.heart');
-            
-            if (hearts.length >= data.lives) {
-                const targetHeart = hearts[data.lives - 1];
-                if (targetHeart) {
-                    targetHeart.classList.add('heart-breaking');
-                }
-            }
-
+            if (hearts.length >= data.lives) { const targetHeart = hearts[data.lives - 1]; if (targetHeart) { targetHeart.classList.add('heart-breaking'); } }
             data.lives--;
-            
-            // Wait for animation before ending or updating
-            setTimeout(() => {
-                if(data.lives <= 0) endGame();
-                else updateHUD(); 
-            }, 300);
+            setTimeout(() => { if(data.lives <= 0) endGame(); else updateHUD(); }, 300);
         }
         function updateHUD() {
-            document.getElementById('p1-score').innerText = session.p1.score; 
-            document.getElementById('p2-score').innerText = session.p2.score;
-            
+            document.getElementById('p1-score').innerText = session.p1.score; document.getElementById('p2-score').innerText = session.p2.score;
             const isSurvivalMode = config.mode.includes('survival') || config.mode === 'competition';
-            
-            if(isSurvivalMode) {
-                // ★★★ Render Hearts as Spans ★★★
-                renderHearts('p1-lives', session.p1.lives);
-                renderHearts('p2-lives', session.p2.lives);
-            } else {
-                document.getElementById('p1-lives').innerHTML = "";
-                document.getElementById('p2-lives').innerHTML = "";
-            }
-            
-            let rTxt = `ROUND ${session.round}`; 
-            if(!config.mode.includes('survival') && config.mode !== 'competition') rTxt += ` / ${config.rounds}`; 
-            document.getElementById('round-info').innerText = rTxt;
+            if(isSurvivalMode) { renderHearts('p1-lives', session.p1.lives); renderHearts('p2-lives', session.p2.lives); } else { document.getElementById('p1-lives').innerHTML = ""; document.getElementById('p2-lives').innerHTML = ""; }
+            let rTxt = `ROUND ${session.round}`; if(!config.mode.includes('survival') && config.mode !== 'competition') rTxt += ` / ${config.rounds}`; document.getElementById('round-info').innerText = rTxt;
         }
-
-        function renderHearts(elementId, count) {
-            const container = document.getElementById(elementId);
-            let html = '';
-            for(let i=0; i<Math.max(0, count); i++) {
-                html += '<span class="heart">❤</span>';
-            }
-            container.innerHTML = html;
-        }
-
-        function showFeedback(text, x, y, color) {
-            const el = document.createElement('div'); el.className = 'hit-popup'; el.innerText = text;
-            el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color;
-            document.getElementById('game-wrapper').appendChild(el); setTimeout(()=>el.remove(), 500);
-        }
-        function notify(text, color) {
-            const el = document.getElementById('center-notify'); el.innerText = text; el.style.color = color; el.style.opacity = 1;
-            if (config.players === 1) { el.style.top = "75%"; } else { el.style.top = "50%"; }
-            el.style.transform = "translate(-50%, -50%) scale(1.2)"; setTimeout(() => { el.style.opacity = 0; el.style.transform = "translate(-50%, -50%) scale(1)"; }, 600);
-        }
+        function renderHearts(elementId, count) { const container = document.getElementById(elementId); let html = ''; for(let i=0; i<Math.max(0, count); i++) { html += '<span class="heart">❤</span>'; } container.innerHTML = html; }
+        function showFeedback(text, x, y, color) { const el = document.createElement('div'); el.className = 'hit-popup'; el.innerText = text; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color; document.getElementById('game-wrapper').appendChild(el); setTimeout(()=>el.remove(), 500); }
+        function notify(text, color) { const el = document.getElementById('center-notify'); el.innerText = text; el.style.color = color; el.style.opacity = 1; if (config.players === 1) { el.style.top = "75%"; } else { el.style.top = "50%"; } el.style.transform = "translate(-50%, -50%) scale(1.2)"; setTimeout(() => { el.style.opacity = 0; el.style.transform = "translate(-50%, -50%) scale(1)"; }, 600); }
         function endGame() {
-            gameState = 'END'; document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('result-screen').classList.add('active');
-            timeouts.forEach(clearTimeout);
+            gameState = 'END'; document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('result-screen').classList.add('active'); timeouts.forEach(clearTimeout);
             const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'比賽'}[config.mode];
             document.getElementById('res-mode').innerText = mName; document.getElementById('res-len').innerText = (config.mode.includes('survival') || config.mode === 'competition') ? "∞" : config.rounds + "R";
-            const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; 
-            document.getElementById('res-diff').innerText = config.mode === 'competition' ? '自動晉級' : dNames[config.diff];
-            
-            const scrollContainer = document.getElementById('result-scroll-container');
-            const container = document.getElementById('result-content'); 
-            container.innerHTML = ''; 
-            
-            if(config.players === 1) {
-                scrollContainer.classList.add('single-mode-layout');
-                container.className = 'result-flex single-layout';
-            } else {
-                scrollContainer.classList.remove('single-mode-layout');
-                container.className = 'result-flex';
-            }
-            
+            const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; document.getElementById('res-diff').innerText = config.mode === 'competition' ? '自動晉級' : dNames[config.diff];
+            const scrollContainer = document.getElementById('result-scroll-container'); const container = document.getElementById('result-content'); container.innerHTML = ''; 
+            if(config.players === 1) { scrollContainer.classList.add('single-mode-layout'); container.className = 'result-flex single-layout'; } else { scrollContainer.classList.remove('single-mode-layout'); container.className = 'result-flex'; }
             container.appendChild(createResultCard(1, session.p1)); if(config.players === 2) container.appendChild(createResultCard(2, session.p2));
             const uploadUI = document.getElementById('upload-ui'); const submitBtn = document.getElementById('btn-submit');
             if(config.players === 1) { document.getElementById('leaderboard-display-result').classList.add('active'); uploadUI.style.display = 'block'; document.getElementById('upload-success-msg').style.display = 'none'; submitBtn.disabled = false; submitBtn.innerText = "確認上傳"; document.getElementById('up-sid').value = ''; document.getElementById('up-guest-name').value = ''; setUploadRole('student'); } else { document.getElementById('leaderboard-display-result').classList.remove('active'); }
@@ -1141,6 +999,11 @@
             else { div.innerHTML = `<h2 style="color:var(--p${pid}-color)">PLAYER ${pid}</h2><div class="res-rank" style="color:${rCol}">${rank}</div><div class="res-score">${data.score}</div><div class="stats-table"><div class="stat-row"><span class="stat-label">MAX COMBO</span><span class="stat-num">${data.maxCombo}</span></div><div class="stat-row"><span class="stat-label">PERFECT</span><span class="stat-num">${data.stats.p}</span></div><div class="stat-row"><span class="stat-label">GOOD</span><span class="stat-num">${data.stats.g}</span></div><div class="stat-row"><span class="stat-label">MISS</span><span class="stat-num">${data.stats.m}</span></div><div class="stat-row" style="background:var(--glass-border)"><span class="stat-label" style="color:white">ACC</span><span class="stat-num">${acc}%</span></div></div>`; }
             return div;
         }
+        
+        // ★★★ 修正1：防止雙指縮放事件 ★★★
+        document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+        document.addEventListener('dblclick', function(e) { e.preventDefault(); }, { passive: false });
+
         const handleTouch = (zone, e) => { e.preventDefault(); if(config.players === 1) { handleInput(1); } else { handleInput(zone); } };
         window.addEventListener('keydown', e => {
             const k = e.key.toLowerCase(); const code = e.code;
