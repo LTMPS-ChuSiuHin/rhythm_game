@@ -12,23 +12,33 @@
         :root {
             /* Theme Colors */
             --bg-dark: #020617;
-            --glass-panel: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            --glass-blur: blur(12px);
+            /* High Contrast Panel Background */
+            --glass-panel: rgba(5, 10, 20, 0.85); 
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+            --glass-blur: blur(16px);
             
             /* Colors */
             --p1-color: #22d3ee;
             --p2-color: #f472b6;
-            --rank-s: #22d3ee; --rank-a: #4ade80; --rank-b: #facc15; --rank-c: #fb923c; --rank-d: #f87171;
+            --rank-s: #22d3ee;
+            --rank-a: #4ade80;
+            --rank-b: #facc15;
+            --rank-c: #fb923c;
+            --rank-d: #f87171;
+            
+            /* Competition Specific */
             --comp-gold: #fbbf24;
-            --text-primary: #f8fafc; --text-secondary: #94a3b8;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
         }
         body {
             margin: 0; background-color: var(--bg-dark); color: var(--text-primary);
             font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
             display: flex; justify-content: center; align-items: center;
             height: 100vh; overflow: hidden; 
+            /* Disable Selection & Zoom */
             user-select: none; -webkit-user-select: none; 
             touch-action: none; -webkit-touch-callout: none;
             position: relative;
@@ -124,30 +134,81 @@
             color: var(--text-secondary); font-size: 13px; margin-top: 0; margin-bottom: 15px;
             letter-spacing: 2px; opacity: 0.9; display: block;
         }
-        .season-banner { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 50px; padding: 6px 20px; display: inline-flex; gap: 10px; align-items: center; margin-bottom: 5px; }
+        
+        /* Updated Season Banner: Multi-line support */
+        .season-banner {
+            background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 20px; padding: 10px 25px; 
+            display: flex; flex-direction: column; gap: 5px; align-items: center;
+            margin-bottom: 5px;
+        }
         .season-text { color: #facc15; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
         .season-sep { color: rgba(255,255,255,0.2); }
         .reward-text { color: #4ade80; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
 
-        .main-content-area { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
-        .control-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 650px; background: var(--glass-panel); backdrop-filter: var(--glass-blur); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); padding: 20px 30px; border-radius: 20px; margin: 5px 0; flex-shrink: 0; }
+        .main-content-area {
+            flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden; 
+        }
+
+        /* Control Panel - High Contrast Update */
+        .control-panel {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 650px;
+            background: var(--glass-panel);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
+            padding: 20px 30px; border-radius: 20px; margin: 5px 0; flex-shrink: 0; 
+        }
         .control-group.full { grid-column: span 2; }
+        
         label { font-size: 12px; color: var(--p1-color); margin-bottom: 4px; font-weight: 800; text-transform: uppercase; display: block; letter-spacing: 1px; }
-        select, .btn, input { padding: 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); color: white; font-family: inherit; font-size: 14px; cursor: pointer; transition: all 0.2s; outline: none; width: 100%; }
-        select:hover, .btn:hover, input:focus { border-color: var(--p1-color); background: rgba(34, 211, 238, 0.1); box-shadow: 0 0 15px rgba(34,211,238,0.1); }
+        
+        select, .btn, input {
+            padding: 10px; border-radius: 8px; 
+            background: rgba(0, 0, 0, 0.7); /* Darker background */
+            border: 1px solid rgba(255,255,255,0.2); /* Brighter border */
+            backdrop-filter: blur(5px);
+            color: white; font-family: inherit; font-size: 14px; 
+            cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
+        }
+        select:hover, .btn:hover, input:focus { 
+            border-color: var(--p1-color); 
+            background: rgba(0, 0, 0, 0.9); 
+            box-shadow: 0 0 15px rgba(34,211,238,0.2); 
+        }
         .control-group.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
 
-        .mode-description { grid-column: span 2; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); border-radius: 10px; padding: 8px; font-size: 12px; color: #e2e8f0; text-align: center; line-height: 1.4; margin-top: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
-        .toggle-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); background: rgba(0,0,0,0.5); border-radius: 8px; padding: 3px; gap: 3px; border: 1px solid rgba(255,255,255,0.05); }
-        .toggle-btn { padding: 6px 2px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 6px; font-weight: 600; transition: 0.2s; font-size: 13px; white-space: nowrap; }
-        .toggle-btn:hover { color: white; background: rgba(255,255,255,0.05); }
-        .toggle-btn.active { background: rgba(255,255,255,0.15); color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); text-shadow: 0 0 8px currentColor; border: 1px solid rgba(255,255,255,0.1); }
-        .toggle-btn[data-mode="vanishing"].active { color: #d946ef; border-color: #d946ef; background: rgba(217, 70, 239, 0.15); }
-        .toggle-btn[data-mode="survival"].active { color: #facc15; border-color: #facc15; background: rgba(250, 204, 21, 0.15); }
-        .toggle-btn[data-mode="vanishing-survival"].active { color: #f87171; border-color: #f87171; background: rgba(248, 113, 113, 0.15); }
-        .toggle-btn[data-mode="competition"].active { color: var(--comp-gold); border-color: var(--comp-gold); background: rgba(251, 191, 36, 0.15); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
-        .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.15); }
+        .mode-description {
+            grid-column: span 2; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--glass-border);
+            border-radius: 10px; padding: 10px; font-size: 13px; color: #e2e8f0; text-align: center;
+            line-height: 1.4; margin-top: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        /* Toggle Button - High Contrast */
+        .toggle-wrapper { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); 
+            background: rgba(0,0,0,0.7); 
+            border-radius: 8px; padding: 3px; gap: 3px; 
+            border: 1px solid rgba(255,255,255,0.15); 
+        }
+        .toggle-btn { 
+            padding: 6px 2px; border: none; background: transparent; 
+            color: var(--text-secondary); cursor: pointer; border-radius: 6px; font-weight: 600; 
+            transition: 0.2s; font-size: 13px; white-space: nowrap; 
+        }
+        .toggle-btn:hover { color: white; background: rgba(255,255,255,0.1); }
+        .toggle-btn.active { 
+            background: rgba(255,255,255,0.15); color: white; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); text-shadow: 0 0 8px currentColor; 
+            border: 1px solid rgba(255,255,255,0.2); 
+        }
+        .toggle-btn[data-mode="vanishing"].active { color: #d946ef; border-color: #d946ef; background: rgba(217, 70, 239, 0.2); }
+        .toggle-btn[data-mode="survival"].active { color: #facc15; border-color: #facc15; background: rgba(250, 204, 21, 0.2); }
+        .toggle-btn[data-mode="vanishing-survival"].active { color: #f87171; border-color: #f87171; background: rgba(248, 113, 113, 0.2); }
+        .toggle-btn[data-mode="competition"].active { color: var(--comp-gold); border-color: var(--comp-gold); background: rgba(251, 191, 36, 0.2); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
+        .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.2); }
 
+        /* Footer & Horizontal Buttons */
         .screen-footer { flex-shrink: 0; width: 100%; margin-top: 20px; }
         .btn-group { display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 700px; margin: 0 auto; flex-wrap: nowrap; }
         .btn-start { padding: 12px 5px; font-size: 18px; font-weight: 800; flex: 1.2; background: linear-gradient(90deg, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8)); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 1px; white-space: nowrap; min-width: 0; }
@@ -158,6 +219,7 @@
         .btn-gold:hover { background: rgba(251, 191, 36, 0.1); color: #fff; border-color: #fff; box-shadow: 0 0 15px var(--comp-gold); }
         .footer-tip { display: none; }
 
+        /* Result & Leaderboard */
         .scroll-content { flex: 1; width: 100%; overflow-y: auto; display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; }
         .single-mode-layout { flex-direction: row !important; align-items: flex-start !important; justify-content: center !important; gap: 30px !important; overflow: hidden !important; }
         .single-mode-layout .result-flex { flex: 0 0 auto; width: 320px; margin: 0; padding: 0; max-width: none; }
@@ -266,10 +328,9 @@
             <div class="screen-header">
                 <h1>藍循節奏大師</h1>
                 <p class="subtitle">先聆聽四拍節奏，然後擊打出相同的節奏。</p>
-                <div class="season-banner">
-                    <span class="season-text">第一賽季（比賽模式）：12月2日 - 12月18日</span>
-                    <span class="season-sep">|</span>
-                    <span class="reward-text">每級首三名可獲 AE 分 100分！</span>
+                <div class="season-banner" style="display: flex; flex-direction: column; gap: 5px; border-radius: 15px; padding: 10px 25px; height: auto;">
+                    <span class="season-text" style="opacity: 0.8;">第一賽季（已完結）：12月2日 - 12月18日</span>
+                    <span class="season-text" style="color: #4ade80; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3);">第二賽季：日期待定</span>
                 </div>
             </div>
             
@@ -289,11 +350,11 @@
                             <button class="toggle-btn" data-mode="vanishing" onclick="setMode('vanishing')">消失</button>
                             <button class="toggle-btn" data-mode="survival" onclick="setMode('survival')">生存</button>
                             <button class="toggle-btn" data-mode="vanishing-survival" onclick="setMode('vanishing-survival')">消存</button>
-                            <button class="toggle-btn" data-mode="competition" onclick="setMode('competition')">比賽</button>
+                            <button class="toggle-btn" data-mode="competition" onclick="setMode('competition')">賽季1</button>
                         </div>
                     </div>
                     <div id="mode-desc" class="mode-description">載入說明中...</div>
-                    
+
                     <div class="control-group" id="round-group">
                         <label>長度</label>
                         <select id="round-select">
@@ -325,7 +386,7 @@
                 <div class="btn-group">
                     <button class="btn btn-secondary" onclick="openLeaderboardMenu()">名人堂</button>
                     <button class="btn btn-start" onclick="startGame()">開始遊戲</button>
-                    <button class="btn btn-secondary btn-gold" onclick="openCompetitionRanking()">🏆 比賽龍虎榜</button>
+                    <button class="btn btn-secondary btn-gold" onclick="openCompetitionRanking()">🏆 第一賽季龍虎榜</button>
                 </div>
             </div>
         </div>
@@ -446,8 +507,54 @@
                 'vanishing': "消失模式：音符會在途中消失，考驗你對節奏的記憶力。",
                 'survival': "生存模式：無盡挑戰直至出現3次失誤，挑戰你的集中力。",
                 'vanishing-survival': "消存模式：消失與生存的混合模式，大師級的終極試練！",
-                'competition': "比賽模式：無盡挑戰直至出現5次失誤，難度將逐漸提升，挑戰成為大賽冠軍！"
+                'competition': "賽季1：重溫第一賽季的挑戰！無盡挑戰直至出現5次失誤，難度將逐漸提升。"
             }
+        };
+
+        // ★★★ 第一賽季最終結果 (靜態資料) ★★★
+        const SEASON_1_RESULTS = {
+            1: [
+                {classId: "1B", name: "22", score: 19550},
+                {classId: "1E", name: "01", score: 17100},
+                {classId: "1B", name: "11", score: 12150},
+                {classId: "1D", name: "17", score: 10600},
+                {classId: "1D", name: "07", score: 8300}
+            ],
+            2: [
+                {classId: "2A", name: "12", score: 9700},
+                {classId: "2D", name: "05", score: 8850},
+                {classId: "2B", name: "07", score: 7800},
+                {classId: "2E", name: "19", score: 7750},
+                {classId: "2D", name: "15", score: 7550}
+            ],
+            3: [
+                {classId: "3B", name: "07", score: 11100},
+                {classId: "3A", name: "27", score: 10700},
+                {classId: "3C", name: "02", score: 9300},
+                {classId: "3B", name: "04", score: 9250},
+                {classId: "3A", name: "26", score: 9200}
+            ],
+            4: [
+                {classId: "4E", name: "01", score: 28000},
+                {classId: "4A", name: "12", score: 13850},
+                {classId: "4B", name: "05", score: 13600},
+                {classId: "4A", name: "07", score: 12300},
+                {classId: "4B", name: "08", score: 9450}
+            ],
+            5: [
+                {classId: "5B", name: "22", score: 12350},
+                {classId: "5E", name: "07", score: 11650},
+                {classId: "5E", name: "03", score: 10750},
+                {classId: "5B", name: "17", score: 9700},
+                {classId: "5D", name: "20", score: 8150}
+            ],
+            6: [
+                {classId: "6E", name: "01", score: 64150},
+                {classId: "6A", name: "11", score: 38800},
+                {classId: "6E", name: "18", score: 37650},
+                {classId: "6A", name: "20", score: 22300},
+                {classId: "6C", name: "06", score: 15650} 
+            ]
         };
 
         function showMenu() { 
@@ -482,7 +589,7 @@
                 el.innerHTML = `<div><span style="color:${pColor}; font-weight:bold;">[${config.players}P]</span> ${pText}</div><div style="margin-top:3px;"><span style="color:${mColor}; font-weight:bold;">[${getModeName(config.mode)}]</span> ${mText}</div>`;
             }
         }
-        function getModeName(m) { const names = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'比賽'}; return names[m] || m; }
+        function getModeName(m) { const names = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'賽季1'}; return names[m] || m; }
         function setUploadRole(role) { uploadRole = role; document.getElementById('role-student').classList.toggle('active', role === 'student'); document.getElementById('role-guest').classList.toggle('active', role === 'guest'); document.getElementById('input-student-row').style.display = role === 'student' ? 'flex' : 'none'; document.getElementById('input-guest-row').style.display = role === 'guest' ? 'flex' : 'none'; }
         function switchLBCategory(cat) { currentLB.category = cat; document.querySelectorAll('#lb-category-tabs .cat-btn').forEach(b => b.classList.remove('active')); document.getElementById(`cat-${cat}`).classList.add('active'); const filters = document.getElementById('lb-filters'); const fGrade = document.getElementById('filter-grade'); const fClass = document.getElementById('filter-class'); if(cat === 'class') { filters.style.display = 'flex'; fGrade.style.display = 'block'; fClass.style.display = 'block'; } else if (cat === 'grade') { filters.style.display = 'flex'; fGrade.style.display = 'block'; fClass.style.display = 'none'; } else { filters.style.display = 'none'; } refreshLB(); }
         function switchLBMode(m) { currentLB.mode = m; document.querySelectorAll('#lb-mode-tabs .mode-tab').forEach(b => b.classList.remove('active')); document.getElementById(`menu-lb-${m}`).classList.add('active'); refreshLB(); }
@@ -533,7 +640,6 @@
             updateDescription(); 
         }
 
-        // ★★★ Score Multiplier Logic ★★★
         function getScoreMultiplier() {
             if (config.mode === 'competition') return 1.0; // Fixed speed in competition
             if (config.bpm === 70) return 0.8;
@@ -541,7 +647,6 @@
             return 1.0;
         }
 
-        // ★★★ Helper for Difficulty Text ★★★
         function getDiffText(d) {
             const map = { 'easy': '簡單', 'normal': '普通', 'hard': '困難', 'master': '達人' };
             return map[d] || d;
@@ -553,6 +658,19 @@
             return s;
         }
 
+        function parseChart(chart) {
+            let beats = [];
+            let currentTime = 0;
+            chart.forEach(str => {
+                let durations = str.split(' ').map(Number);
+                durations.forEach(d => {
+                    beats.push(currentTime);
+                    currentTime += d;
+                });
+            });
+            return beats;
+        }
+
         async function submitScore() { 
             if (!db) { alert("請先設定 Firebase！"); return; } 
             const btn = document.getElementById('btn-submit'); 
@@ -561,12 +679,18 @@
             if (uploadRole === 'student') { 
                 grade = document.getElementById('up-grade').value; 
                 cls = document.getElementById('up-class').value; 
-                let rawSid = document.getElementById('up-sid').value.trim(); 
+                let rawSid = document.getElementById('up-sid').value.trim(); // Get input value
+
                 if (!grade || grade === "") { alert("請選擇年級！"); return; }
                 if (!cls || cls === "") { alert("請選擇班別！"); return; }
                 if (!rawSid) { alert("請輸入學號！"); return; }
+                
                 let sidNum = parseInt(rawSid, 10);
-                if (isNaN(sidNum) || sidNum < 1 || sidNum > 40) { alert("學號必須為 1 到 40 之間的數字！"); return; }
+                if (isNaN(sidNum) || sidNum < 1 || sidNum > 40) {
+                    alert("學號必須為 1 到 40 之間的數字！");
+                    return;
+                }
+
                 name = sidNum.toString().padStart(2, '0');
                 classId = grade + cls; 
                 type = 'student'; 
@@ -584,7 +708,7 @@
                     name: name, 
                     score: session.p1.score, 
                     difficulty: config.diff, 
-                    bpm: config.bpm, 
+                    bpm: config.bpm, // Save BPM
                     type: type, 
                     mode: config.mode, 
                     timestamp: firebase.firestore.FieldValue.serverTimestamp() 
@@ -599,7 +723,6 @@
                 let colName = config.mode === 'competition' ? 'lb_competition' : 'leaderboard';
                 await db.collection(colName).add(payload); 
                 
-                // ★★★ Clear Cache on Submit ★★★
                 lbCache = {};
 
                 document.getElementById('upload-ui').style.display = 'none'; 
@@ -616,7 +739,6 @@
             const list = document.getElementById(targetId); 
             if (!db) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">資料庫未連接</li>'; return; } 
             
-            // ★★★ Cache Check ★★★
             const cacheKey = `LB_${mode}_${currentLB.category}_${currentLB.filterGrade}_${currentLB.filterClass}`;
             const now = Date.now();
             if (lbCache[cacheKey] && (now - lbCache[cacheKey].timestamp < CACHE_DURATION)) {
@@ -658,7 +780,6 @@
                 
                 const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score).slice(0, 20);
                 
-                // ★★★ Save to Cache ★★★
                 lbCache[cacheKey] = { timestamp: now, data: sortedList };
                 
                 renderLBList(list, sortedList);
@@ -698,63 +819,17 @@
             fetchCompetitionWinners();
         }
 
-        async function fetchCompetitionWinners() {
+        function fetchCompetitionWinners() {
             const container = document.getElementById('comp-grid-container');
-            
-            // ★★★ Cache Check ★★★
-            const cacheKey = 'COMP_ALL';
-            const now = Date.now();
-            if (lbCache[cacheKey] && (now - lbCache[cacheKey].timestamp < CACHE_DURATION)) {
-                renderCompGrid(container, lbCache[cacheKey].data);
-                return;
-            }
-
-            if(!db) { container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1;">資料庫未連接</div>'; return; }
-            container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1;">正在讀取各級戰況...</div>';
-            
-            // Collect all data first
-            let allGradesData = {};
-            
-            try {
-                for (let g = 1; g <= 6; g++) {
-                    const gradeCode = g.toString();
-                    const q = db.collection('lb_competition')
-                                .where('grade', '==', gradeCode)
-                                .orderBy('score', 'desc')
-                                .limit(50);
-                    
-                    const snapshot = await q.get();
-                    let gradeList = [];
-
-                    if (!snapshot.empty) {
-                        const uniqueData = new Map();
-                        snapshot.forEach(doc => {
-                            const d = doc.data();
-                            const key = d.classId + '_' + d.name;
-                            if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) {
-                                uniqueData.set(key, d);
-                            }
-                        });
-                        gradeList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score).slice(0, 5);
-                    }
-                    allGradesData[g] = gradeList;
-                }
-                
-                // ★★★ Save to Cache ★★★
-                lbCache[cacheKey] = { timestamp: now, data: allGradesData };
-                
-                renderCompGrid(container, allGradesData);
-
-            } catch(e) {
-                console.error(e);
-                container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1; color:red;">讀取失敗，請檢查索引設定</div>';
-            }
+            const headerTitle = document.querySelector('#competition-screen h1');
+            if(headerTitle) headerTitle.innerText = "第一賽季：最終龍虎榜";
+            renderCompGrid(container, SEASON_1_RESULTS);
         }
 
         function renderCompGrid(container, allGradesData) {
             let html = '';
             for (let g = 1; g <= 6; g++) {
-                let gradeList = allGradesData[g];
+                let gradeList = allGradesData[g] || [];
                 let cardHtml = `<div class="comp-card"><div class="comp-grade-title">${g} 年級</div>`;
                 
                 if (gradeList.length === 0) {
@@ -792,7 +867,6 @@
                 if(!this.ctx) return; t = t || this.ctx.currentTime;
                 const o = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
                 o.connect(f); f.connect(g); g.connect(this.ctx.destination);
-                // ★★★ Lower Gain to Prevent Clipping ★★★
                 if(type === 'teacher') { o.type = 'sine'; f.type = 'bandpass'; f.frequency.value = 800; f.Q.value = 5; o.frequency.setValueAtTime(850, t); o.frequency.exponentialRampToValueAtTime(800, t+0.1); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.4, t+0.01); g.gain.exponentialRampToValueAtTime(0.001, t+0.2); o.start(t); o.stop(t+0.25); }
                 else if(type === 'p1') { o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1000; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t+0.15); g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.25); o.start(t); o.stop(t+0.3); }
                 else if(type === 'p2') { o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 1500; o.frequency.setValueAtTime(400, t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.3, t+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+0.3); o.start(t); o.stop(t+0.35); }
@@ -824,17 +898,13 @@
             config.bpm = parseInt(document.getElementById('speed-select').value);
 
             if (config.mode === 'competition') {
-                config.bpm = 95;
-                config.rounds = Infinity;
-                config.players = 1;
-                config.diff = 'easy'; 
+                config.bpm = 95; config.rounds = Infinity; config.players = 1; config.diff = 'easy'; 
             } else {
                 config.diff = document.getElementById('diff-select').value;
                 config.rounds = config.mode.includes('survival') ? Infinity : parseInt(document.getElementById('round-select').value);
             }
 
             const initLives = config.mode === 'competition' ? 5 : 3;
-            // ★★★ Combo Init ★★★
             const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1, combo: 0, maxCombo: 0 });
             session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 2.0, p1: initP(), p2: initP() };
             
@@ -846,12 +916,8 @@
         function schedule() {
             if(gameState !== 'PLAYING') return;
             if(!config.mode.includes('survival') && config.mode !== 'competition' && session.round >= config.rounds) { endGame(); return; }
-            
             if(config.mode === 'competition') {
-                if(session.round < 4) config.diff = 'easy';
-                else if(session.round < 8) config.diff = 'normal';
-                else if(session.round < 12) config.diff = 'hard';
-                else config.diff = 'master';
+                if(session.round < 4) config.diff = 'easy'; else if(session.round < 8) config.diff = 'normal'; else if(session.round < 12) config.diff = 'hard'; else config.diff = 'master';
             }
 
             const now = session.nextTime; const BEAT = getBeatSec(); const pattern = generatePattern(); const playStart = now + (BEAT * 4);
@@ -859,7 +925,6 @@
             pattern.forEach((b, idx) => { const target = playStart + b*BEAT; session.p1.notes.push({ target: target, hit: false, missed: false, index: idx }); if(config.players === 2) session.p2.notes.push({ target: target, hit: false, missed: false, index: idx }); });
             
             timeouts.push(setTimeout(() => { if(gameState!=='PLAYING') return; session.round++; updateHUD(); notify("LISTEN", "var(--p1-color)"); AudioEngine.play('metro', AudioEngine.ctx.currentTime); }, (now - AudioEngine.ctx.currentTime)*1000));
-            
             timeouts.push(setTimeout(() => { 
                 if(gameState!=='PLAYING') return; 
                 let col = config.mode.includes('vanishing') ? '#d946ef' : '#facc15'; 
@@ -873,7 +938,9 @@
         function render() {
             if(gameState !== 'PLAYING') return;
             ctx.clearRect(0, 0, width, height); VFX.update(ctx);
-            const now = AudioEngine.ctx.currentTime; const speed = getSpeed(); const beatSec = getBeatSec();
+            const now = AudioEngine.ctx.currentTime; 
+            
+            const speed = getSpeed(); const beatSec = getBeatSec();
             const isVanishing = config.mode.includes('vanishing') || config.mode === 'competition';
             const y1 = config.players === 1 ? height/2 : height*0.28; const y2 = height*0.72;
             
@@ -883,20 +950,7 @@
             drawTrack(ctx, y1, 'var(--p1-color)', 'P1', session.p1.bump);
             drawNotes(ctx, session.p1.notes, y1, '#22d3ee', now, speed, beatSec, isVanishing, 1);
             if(config.players === 2) {
-                // ★★★ Draw Divider Line ★★★
-                ctx.save();
-                ctx.beginPath();
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-                ctx.lineWidth = 4;
-                ctx.setLineDash([15, 15]);
-                ctx.moveTo(0, height / 2);
-                ctx.lineTo(width, height / 2);
-                ctx.stroke();
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = "rgba(255, 255, 255, 0.5)";
-                ctx.stroke();
-                ctx.restore();
-
+                ctx.save(); ctx.beginPath(); ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 4; ctx.setLineDash([15, 15]); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke(); ctx.shadowBlur = 15; ctx.shadowColor = "rgba(255, 255, 255, 0.5)"; ctx.stroke(); ctx.restore();
                 drawTrack(ctx, y2, 'var(--p2-color)', 'P2', session.p2.bump);
                 drawNotes(ctx, session.p2.notes, y2, '#f472b6', now, speed, beatSec, isVanishing, 2);
             }
@@ -986,16 +1040,14 @@
             document.getElementById('p1-score').innerText = session.p1.score; document.getElementById('p2-score').innerText = session.p2.score;
             const isSurvivalMode = config.mode.includes('survival') || config.mode === 'competition';
             if(isSurvivalMode) { renderHearts('p1-lives', session.p1.lives); renderHearts('p2-lives', session.p2.lives); } else { document.getElementById('p1-lives').innerHTML = ""; document.getElementById('p2-lives').innerHTML = ""; }
-            let rTxt = config.mode === 'taiko' ? "TAIKO" : `ROUND ${session.round}`; 
-            if(!config.mode.includes('survival') && config.mode !== 'competition' && config.mode !== 'taiko') rTxt += ` / ${config.rounds}`; 
-            document.getElementById('round-info').innerText = rTxt;
+            let rTxt = `ROUND ${session.round}`; if(!config.mode.includes('survival') && config.mode !== 'competition') rTxt += ` / ${config.rounds}`; document.getElementById('round-info').innerText = rTxt;
         }
         function renderHearts(elementId, count) { const container = document.getElementById(elementId); let html = ''; for(let i=0; i<Math.max(0, count); i++) { html += '<span class="heart">❤</span>'; } container.innerHTML = html; }
         function showFeedback(text, x, y, color) { const el = document.createElement('div'); el.className = 'hit-popup'; el.innerText = text; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color; document.getElementById('game-wrapper').appendChild(el); setTimeout(()=>el.remove(), 500); }
         function notify(text, color) { const el = document.getElementById('center-notify'); el.innerText = text; el.style.color = color; el.style.opacity = 1; if (config.players === 1) { el.style.top = "75%"; } else { el.style.top = "50%"; } el.style.transform = "translate(-50%, -50%) scale(1.2)"; setTimeout(() => { el.style.opacity = 0; el.style.transform = "translate(-50%, -50%) scale(1)"; }, 600); }
         function endGame() {
             gameState = 'END'; document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('result-screen').classList.add('active'); timeouts.forEach(clearTimeout);
-            const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'比賽', 'taiko':'太鼓'}[config.mode];
+            const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'賽季1'}[config.mode];
             document.getElementById('res-mode').innerText = mName; document.getElementById('res-len').innerText = (config.mode.includes('survival') || config.mode === 'competition') ? "∞" : config.rounds + "R";
             const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; document.getElementById('res-diff').innerText = config.mode === 'competition' ? '自動晉級' : dNames[config.diff];
             const scrollContainer = document.getElementById('result-scroll-container'); const container = document.getElementById('result-content'); container.innerHTML = ''; 
@@ -1013,7 +1065,6 @@
             return div;
         }
         
-        // ★★★ 修正1：防止雙指縮放事件 ★★★
         document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
         document.addEventListener('dblclick', function(e) { e.preventDefault(); }, { passive: false });
 
