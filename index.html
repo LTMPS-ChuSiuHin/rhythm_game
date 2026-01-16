@@ -12,7 +12,6 @@
         :root {
             /* Theme Colors */
             --bg-dark: #020617;
-            /* High Contrast Panel Background */
             --glass-panel: rgba(5, 10, 20, 0.85); 
             --glass-border: rgba(255, 255, 255, 0.2);
             --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
@@ -29,6 +28,7 @@
             
             /* Competition Specific */
             --comp-gold: #fbbf24;
+            --season2-color: #a78bfa;
             
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
@@ -38,7 +38,6 @@
             font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
             display: flex; justify-content: center; align-items: center;
             height: 100vh; overflow: hidden; 
-            /* Disable Selection & Zoom */
             user-select: none; -webkit-user-select: none; 
             touch-action: none; -webkit-touch-callout: none;
             position: relative;
@@ -135,7 +134,6 @@
             letter-spacing: 2px; opacity: 0.9; display: block;
         }
         
-        /* Updated Season Banner: Multi-line support */
         .season-banner {
             background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);
             border-radius: 20px; padding: 10px 25px; 
@@ -151,7 +149,6 @@
             overflow: hidden; 
         }
 
-        /* Control Panel - High Contrast Update */
         .control-panel {
             display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 650px;
             background: var(--glass-panel);
@@ -165,8 +162,8 @@
         
         select, .btn, input {
             padding: 10px; border-radius: 8px; 
-            background: rgba(0, 0, 0, 0.7); /* Darker background */
-            border: 1px solid rgba(255,255,255,0.2); /* Brighter border */
+            background: rgba(0, 0, 0, 0.7); 
+            border: 1px solid rgba(255,255,255,0.2); 
             backdrop-filter: blur(5px);
             color: white; font-family: inherit; font-size: 14px; 
             cursor: pointer; transition: all 0.2s; outline: none; width: 100%;
@@ -184,7 +181,6 @@
             line-height: 1.4; margin-top: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
         
-        /* Toggle Button - High Contrast */
         .toggle-wrapper { 
             display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); 
             background: rgba(0,0,0,0.7); 
@@ -206,9 +202,9 @@
         .toggle-btn[data-mode="survival"].active { color: #facc15; border-color: #facc15; background: rgba(250, 204, 21, 0.2); }
         .toggle-btn[data-mode="vanishing-survival"].active { color: #f87171; border-color: #f87171; background: rgba(248, 113, 113, 0.2); }
         .toggle-btn[data-mode="competition"].active { color: var(--comp-gold); border-color: var(--comp-gold); background: rgba(251, 191, 36, 0.2); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
+        .toggle-btn[data-mode="season2"].active { color: var(--season2-color); border-color: var(--season2-color); background: rgba(167, 139, 250, 0.2); box-shadow: 0 0 15px rgba(167, 139, 250, 0.3); }
         .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.2); }
 
-        /* Footer & Horizontal Buttons */
         .screen-footer { flex-shrink: 0; width: 100%; margin-top: 20px; }
         .btn-group { display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 700px; margin: 0 auto; flex-wrap: nowrap; }
         .btn-start { padding: 12px 5px; font-size: 18px; font-weight: 800; flex: 1.2; background: linear-gradient(90deg, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8)); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 50px; letter-spacing: 1px; white-space: nowrap; min-width: 0; }
@@ -217,9 +213,32 @@
         .btn-secondary:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
         .btn-gold { border-color: var(--comp-gold); color: var(--comp-gold); }
         .btn-gold:hover { background: rgba(251, 191, 36, 0.1); color: #fff; border-color: #fff; box-shadow: 0 0 15px var(--comp-gold); }
-        .footer-tip { display: none; }
 
-        /* Result & Leaderboard */
+        #season2-overlay {
+            display: none;
+            justify-content: center; 
+            align-items: center;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+        }
+        #season2-overlay.active { display: flex; }
+        .choice-card {
+            background: var(--glass-panel); border: 2px solid var(--season2-color);
+            padding: 30px; border-radius: 20px; text-align: center;
+            box-shadow: 0 0 50px rgba(167, 139, 250, 0.3);
+            max-width: 400px; width: 90%;
+        }
+        .choice-title { color: var(--season2-color); font-size: 28px; font-weight: 900; margin-bottom: 10px; }
+        .choice-desc { color: #ddd; margin-bottom: 25px; font-size: 16px; }
+        .choice-btn {
+            display: block; width: 100%; padding: 15px; margin: 10px 0;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: white; font-size: 18px; font-weight: bold; border-radius: 12px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .choice-btn:hover:not(:disabled) { background: var(--season2-color); color: #000; }
+        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+
         .scroll-content { flex: 1; width: 100%; overflow-y: auto; display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; }
         .single-mode-layout { flex-direction: row !important; align-items: flex-start !important; justify-content: center !important; gap: 30px !important; overflow: hidden !important; }
         .single-mode-layout .result-flex { flex: 0 0 auto; width: 320px; margin: 0; padding: 0; max-width: none; }
@@ -324,6 +343,15 @@
             </div>
         </div>
 
+        <div id="season2-overlay" class="screen">
+            <div class="choice-card">
+                <div class="choice-title">LEVEL UP!</div>
+                <div class="choice-desc">恭喜完成 4 回合！生命 +1 ❤<br>請選擇升級獎勵：</div>
+                <button class="choice-btn" onclick="applySeason2Choice('speed')">⚡ 加快速度 (+10 BPM)</button>
+                <button id="s2-diff-btn" class="choice-btn" onclick="applySeason2Choice('diff')">🔥 增加難度</button>
+            </div>
+        </div>
+
         <div id="menu-screen" class="screen active">
             <div class="screen-header">
                 <h1>藍循節奏大師</h1>
@@ -351,6 +379,7 @@
                             <button class="toggle-btn" data-mode="survival" onclick="setMode('survival')">生存</button>
                             <button class="toggle-btn" data-mode="vanishing-survival" onclick="setMode('vanishing-survival')">消存</button>
                             <button class="toggle-btn" data-mode="competition" onclick="setMode('competition')">賽季1</button>
+                            <button class="toggle-btn" data-mode="season2" onclick="setMode('season2')">賽季2</button>
                         </div>
                     </div>
                     <div id="mode-desc" class="mode-description">載入說明中...</div>
@@ -417,6 +446,7 @@
                         <button class="mode-tab" id="menu-lb-vanishing" onclick="switchLBMode('vanishing')">消失模式</button>
                         <button class="mode-tab" id="menu-lb-survival" onclick="switchLBMode('survival')">生存模式</button>
                         <button class="mode-tab" id="menu-lb-vanishing-survival" onclick="switchLBMode('vanishing-survival')">消存模式</button>
+                        <button class="mode-tab" id="menu-lb-season2" onclick="switchLBMode('season2')">賽季2</button>
                     </div>
                 </div>
             </div>
@@ -447,7 +477,6 @@
                     <div class="sum-item"><span class="sum-label">難度</span><span class="sum-val" id="res-diff">普通</span></div>
                 </div>
             </div>
-            
             <div class="scroll-content" id="result-scroll-container">
                 <div class="result-flex" id="result-content"></div>
                 <div id="leaderboard-display-result" class="leaderboard-section">
@@ -492,10 +521,8 @@
 
         let currentLB = { mode: 'fixed', category: 'class', filterGrade: '1', filterClass: 'A' };
         let uploadRole = 'student';
-
-        // ★★★ Cache Variables ★★★
-        const CACHE_DURATION = 60 * 60 * 1000; // 60 minutes
-        let lbCache = {}; // Format: { "key": { timestamp: 123, data: [] } }
+        const CACHE_DURATION = 60 * 60 * 1000; 
+        let lbCache = {}; 
 
         const DESCRIPTIONS = {
             players: {
@@ -507,54 +534,18 @@
                 'vanishing': "消失模式：音符會在途中消失，考驗你對節奏的記憶力。",
                 'survival': "生存模式：無盡挑戰直至出現3次失誤，挑戰你的集中力。",
                 'vanishing-survival': "消存模式：消失與生存的混合模式，大師級的終極試練！",
-                'competition': "賽季1：重溫第一賽季的挑戰！無盡挑戰直至出現5次失誤，難度將逐漸提升。"
+                'competition': "賽季1：重溫第一賽季的挑戰！無盡挑戰直至出現5次失誤，難度將逐漸提升。",
+                'season2': "賽季2：只有2顆心的生存挑戰！每4回合可選擇升級速度或難度。"
             }
         };
 
-        // ★★★ 第一賽季最終結果 (靜態資料) ★★★
         const SEASON_1_RESULTS = {
-            1: [
-                {classId: "1B", name: "22", score: 19550},
-                {classId: "1E", name: "01", score: 17100},
-                {classId: "1B", name: "11", score: 12150},
-                {classId: "1D", name: "17", score: 10600},
-                {classId: "1D", name: "07", score: 8300}
-            ],
-            2: [
-                {classId: "2A", name: "12", score: 9700},
-                {classId: "2D", name: "05", score: 8850},
-                {classId: "2B", name: "07", score: 7800},
-                {classId: "2E", name: "19", score: 7750},
-                {classId: "2D", name: "15", score: 7550}
-            ],
-            3: [
-                {classId: "3B", name: "07", score: 11100},
-                {classId: "3A", name: "27", score: 10700},
-                {classId: "3C", name: "02", score: 9300},
-                {classId: "3B", name: "04", score: 9250},
-                {classId: "3A", name: "26", score: 9200}
-            ],
-            4: [
-                {classId: "4E", name: "01", score: 28000},
-                {classId: "4A", name: "12", score: 13850},
-                {classId: "4B", name: "05", score: 13600},
-                {classId: "4A", name: "07", score: 12300},
-                {classId: "4B", name: "08", score: 9450}
-            ],
-            5: [
-                {classId: "5B", name: "22", score: 12350},
-                {classId: "5E", name: "07", score: 11650},
-                {classId: "5E", name: "03", score: 10750},
-                {classId: "5B", name: "17", score: 9700},
-                {classId: "5D", name: "20", score: 8150}
-            ],
-            6: [
-                {classId: "6E", name: "01", score: 64150},
-                {classId: "6A", name: "11", score: 38800},
-                {classId: "6E", name: "18", score: 37650},
-                {classId: "6A", name: "20", score: 22300},
-                {classId: "6C", name: "06", score: 15650} 
-            ]
+            1: [ {classId: "1B", name: "22", score: 19550}, {classId: "1E", name: "01", score: 17100}, {classId: "1B", name: "11", score: 12150}, {classId: "1D", name: "17", score: 10600}, {classId: "1D", name: "07", score: 8300} ],
+            2: [ {classId: "2A", name: "12", score: 9700}, {classId: "2D", name: "05", score: 8850}, {classId: "2B", name: "07", score: 7800}, {classId: "2E", name: "19", score: 7750}, {classId: "2D", name: "15", score: 7550} ],
+            3: [ {classId: "3B", name: "07", score: 11100}, {classId: "3A", name: "27", score: 10700}, {classId: "3C", name: "02", score: 9300}, {classId: "3B", name: "04", score: 9250}, {classId: "3A", name: "26", score: 9200} ],
+            4: [ {classId: "4E", name: "01", score: 28000}, {classId: "4A", name: "12", score: 13850}, {classId: "4B", name: "05", score: 13600}, {classId: "4A", name: "07", score: 12300}, {classId: "4B", name: "08", score: 9450} ],
+            5: [ {classId: "5B", name: "22", score: 12350}, {classId: "5E", name: "07", score: 11650}, {classId: "5E", name: "03", score: 10750}, {classId: "5B", name: "17", score: 9700}, {classId: "5D", name: "20", score: 8150} ],
+            6: [ {classId: "6E", name: "01", score: 64150}, {classId: "6A", name: "11", score: 38800}, {classId: "6E", name: "18", score: 37650}, {classId: "6A", name: "20", score: 22300}, {classId: "6C", name: "06", score: 15650} ]
         };
 
         function showMenu() { 
@@ -567,11 +558,7 @@
             gameState = 'MENU';
             timeouts.forEach(clearTimeout);
             if (animId) cancelAnimationFrame(animId);
-            if(AudioEngine.ctx && AudioEngine.ctx.state === 'running') {
-                AudioEngine.ctx.suspend().then(()=>AudioEngine.ctx.resume());
-            }
-            const bgm = document.getElementById('bgmPlayer');
-            if(bgm) { bgm.pause(); bgm.currentTime = 0; }
+            if(AudioEngine.ctx && AudioEngine.ctx.state === 'running') { AudioEngine.ctx.suspend().then(()=>AudioEngine.ctx.resume()); }
             showMenu();
         }
 
@@ -585,11 +572,10 @@
             if(config.mode.includes('survival')) mColor = '#facc15';
             if(config.mode === 'vanishing-survival') mColor = '#f87171';
             if(config.mode === 'competition') mColor = 'var(--comp-gold)';
-            if(el) {
-                el.innerHTML = `<div><span style="color:${pColor}; font-weight:bold;">[${config.players}P]</span> ${pText}</div><div style="margin-top:3px;"><span style="color:${mColor}; font-weight:bold;">[${getModeName(config.mode)}]</span> ${mText}</div>`;
-            }
+            if(config.mode === 'season2') mColor = 'var(--season2-color)';
+            if(el) { el.innerHTML = `<div><span style="color:${pColor}; font-weight:bold;">[${config.players}P]</span> ${pText}</div><div style="margin-top:3px;"><span style="color:${mColor}; font-weight:bold;">[${getModeName(config.mode)}]</span> ${mText}</div>`; }
         }
-        function getModeName(m) { const names = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'賽季1'}; return names[m] || m; }
+        function getModeName(m) { const names = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'賽季1', 'season2':'賽季2'}; return names[m] || m; }
         function setUploadRole(role) { uploadRole = role; document.getElementById('role-student').classList.toggle('active', role === 'student'); document.getElementById('role-guest').classList.toggle('active', role === 'guest'); document.getElementById('input-student-row').style.display = role === 'student' ? 'flex' : 'none'; document.getElementById('input-guest-row').style.display = role === 'guest' ? 'flex' : 'none'; }
         function switchLBCategory(cat) { currentLB.category = cat; document.querySelectorAll('#lb-category-tabs .cat-btn').forEach(b => b.classList.remove('active')); document.getElementById(`cat-${cat}`).classList.add('active'); const filters = document.getElementById('lb-filters'); const fGrade = document.getElementById('filter-grade'); const fClass = document.getElementById('filter-class'); if(cat === 'class') { filters.style.display = 'flex'; fGrade.style.display = 'block'; fClass.style.display = 'block'; } else if (cat === 'grade') { filters.style.display = 'flex'; fGrade.style.display = 'block'; fClass.style.display = 'none'; } else { filters.style.display = 'none'; } refreshLB(); }
         function switchLBMode(m) { currentLB.mode = m; document.querySelectorAll('#lb-mode-tabs .mode-tab').forEach(b => b.classList.remove('active')); document.getElementById(`menu-lb-${m}`).classList.add('active'); refreshLB(); }
@@ -607,19 +593,15 @@
             const pBtns = document.querySelectorAll('.toggle-btn[data-val]');
             const pGroup = document.getElementById('player-group');
             
-            // Reset logic
-            rg.classList.remove('disabled');
-            ds.classList.remove('disabled'); 
-            ss.classList.remove('disabled'); 
-            pGroup.classList.remove('disabled');
+            rg.classList.remove('disabled'); ds.classList.remove('disabled'); ss.classList.remove('disabled'); pGroup.classList.remove('disabled');
 
             if(m === 'competition') {
-                // Competition Mode: Lock everything, Force 1P
-                rg.classList.add('disabled');
-                ds.classList.add('disabled');
-                ss.classList.add('disabled');
-                pGroup.classList.add('disabled');
-                
+                rg.classList.add('disabled'); ds.classList.add('disabled'); ss.classList.add('disabled'); pGroup.classList.add('disabled');
+                setPlayers(1);
+                document.getElementById('speed-select').value = "95";
+                document.getElementById('diff-select').value = "easy";
+            } else if (m === 'season2') {
+                rg.classList.add('disabled'); ds.classList.add('disabled'); ss.classList.add('disabled'); pGroup.classList.add('disabled');
                 setPlayers(1);
                 document.getElementById('speed-select').value = "95";
                 document.getElementById('diff-select').value = "easy";
@@ -630,9 +612,8 @@
         }
         
         function setPlayers(n) { 
-            // Conflict Resolution: If Competition Mode is active, switching to 2P forces mode change
-            if (n === 2 && config.mode === 'competition') {
-                setMode('fixed'); // Force non-comp mode if 2P clicked
+            if (n === 2 && (config.mode === 'competition' || config.mode === 'season2')) {
+                setMode('fixed'); 
             }
             config.players = n; 
             document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active')); 
@@ -641,7 +622,7 @@
         }
 
         function getScoreMultiplier() {
-            if (config.mode === 'competition') return 1.0; // Fixed speed in competition
+            if (config.mode === 'competition' || config.mode === 'season2') return 1.0; 
             if (config.bpm === 70) return 0.8;
             if (config.bpm === 120) return 1.2;
             return 1.0;
@@ -658,39 +639,19 @@
             return s;
         }
 
-        function parseChart(chart) {
-            let beats = [];
-            let currentTime = 0;
-            chart.forEach(str => {
-                let durations = str.split(' ').map(Number);
-                durations.forEach(d => {
-                    beats.push(currentTime);
-                    currentTime += d;
-                });
-            });
-            return beats;
-        }
-
         async function submitScore() { 
             if (!db) { alert("請先設定 Firebase！"); return; } 
             const btn = document.getElementById('btn-submit'); 
             let name, grade, cls, classId, type; 
-            
             if (uploadRole === 'student') { 
                 grade = document.getElementById('up-grade').value; 
                 cls = document.getElementById('up-class').value; 
-                let rawSid = document.getElementById('up-sid').value.trim(); // Get input value
-
+                let rawSid = document.getElementById('up-sid').value.trim(); 
                 if (!grade || grade === "") { alert("請選擇年級！"); return; }
                 if (!cls || cls === "") { alert("請選擇班別！"); return; }
                 if (!rawSid) { alert("請輸入學號！"); return; }
-                
                 let sidNum = parseInt(rawSid, 10);
-                if (isNaN(sidNum) || sidNum < 1 || sidNum > 40) {
-                    alert("學號必須為 1 到 40 之間的數字！");
-                    return;
-                }
-
+                if (isNaN(sidNum) || sidNum < 1 || sidNum > 40) { alert("學號必須為 1 到 40 之間的數字！"); return; }
                 name = sidNum.toString().padStart(2, '0');
                 classId = grade + cls; 
                 type = 'student'; 
@@ -699,115 +660,49 @@
                 type = 'guest'; 
                 if (!name) { alert("請輸入訪客暱稱！"); return; } 
             } 
-            
-            btn.disabled = true; 
-            btn.innerText = "上傳中..."; 
-            
+            btn.disabled = true; btn.innerText = "上傳中..."; 
             try { 
-                let payload = { 
-                    name: name, 
-                    score: session.p1.score, 
-                    difficulty: config.diff, 
-                    bpm: config.bpm, // Save BPM
-                    type: type, 
-                    mode: config.mode, 
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-                }; 
-                
-                if(type === 'student') { 
-                    payload.grade = grade; 
-                    payload.class = cls; 
-                    payload.classId = classId; 
-                } 
-                
+                let payload = { name: name, score: session.p1.score, difficulty: config.diff, bpm: config.bpm, type: type, mode: config.mode, timestamp: firebase.firestore.FieldValue.serverTimestamp() }; 
+                if(type === 'student') { payload.grade = grade; payload.class = cls; payload.classId = classId; } 
                 let colName = config.mode === 'competition' ? 'lb_competition' : 'leaderboard';
                 await db.collection(colName).add(payload); 
-                
                 lbCache = {};
-
                 document.getElementById('upload-ui').style.display = 'none'; 
                 document.getElementById('upload-success-msg').style.display = 'block'; 
-            } catch (e) { 
-                console.error("Upload Error:", e); 
-                alert("上傳失敗：" + e.message); 
-                btn.disabled = false; 
-                btn.innerText = "確認上傳"; 
-            } 
+            } catch (e) { console.error("Upload Error:", e); alert("上傳失敗：" + e.message); btn.disabled = false; btn.innerText = "確認上傳"; } 
         }
 
         async function fetchLeaderboard(mode, targetId) { 
             const list = document.getElementById(targetId); 
             if (!db) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">資料庫未連接</li>'; return; } 
-            
             const cacheKey = `LB_${mode}_${currentLB.category}_${currentLB.filterGrade}_${currentLB.filterClass}`;
             const now = Date.now();
-            if (lbCache[cacheKey] && (now - lbCache[cacheKey].timestamp < CACHE_DURATION)) {
-                renderLBList(list, lbCache[cacheKey].data);
-                return;
-            }
-
+            if (lbCache[cacheKey] && (now - lbCache[cacheKey].timestamp < CACHE_DURATION)) { renderLBList(list, lbCache[cacheKey].data); return; }
             list.innerHTML = '<li class="lb-item" style="justify-content:center;">讀取中...</li>'; 
-            
             let q = db.collection('leaderboard').where('mode', '==', mode);
-            
             try { 
-                if (currentLB.category === 'class') { 
-                    const cid = currentLB.filterGrade + currentLB.filterClass; 
-                    q = q.where('classId', '==', cid).orderBy('score', 'desc'); 
-                } else if (currentLB.category === 'grade') { 
-                    q = q.where('grade', '==', currentLB.filterGrade).orderBy('score', 'desc'); 
-                } else if (currentLB.category === 'school') { 
-                    q = q.where('type', '==', 'student').orderBy('score', 'desc'); 
-                } else { 
-                    q = q.orderBy('score', 'desc'); 
-                } 
-                
+                if (currentLB.category === 'class') { const cid = currentLB.filterGrade + currentLB.filterClass; q = q.where('classId', '==', cid).orderBy('score', 'desc'); } 
+                else if (currentLB.category === 'grade') { q = q.where('grade', '==', currentLB.filterGrade).orderBy('score', 'desc'); } 
+                else if (currentLB.category === 'school') { q = q.where('type', '==', 'student').orderBy('score', 'desc'); } 
+                else { q = q.orderBy('score', 'desc'); } 
                 const querySnapshot = await q.limit(50).get(); 
-                
-                if (querySnapshot.empty) { 
-                    list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>'; 
-                    return; 
-                } 
-                
+                if (querySnapshot.empty) { list.innerHTML = '<li class="lb-item" style="justify-content:center;">暫無資料</li>'; return; } 
                 const uniqueData = new Map();
-                querySnapshot.forEach(doc => {
-                    const d = doc.data();
-                    const key = d.type === 'student' ? (d.classId + '_' + d.name) : ('guest_' + d.name);
-                    if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) {
-                        uniqueData.set(key, d);
-                    }
-                });
-                
+                querySnapshot.forEach(doc => { const d = doc.data(); const key = d.type === 'student' ? (d.classId + '_' + d.name) : ('guest_' + d.name); if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) { uniqueData.set(key, d); } });
                 const sortedList = Array.from(uniqueData.values()).sort((a, b) => b.score - a.score).slice(0, 20);
-                
                 lbCache[cacheKey] = { timestamp: now, data: sortedList };
-                
                 renderLBList(list, sortedList);
-                
-            } catch (e) { 
-                console.error("Fetch Error:", e); 
-                if(e.message.includes('index')) { 
-                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>'; 
-                } else { 
-                    list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>'; 
-                } 
-            } 
+            } catch (e) { console.error("Fetch Error:", e); if(e.message.includes('index')) { list.innerHTML = '<li class="lb-item" style="justify-content:center; color:#f87171; font-size:10px;">請管理員在 Firebase 建立複合索引</li>'; } else { list.innerHTML = '<li class="lb-item" style="justify-content:center; color:red;">讀取失敗</li>'; } } 
         }
 
         function renderLBList(listElement, dataList) {
-            listElement.innerHTML = '';
-            let rank = 1;
+            listElement.innerHTML = ''; let rank = 1;
             dataList.forEach((data) => { 
                 const safeName = data.name.replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
-                let rankColor = 'var(--rank-b)'; 
-                if(rank===1) rankColor = 'var(--rank-s)'; 
-                if(rank===2) rankColor = 'var(--rank-a)'; 
-                if(rank===3) rankColor = '#fff'; 
-                let detailInfo = "訪客"; 
-                if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } 
+                let rankColor = 'var(--rank-b)'; if(rank===1) rankColor = 'var(--rank-s)'; if(rank===2) rankColor = 'var(--rank-a)'; if(rank===3) rankColor = '#fff'; 
+                let detailInfo = "訪客"; if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } 
                 const metaStr = `${getSpeedText(data.bpm || 95)} | ${getDiffText(data.difficulty)}`;
-                const item = document.createElement('li');
-                item.className = 'lb-item';
+                const item = document.createElement('li'); item.className = 'lb-item';
                 item.innerHTML = `<span class="lb-rank" style="color:${rankColor}">${rank++}</span><div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div><div class="lb-stats"><span class="lb-meta">${metaStr}</span><span class="lb-score">${data.score}</span></div>`; 
                 listElement.appendChild(item); 
             });
@@ -831,30 +726,21 @@
             for (let g = 1; g <= 6; g++) {
                 let gradeList = allGradesData[g] || [];
                 let cardHtml = `<div class="comp-card"><div class="comp-grade-title">${g} 年級</div>`;
-                
-                if (gradeList.length === 0) {
-                    cardHtml += `<div style="text-align:center; color:#666; padding:10px; font-size:12px;">暫無紀錄</div>`;
-                } else {
+                if (gradeList.length === 0) { cardHtml += `<div style="text-align:center; color:#666; padding:10px; font-size:12px;">暫無紀錄</div>`; } 
+                else {
                     let rank = 1;
                     gradeList.forEach(data => {
-                        let badge = rank;
-                        let color = '#fff';
-                        if(rank===1) { badge='🥇'; color='var(--comp-gold)'; }
-                        else if(rank===2) { badge='🥈'; color='var(--comp-silver)'; }
-                        else if(rank===3) { badge='🥉'; color='var(--comp-bronze)'; }
-                        else { badge = rank + '.'; color='#94a3b8'; }
-                        
+                        let badge = rank; let color = '#fff';
+                        if(rank===1) { badge='🥇'; color='var(--comp-gold)'; } else if(rank===2) { badge='🥈'; color='var(--comp-silver)'; } else if(rank===3) { badge='🥉'; color='var(--comp-bronze)'; } else { badge = rank + '.'; color='#94a3b8'; }
                         cardHtml += `<div class="comp-item"><span class="comp-rank" style="color:${color}">${badge}</span><span class="comp-name" style="color:${color}">${data.classId} ${data.name}</span><div style="text-align:right;"><div class="comp-score">${data.score}</div></div></div>`;
                         rank++;
                     });
                 }
-                cardHtml += `</div>`;
-                html += cardHtml;
+                cardHtml += `</div>`; html += cardHtml;
             }
             container.innerHTML = html;
         }
 
-        // Game Engine
         const VFX = {
             particles: [],
             init() { this.particles = []; for(let i=0; i<100; i++) { this.particles.push({ x: Math.random() * 1100, y: Math.random() * 680, size: Math.random() * 2 + 0.5, speed: Math.random() * 4 + 1, alpha: Math.random() * 0.6 + 0.1, color: Math.random() > 0.5 ? '#22d3ee' : '#f472b6' }); } },
@@ -899,12 +785,16 @@
 
             if (config.mode === 'competition') {
                 config.bpm = 95; config.rounds = Infinity; config.players = 1; config.diff = 'easy'; 
+            } else if (config.mode === 'season2') {
+                config.bpm = 95; config.rounds = Infinity; config.players = 1; config.diff = 'easy';
             } else {
                 config.diff = document.getElementById('diff-select').value;
                 config.rounds = config.mode.includes('survival') ? Infinity : parseInt(document.getElementById('round-select').value);
             }
 
-            const initLives = config.mode === 'competition' ? 5 : 3;
+            let initLives = config.mode === 'competition' ? 5 : 3;
+            if (config.mode === 'season2') initLives = 2; 
+
             const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1, combo: 0, maxCombo: 0 });
             session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 2.0, p1: initP(), p2: initP() };
             
@@ -913,11 +803,63 @@
             
             schedule(); render();
         }
+
+        // Season 2 Logic
+        function pauseGameForChoice() {
+            gameState = 'PAUSED';
+            const btn = document.getElementById('s2-diff-btn');
+            if (config.diff === 'master') {
+                btn.innerText = "難度已達上限 (MAX)";
+                btn.disabled = true;
+            } else {
+                btn.innerText = "🔥 增加難度";
+                btn.disabled = false;
+            }
+            document.getElementById('season2-overlay').classList.add('active');
+        }
+
+        function applySeason2Choice(choice) {
+            document.getElementById('season2-overlay').classList.remove('active');
+            
+            if (session.p1.lives < 10) session.p1.lives++;
+            updateHUD();
+
+            if (choice === 'speed') {
+                config.bpm += 10;
+                notify(`加速! ${config.bpm} BPM`, 'var(--season2-color)');
+            } else if (choice === 'diff') {
+                const levels = ['easy', 'normal', 'hard', 'master'];
+                let idx = levels.indexOf(config.diff);
+                if (idx < 3) config.diff = levels[idx+1];
+                notify(`難度提升: ${getDiffText(config.diff)}`, 'var(--season2-color)');
+            }
+
+            gameState = 'PLAYING';
+            session.nextTime = AudioEngine.ctx.currentTime + 2.0; 
+            schedule();
+        }
+
         function schedule() {
             if(gameState !== 'PLAYING') return;
-            if(!config.mode.includes('survival') && config.mode !== 'competition' && session.round >= config.rounds) { endGame(); return; }
+            
+            // Season 2 Checkpoint Logic
+            if (config.mode === 'season2' && session.round > 0 && session.round % 4 === 0) {
+                if (!session.checkpointPassed) {
+                    pauseGameForChoice();
+                    session.checkpointPassed = true; 
+                    return;
+                }
+            } else {
+                session.checkpointPassed = false; 
+            }
+
+            if(!config.mode.includes('survival') && config.mode !== 'competition' && config.mode !== 'season2' && session.round >= config.rounds) { endGame(); return; }
+            
             if(config.mode === 'competition') {
-                if(session.round < 4) config.diff = 'easy'; else if(session.round < 8) config.diff = 'normal'; else if(session.round < 12) config.diff = 'hard'; else config.diff = 'master';
+                if(session.round < 4) config.diff = 'easy';
+                else if(session.round < 8) config.diff = 'normal';
+                else if(session.round < 12) config.diff = 'hard';
+                else config.diff = 'master';
             }
 
             const now = session.nextTime; const BEAT = getBeatSec(); const pattern = generatePattern(); const playStart = now + (BEAT * 4);
@@ -925,23 +867,25 @@
             pattern.forEach((b, idx) => { const target = playStart + b*BEAT; session.p1.notes.push({ target: target, hit: false, missed: false, index: idx }); if(config.players === 2) session.p2.notes.push({ target: target, hit: false, missed: false, index: idx }); });
             
             timeouts.push(setTimeout(() => { if(gameState!=='PLAYING') return; session.round++; updateHUD(); notify("LISTEN", "var(--p1-color)"); AudioEngine.play('metro', AudioEngine.ctx.currentTime); }, (now - AudioEngine.ctx.currentTime)*1000));
+            
             timeouts.push(setTimeout(() => { 
                 if(gameState!=='PLAYING') return; 
                 let col = config.mode.includes('vanishing') ? '#d946ef' : '#facc15'; 
                 if(config.mode === 'vanishing-survival') col = '#f87171'; 
                 if(config.mode === 'competition') col = 'var(--comp-gold)';
+                if(config.mode === 'season2') col = 'var(--season2-color)';
                 notify("PLAY", col); AudioEngine.play('metro', AudioEngine.ctx.currentTime); 
             }, (playStart - AudioEngine.ctx.currentTime)*1000));
             
             session.nextTime += (BEAT * 8); timeouts.push(setTimeout(schedule, (session.nextTime - AudioEngine.ctx.currentTime - 0.1)*1000));
         }
         function render() {
-            if(gameState !== 'PLAYING') return;
+            if(gameState !== 'PLAYING' && gameState !== 'PAUSED') return; 
+            if(gameState === 'PAUSED') { requestAnimationFrame(render); return; } 
+
             ctx.clearRect(0, 0, width, height); VFX.update(ctx);
-            const now = AudioEngine.ctx.currentTime; 
-            
-            const speed = getSpeed(); const beatSec = getBeatSec();
-            const isVanishing = config.mode.includes('vanishing') || config.mode === 'competition';
+            const now = AudioEngine.ctx.currentTime; const speed = getSpeed(); const beatSec = getBeatSec();
+            const isVanishing = config.mode.includes('vanishing') || config.mode === 'competition' || config.mode === 'season2';
             const y1 = config.players === 1 ? height/2 : height*0.28; const y2 = height*0.72;
             
             if(session.p1.bump > 1) session.p1.bump = Math.max(1, 1 + (session.p1.bump - 1) * 0.8); 
@@ -978,7 +922,9 @@
                 }
                 if (x > -50 && x < width && !n.missed && alpha > 0.01) {
                     const isIncoming = dt <= (BEATS_PHASE * beatSec);
-                    const noteColor = (vanish && isIncoming) ? '#d946ef' : (isIncoming ? color : '#64748b');
+                    let noteColor = (vanish && isIncoming) ? '#d946ef' : (isIncoming ? color : '#64748b');
+                    if (config.mode === 'season2' && vanish && isIncoming) noteColor = '#a78bfa'; 
+
                     c.save(); c.globalAlpha = alpha;
                     c.shadowBlur = 25; c.shadowColor = noteColor;
                     let grad = c.createRadialGradient(x, y, 10, x, y, 35);
@@ -988,11 +934,7 @@
                     c.fillStyle = "rgba(255,255,255,0.5)"; c.beginPath(); c.ellipse(x-12, y-12, 10, 15, Math.PI/4, 0, Math.PI*2); c.fill();
                     c.restore();
                 }
-                if(dt < -WINDOWS.MISS && !n.missed) { 
-                    n.missed = true; 
-                    handleResult(pid, 'MISS'); 
-                    showFeedback('MISS', HIT_X, y, 'var(--rank-d)'); 
-                }
+                if(dt < -WINDOWS.MISS && !n.missed) { n.missed = true; handleResult(pid, 'MISS'); showFeedback('MISS', HIT_X, y, 'var(--rank-d)'); }
             });
         }
         function handleInput(pid) {
@@ -1014,7 +956,7 @@
             }
         }
         function handleResult(pid, rating) {
-            const data = pid === 1 ? session.p1 : session.p2; const isSurvival = config.mode.includes('survival') || config.mode === 'competition';
+            const data = pid === 1 ? session.p1 : session.p2; const isSurvival = config.mode.includes('survival') || config.mode === 'competition' || config.mode === 'season2';
             let multiplier = getScoreMultiplier();
             if(rating === 'PERFECT' || rating === 'GOOD') { 
                 data.combo++; if(data.combo > data.maxCombo) data.maxCombo = data.combo;
@@ -1038,18 +980,21 @@
         }
         function updateHUD() {
             document.getElementById('p1-score').innerText = session.p1.score; document.getElementById('p2-score').innerText = session.p2.score;
-            const isSurvivalMode = config.mode.includes('survival') || config.mode === 'competition';
+            const isSurvivalMode = config.mode.includes('survival') || config.mode === 'competition' || config.mode === 'season2';
             if(isSurvivalMode) { renderHearts('p1-lives', session.p1.lives); renderHearts('p2-lives', session.p2.lives); } else { document.getElementById('p1-lives').innerHTML = ""; document.getElementById('p2-lives').innerHTML = ""; }
-            let rTxt = `ROUND ${session.round}`; if(!config.mode.includes('survival') && config.mode !== 'competition') rTxt += ` / ${config.rounds}`; document.getElementById('round-info').innerText = rTxt;
+            let rTxt = `ROUND ${session.round}`; 
+            if(config.mode === 'season2') rTxt = `S2 | ${config.bpm} BPM | ${getDiffText(config.diff)} | R${session.round}`;
+            else if(!config.mode.includes('survival') && config.mode !== 'competition') rTxt += ` / ${config.rounds}`; 
+            document.getElementById('round-info').innerText = rTxt;
         }
         function renderHearts(elementId, count) { const container = document.getElementById(elementId); let html = ''; for(let i=0; i<Math.max(0, count); i++) { html += '<span class="heart">❤</span>'; } container.innerHTML = html; }
         function showFeedback(text, x, y, color) { const el = document.createElement('div'); el.className = 'hit-popup'; el.innerText = text; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color; document.getElementById('game-wrapper').appendChild(el); setTimeout(()=>el.remove(), 500); }
         function notify(text, color) { const el = document.getElementById('center-notify'); el.innerText = text; el.style.color = color; el.style.opacity = 1; if (config.players === 1) { el.style.top = "75%"; } else { el.style.top = "50%"; } el.style.transform = "translate(-50%, -50%) scale(1.2)"; setTimeout(() => { el.style.opacity = 0; el.style.transform = "translate(-50%, -50%) scale(1)"; }, 600); }
         function endGame() {
             gameState = 'END'; document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('result-screen').classList.add('active'); timeouts.forEach(clearTimeout);
-            const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'賽季1'}[config.mode];
-            document.getElementById('res-mode').innerText = mName; document.getElementById('res-len').innerText = (config.mode.includes('survival') || config.mode === 'competition') ? "∞" : config.rounds + "R";
-            const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; document.getElementById('res-diff').innerText = config.mode === 'competition' ? '自動晉級' : dNames[config.diff];
+            const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'賽季1', 'season2':'賽季2'}[config.mode];
+            document.getElementById('res-mode').innerText = mName; document.getElementById('res-len').innerText = (config.mode.includes('survival') || config.mode === 'competition' || config.mode === 'season2') ? "∞" : config.rounds + "R";
+            const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; document.getElementById('res-diff').innerText = (config.mode === 'competition' || config.mode === 'season2') ? '自動晉級' : dNames[config.diff];
             const scrollContainer = document.getElementById('result-scroll-container'); const container = document.getElementById('result-content'); container.innerHTML = ''; 
             if(config.players === 1) { scrollContainer.classList.add('single-mode-layout'); container.className = 'result-flex single-layout'; } else { scrollContainer.classList.remove('single-mode-layout'); container.className = 'result-flex'; }
             container.appendChild(createResultCard(1, session.p1)); if(config.players === 2) container.appendChild(createResultCard(2, session.p2));
