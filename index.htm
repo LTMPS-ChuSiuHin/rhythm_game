@@ -226,18 +226,18 @@
             background: var(--glass-panel); border: 2px solid var(--season2-color);
             padding: 30px; border-radius: 20px; text-align: center;
             box-shadow: 0 0 50px rgba(167, 139, 250, 0.3);
-            max-width: 450px; width: 90%;
+            max-width: 480px; width: 90%;
         }
         .choice-title { color: var(--season2-color); font-size: 28px; font-weight: 900; margin-bottom: 10px; }
-        .choice-desc { color: #ddd; margin-bottom: 25px; font-size: 16px; }
+        .choice-desc { color: #ddd; margin-bottom: 25px; font-size: 15px; line-height: 1.5; }
         .choice-btn {
             display: block; width: 100%; padding: 15px; margin: 10px 0;
             background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-            color: white; font-size: 18px; font-weight: bold; border-radius: 12px;
+            color: white; font-size: 16px; font-weight: bold; border-radius: 12px;
             cursor: pointer; transition: 0.2s;
         }
-        .choice-btn:hover:not(:disabled) { background: var(--season2-color); color: #000; }
-        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+        .choice-btn:hover:not(:disabled) { background: var(--season2-color); color: #000; box-shadow: 0 0 15px rgba(167, 139, 250, 0.5); border-color: white; }
+        .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
 
         .scroll-content { flex: 1; width: 100%; overflow-y: auto; display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; }
         .single-mode-layout { flex-direction: row !important; align-items: flex-start !important; justify-content: center !important; gap: 30px !important; overflow: hidden !important; }
@@ -345,10 +345,11 @@
 
         <div id="season2-overlay" class="screen">
             <div class="choice-card">
-                <div class="choice-title">LEVEL UP!</div>
-                <div class="choice-desc">恭喜完成 4 回合！生命 +1 ❤<br>請選擇升級獎勵：</div>
-                <button class="choice-btn" onclick="applySeason2Choice('speed')">⚡ 加快速度 (+15 BPM)</button>
-                <button id="s2-diff-btn" class="choice-btn" onclick="applySeason2Choice('diff')">🔥 增加難度</button>
+                <div class="choice-title" id="s2-title">LEVEL UP!</div>
+                <div class="choice-desc" id="s2-desc">恭喜完成 4 回合！速度將自動 +10<br>請選擇一項增益效果：</div>
+                <button id="s2-btn-life" class="choice-btn" onclick="applySeason2Choice('life')">💖 增加一顆心 (目前 1 顆，上限 5 顆)</button>
+                <button id="s2-btn-vision" class="choice-btn" onclick="applySeason2Choice('vision')">👁️ 顯示音符 (下4回合)</button>
+                <button id="s2-btn-score" class="choice-btn" onclick="applySeason2Choice('score')">🌟 分數加乘 1.2 倍</button>
             </div>
         </div>
 
@@ -542,7 +543,7 @@
                 'survival': "生存模式：無盡挑戰直至出現3次失誤，挑戰你的集中力。",
                 'vanishing-survival': "消存模式：消失與生存的混合模式，大師級的終極試練！",
                 'competition': "賽季1：重溫第一賽季的挑戰！無盡挑戰直至出現5次失誤，難度將逐漸提升。",
-                'season2': "賽季2：只有2顆心的生存挑戰！每4回合可選擇升級速度或難度。"
+                'season2': "賽季2：2顆心的生存挑戰！每4回合自動加速並可選擇一項強大的增益效果。"
             }
         };
 
@@ -617,7 +618,7 @@
             } else if (m === 'season2') {
                 rg.classList.add('disabled'); ds.classList.add('disabled'); ss.classList.add('disabled'); pGroup.classList.add('disabled');
                 setPlayers(1);
-                document.getElementById('speed-select').value = "95";
+                document.getElementById('speed-select').value = "95"; // 遊戲開始時會重置為100
                 document.getElementById('diff-select').value = "easy";
             } else if(m.includes('survival')) { 
                 rg.classList.add('disabled'); 
@@ -639,10 +640,11 @@
             if (config.mode === 'competition') return 1.0; 
             
             if (config.mode === 'season2') {
-                if (config.diff === 'normal') return 1.2;
-                if (config.diff === 'hard') return 1.5;
-                if (config.diff === 'master') return 2.0;
-                return 1.0; 
+                let base = 1.0;
+                if (config.diff === 'normal') base = 1.2;
+                if (config.diff === 'hard') base = 1.5;
+                if (config.diff === 'master') base = 2.0;
+                return base * (session.p1.s2Multi || 1.0);
             }
 
             if (config.bpm === 70) return 0.8;
@@ -739,7 +741,7 @@
         function openCompetitionRanking() {
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
             document.getElementById('competition-screen').classList.add('active');
-            switchCompSeason(2); // 預設顯示第二賽季
+            switchCompSeason(2);
         }
 
         function switchCompSeason(season) {
@@ -868,7 +870,7 @@
             if (config.mode === 'competition') {
                 config.bpm = 95; config.rounds = Infinity; config.players = 1; config.diff = 'easy'; 
             } else if (config.mode === 'season2') {
-                config.bpm = 95; config.rounds = Infinity; config.players = 1; config.diff = 'easy';
+                config.bpm = 100; config.rounds = Infinity; config.players = 1; config.diff = 'easy';
             } else {
                 config.diff = document.getElementById('diff-select').value;
                 config.rounds = config.mode.includes('survival') ? Infinity : parseInt(document.getElementById('round-select').value);
@@ -877,7 +879,7 @@
             let initLives = config.mode === 'competition' ? 5 : 3;
             if (config.mode === 'season2') initLives = 2; 
 
-            const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1, combo: 0, maxCombo: 0 });
+            const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1, combo: 0, maxCombo: 0, s2VisionRounds: 0, s2Multi: 1.0 });
             session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 2.0, p1: initP(), p2: initP() };
             
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('hud-p2').style.opacity = config.players === 2 ? 1 : 0;
@@ -888,39 +890,56 @@
 
         function pauseGameForChoice() {
             gameState = 'PAUSED';
-            const btn = document.getElementById('s2-diff-btn');
-            if (config.diff === 'master') {
-                btn.innerText = "難度已達上限 (MAX)";
-                btn.disabled = true;
-            } else {
-                const levels = ['easy', 'normal', 'hard', 'master'];
-                const nextDiff = levels[levels.indexOf(config.diff) + 1];
-                let multi = 1;
-                if(nextDiff === 'normal') multi = 1.2;
-                if(nextDiff === 'hard') multi = 1.5;
-                if(nextDiff === 'master') multi = 2.0;
-                
-                btn.innerText = `🔥 升級難度: ${getDiffText(nextDiff)} (分數 x${multi})`;
-                btn.disabled = false;
+            let diffUpText = "";
+            let nextDiff = config.diff;
+            if (session.round === 12) nextDiff = 'normal';
+            if (session.round === 24) nextDiff = 'hard';
+            if (session.round === 36) nextDiff = 'master';
+            
+            if (nextDiff !== config.diff) {
+                diffUpText = `<br><span style="color:#f43f5e; font-weight:bold;">🔥 難度將提升至：${getDiffText(nextDiff)}</span>`;
             }
+
+            document.getElementById('s2-desc').innerHTML = `恭喜完成 ${session.round} 回合！<br>⚡ 速度將自動 +10 (目前 ${config.bpm} &rarr; ${config.bpm + 10})${diffUpText}<br><br>請選擇一項增益效果：`;
+
+            const btnLife = document.getElementById('s2-btn-life');
+            if (session.p1.lives >= 5) {
+                btnLife.innerText = "💖 生命已達上限 (MAX)";
+                btnLife.disabled = true;
+            } else {
+                btnLife.innerText = `💖 增加一顆心 (目前 ${session.p1.lives} 顆，上限 5 顆)`;
+                btnLife.disabled = false;
+            }
+
+            document.getElementById('s2-btn-score').innerText = `🌟 分數加乘 x1.2 (目前疊加: ${(session.p1.s2Multi * 1.2).toFixed(2)}x)`;
+
             document.getElementById('season2-overlay').classList.add('active');
         }
 
         function applySeason2Choice(choice) {
             document.getElementById('season2-overlay').classList.remove('active');
             
-            if (session.p1.lives < 10) session.p1.lives++;
-            updateHUD();
+            // 自動升級設定
+            config.bpm += 10;
+            if (session.round === 12) config.diff = 'normal';
+            if (session.round === 24) config.diff = 'hard';
+            if (session.round === 36) config.diff = 'master';
 
-            if (choice === 'speed') {
-                config.bpm += 15; 
-                notify(`加速! ${config.bpm} BPM`, 'var(--season2-color)');
-            } else if (choice === 'diff') {
-                const levels = ['easy', 'normal', 'hard', 'master'];
-                let idx = levels.indexOf(config.diff);
-                if (idx < 3) config.diff = levels[idx+1];
-                notify(`難度提升: ${getDiffText(config.diff)}`, 'var(--season2-color)');
+            // 應用玩家選擇
+            let notifyMsg = "";
+            if (choice === 'life') {
+                if (session.p1.lives < 5) session.p1.lives++;
+                notifyMsg = "生命 +1 ❤";
+            } else if (choice === 'vision') {
+                session.p1.s2VisionRounds = 5; // 設置為 5，因為下一回合開始時會立刻 -1，確保完整覆蓋 4 個回合
+                notifyMsg = "獲得視野 👁️";
+            } else if (choice === 'score') {
+                session.p1.s2Multi *= 1.2;
+                notifyMsg = "分數加乘 🌟";
             }
+
+            updateHUD();
+            notify(notifyMsg, 'var(--season2-color)');
 
             gameState = 'PLAYING';
             session.nextTime = AudioEngine.ctx.currentTime + 2.0; 
@@ -953,7 +972,16 @@
             pattern.forEach(b => AudioEngine.play('teacher', now + b*BEAT));
             pattern.forEach((b, idx) => { const target = playStart + b*BEAT; session.p1.notes.push({ target: target, hit: false, missed: false, index: idx }); if(config.players === 2) session.p2.notes.push({ target: target, hit: false, missed: false, index: idx }); });
             
-            timeouts.push(setTimeout(() => { if(gameState!=='PLAYING') return; session.round++; updateHUD(); notify("LISTEN", "var(--p1-color)"); AudioEngine.play('metro', AudioEngine.ctx.currentTime); }, (now - AudioEngine.ctx.currentTime)*1000));
+            timeouts.push(setTimeout(() => { 
+                if(gameState!=='PLAYING') return; 
+                session.round++; 
+                if (config.mode === 'season2' && session.p1.s2VisionRounds > 0) {
+                    session.p1.s2VisionRounds--;
+                }
+                updateHUD(); 
+                notify("LISTEN", "var(--p1-color)"); 
+                AudioEngine.play('metro', AudioEngine.ctx.currentTime); 
+            }, (now - AudioEngine.ctx.currentTime)*1000));
             
             timeouts.push(setTimeout(() => { 
                 if(gameState!=='PLAYING') return; 
@@ -972,18 +1000,22 @@
 
             ctx.clearRect(0, 0, width, height); VFX.update(ctx);
             const now = AudioEngine.ctx.currentTime; const speed = getSpeed(); const beatSec = getBeatSec();
-            const isVanishing = config.mode.includes('vanishing') || config.mode === 'competition' || config.mode === 'season2';
+            
+            // 如果是在賽季2，且擁有視野 Buff 時，不要消失
+            const isVanishingP1 = (config.mode.includes('vanishing') || config.mode === 'competition' || config.mode === 'season2') && !(config.mode === 'season2' && session.p1.s2VisionRounds > 0);
+            
             const y1 = config.players === 1 ? height/2 : height*0.28; const y2 = height*0.72;
             
             if(session.p1.bump > 1) session.p1.bump = Math.max(1, 1 + (session.p1.bump - 1) * 0.8); 
             if(session.p2.bump > 1) session.p2.bump = Math.max(1, 1 + (session.p2.bump - 1) * 0.8);
 
             drawTrack(ctx, y1, 'var(--p1-color)', 'P1', session.p1.bump);
-            drawNotes(ctx, session.p1.notes, y1, '#22d3ee', now, speed, beatSec, isVanishing, 1);
+            drawNotes(ctx, session.p1.notes, y1, '#22d3ee', now, speed, beatSec, isVanishingP1, 1);
             if(config.players === 2) {
+                const isVanishingP2 = config.mode.includes('vanishing') || config.mode === 'competition';
                 ctx.save(); ctx.beginPath(); ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 4; ctx.setLineDash([15, 15]); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke(); ctx.shadowBlur = 15; ctx.shadowColor = "rgba(255, 255, 255, 0.5)"; ctx.stroke(); ctx.restore();
                 drawTrack(ctx, y2, 'var(--p2-color)', 'P2', session.p2.bump);
-                drawNotes(ctx, session.p2.notes, y2, '#f472b6', now, speed, beatSec, isVanishing, 2);
+                drawNotes(ctx, session.p2.notes, y2, '#f472b6', now, speed, beatSec, isVanishingP2, 2);
             }
             animId = requestAnimationFrame(render);
         }
