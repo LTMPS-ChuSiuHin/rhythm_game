@@ -8,8 +8,8 @@
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <!-- 引入 Google Identity Services，取消 async defer 確保順序載入 -->
-    <script src="https://accounts.google.com/gsi/client"></script>
+    <!-- 引入 Google Identity Services 以支援 OAuth 登入 -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             /* Theme Colors */
@@ -239,6 +239,31 @@
             50% { transform: translateY(-12px) rotate(4deg) scale(1.15); filter: brightness(1.2); }
         }
 
+        /* 吉祥物圖片特效 */
+        .mascot {
+            position: absolute;
+            bottom: -10px;
+            width: 140px;
+            height: auto;
+            z-index: 15;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform: translateY(30px);
+        }
+        .mascot.visible {
+            opacity: 1;
+            transform: translateY(0);
+            animation: mascotBop 2.5s infinite alternate ease-in-out;
+        }
+        #mascot-left { left: 30px; }
+        #mascot-right { right: 30px; }
+
+        @keyframes mascotBop {
+            0% { transform: translateY(0px) rotate(-3deg); }
+            100% { transform: translateY(-12px) rotate(3deg); }
+        }
+
         /* COMBO 進階特效 (Fever / Hyper) */
         .combo-popup {
             position: absolute; font-weight: 900; font-size: 48px; color: #facc15; text-shadow: 0 0 10px #b45309, 0 0 20px #facc15;
@@ -263,6 +288,7 @@
             animation: hyperPop 0.6s ease-out forwards, aurora-flow 2s infinite linear;
         }
 
+        /* 調整過關文字與 Combo 向上平移，避免重疊 */
         @keyframes comboPop {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
             20% { opacity: 1; transform: translate(-50%, -60%) scale(1.2); }
@@ -476,6 +502,7 @@
             #season1-slogan-top { top: calc(50% - 150px); }
             #season1-slogan-bottom { top: calc(50% + 110px); }
             .season-text { font-size: 14px; }
+            .mascot { width: 100px; }
         }
     </style>
 </head>
@@ -531,6 +558,10 @@
                 <span style="--i:6; color:#dcbaff;">英</span>
                 <span style="--i:7; color:#ffb3ff;">才</span>
             </div>
+            
+            <!-- 賽季1 專屬吉祥物 -->
+            <img id="mascot-left" src="left.png" class="mascot" alt="">
+            <img id="mascot-right" src="right.png" class="mascot" alt="">
             
             <div class="hud-bar p1-hud" id="hud-p1">
                 <div>P1 SCORE <span id="p1-score" style="margin-left:10px; color:white;">0</span></div>
@@ -920,6 +951,8 @@
             document.getElementById('ui-layer').style.display = 'none';
             document.getElementById('season1-slogan-top').classList.remove('visible');
             document.getElementById('season1-slogan-bottom').classList.remove('visible');
+            document.getElementById('mascot-left').classList.remove('visible');
+            document.getElementById('mascot-right').classList.remove('visible');
             document.getElementById('btn-pause').style.display = 'none';
             
             showMenu();
@@ -1285,9 +1318,11 @@
             if (config.mode === 'season1') {
                 config.bpm = SEASON1_BPM; config.rounds = Infinity; config.players = 1; config.diff = 'easy'; 
                 
-                // 顯示賽季1專屬字句
+                // 顯示賽季1專屬字句與吉祥物
                 document.getElementById('season1-slogan-top').classList.add('visible');
                 document.getElementById('season1-slogan-bottom').classList.add('visible');
+                document.getElementById('mascot-left').classList.add('visible');
+                document.getElementById('mascot-right').classList.add('visible');
                 
             } else if (config.mode === 'progressive') {
                 config.bpm = 95; config.rounds = Infinity; config.players = 1; config.diff = 'easy'; 
@@ -1546,7 +1581,7 @@
                 if(dt < -WINDOWS.MISS && !n.missed) { 
                     n.missed = true; 
                     handleResult(pid, 'MISS'); 
-                    showFeedback('MISS', HIT_X, y, 'var(--rank-d)'); 
+                    showFeedback('MISS', HIT_X, y - 90, 'var(--rank-d)'); 
                 }
             });
         }
@@ -1576,7 +1611,7 @@
                     VFX.bursts.push({ y: y, color: burstColor, life: 1.0 });
                 }
                 
-                handleResult(pid, rating); showFeedback(rating, HIT_X, y, rCol);
+                handleResult(pid, rating); showFeedback(rating, HIT_X, y - 90, rCol);
             }
         }
         function handleResult(pid, rating) {
@@ -1586,7 +1621,7 @@
             
             if(rating === 'PERFECT' || rating === 'GOOD') { 
                 data.combo++; if(data.combo > data.maxCombo) data.maxCombo = data.combo;
-                if(data.combo >= 10 && data.combo % 10 === 0) { const y = config.players === 1 ? height/2 : (pid===1 ? height*0.28 : height*0.72); showCombo(data.combo, HIT_X, y - 50); }
+                if(data.combo >= 10 && data.combo % 10 === 0) { const y = config.players === 1 ? height/2 : (pid===1 ? height*0.28 : height*0.72); showCombo(data.combo, HIT_X, y - 140); }
                 if(rating === 'PERFECT') { data.score += Math.round(100 * multiplier); data.stats.p++; } else { data.score += Math.round(50 * multiplier); data.stats.g++; }
             } else { 
                 data.stats.m++; 
@@ -1658,6 +1693,8 @@
             document.getElementById('ui-layer').style.display = 'none';
             document.getElementById('season1-slogan-top').classList.remove('visible');
             document.getElementById('season1-slogan-bottom').classList.remove('visible');
+            document.getElementById('mascot-left').classList.remove('visible');
+            document.getElementById('mascot-right').classList.remove('visible');
             document.getElementById('btn-pause').style.display = 'none';
 
             const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'progressive':'漸進', 'season1':'賽季1'}[config.mode];
