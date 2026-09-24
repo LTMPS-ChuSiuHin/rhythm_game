@@ -44,16 +44,13 @@
             user-select: none; -webkit-user-select: none; 
             touch-action: none; -webkit-touch-callout: none;
             position: relative;
-            perspective: 1200px; /* 為 3D 微視角特效提供景深 */
         }
 
-        /* 增強背景特效：加入 3D 微移過渡 */
+        /* 背景層 */
         .bg-layer { 
-            position: absolute; top: -5%; left: -5%; width: 110%; height: 110%; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             overflow: hidden; z-index: 0; pointer-events: none; 
             background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
-            transition: transform 0.1s ease-out;
-            transform: translate(0, 0);
         }
         
         /* 動態極光流光 (Cyber Aurora / Mesh Gradient) */
@@ -113,16 +110,20 @@
         .p-4 { left: 90%; width: 4px; height: 4px; animation-duration: 6s; animation-delay: 0.5s; }
         @keyframes floatUp { 0% { bottom: -10px; opacity: 0; } 50% { opacity: 0.6; box-shadow: 0 0 10px white; } 100% { bottom: 100%; opacity: 0; } }
 
-        /* 呼吸燈特效外框，加入3D過渡 */
+        /* 呼吸燈特效外框 */
         #game-wrapper {
             position: relative; width: 100%; max-width: 1100px; height: 100%; max-height: 680px;
             background: rgba(15, 23, 42, 0.15); border-radius: 24px;
             overflow: hidden; z-index: 10; backdrop-filter: blur(5px);
             border: 1px solid rgba(255,255,255,0.1);
             animation: borderPulse 4s infinite alternate;
-            transform-style: preserve-3d;
-            transition: transform 0.1s ease-out;
-            transform: translateZ(0); /* Default state before JS kicks in */
+        }
+
+        /* 針對 iPad 及較高螢幕，將整體遊戲畫面稍微向上調高，避免視角過低 */
+        @media (min-height: 700px) {
+            #game-wrapper {
+                transform: translateY(-4vh);
+            }
         }
 
         @keyframes borderPulse {
@@ -542,7 +543,7 @@
                 <div id="p2-lives" class="lives"></div>
             </div>
             
-            <!-- 暫停按鈕 置中 -->
+            <!-- 返回主選單 按鈕置中 -->
             <button id="btn-pause" onclick="pauseGame()">返回主選單</button>
         </div>
 
@@ -746,28 +747,6 @@
         const SEASON1_LYRICS = "藍天碧海春風化雨暖我心無盡 旅途 伴快樂一世間耶穌恩典早已充滿我心裏勤學求道效主愛人樂與學在藍循我在長廊裏禱告你在球場上散步帶着疑問與苦惱也會為我引路我結伴同行邁向天際遇星河書海內奮鬥得到知識再破巨浪你我在藍循實—踐那美夢全然綻放用新世界的光去共創".replace(/\s+/g, '');
         
         // ==========================================
-
-        // 3D 視角滑鼠互動
-        let mouseX = 0; let mouseY = 0;
-        window.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-            mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-            applyTilt();
-        });
-        window.addEventListener('deviceorientation', (e) => {
-            if (e.gamma && e.beta) {
-                mouseX = Math.max(-1, Math.min(1, e.gamma / 45));
-                mouseY = Math.max(-1, Math.min(1, (e.beta - 45) / 45));
-                applyTilt();
-            }
-        });
-        function applyTilt() {
-            const gw = document.getElementById('game-wrapper');
-            const bg = document.querySelector('.bg-layer');
-            let baseTY = window.innerHeight > 700 ? -4 : 0; // 保留 iPad 的 Y 軸偏移
-            if(gw) gw.style.transform = `perspective(1200px) rotateX(${mouseY * -4}deg) rotateY(${mouseX * 4}deg) translateY(${baseTY}vh)`;
-            if(bg) bg.style.transform = `translate(${mouseX * -15}px, ${mouseY * -15}px)`;
-        }
 
         const firebaseConfig = { apiKey: "AIzaSyD4rb1PhX9TCxj8VORCnZW8Ik6HPDZk8NE", authDomain: "ltmps-rhythm-game.firebaseapp.com", projectId: "ltmps-rhythm-game", storageBucket: "ltmps-rhythm-game.firebasestorage.app", messagingSenderId: "1035907577062", appId: "1:1035907577062:web:0c7e1625fa4c22a9aff727" };
         let db;
@@ -1191,9 +1170,9 @@
         }
 
         const VFX = {
-            particles: [], confetti: [], flares: [],
+            particles: [], confetti: [], bursts: [],
             init() { 
-                this.particles = []; this.confetti = []; this.flares = [];
+                this.particles = []; this.confetti = []; this.bursts = [];
                 for(let i=0; i<100; i++) { 
                     this.particles.push({ x: Math.random() * 1100, y: Math.random() * 680, size: Math.random() * 2 + 0.5, speed: Math.random() * 4 + 1, alpha: Math.random() * 0.6 + 0.1, color: Math.random() > 0.5 ? '#22d3ee' : '#f472b6' }); 
                 }
@@ -1223,19 +1202,37 @@
                     });
                 }
                 
-                // 渲染光束 Flare
-                for(let i = this.flares.length - 1; i >= 0; i--) {
-                    let f = this.flares[i];
-                    f.life -= 0.05;
-                    if(f.life <= 0) { this.flares.splice(i, 1); continue; }
-                    let grad = ctx.createLinearGradient(HIT_X, f.y - 80, HIT_X, f.y + 80);
-                    grad.addColorStop(0, f.color + '0)');
-                    grad.addColorStop(0.5, f.color + f.life + ')');
-                    grad.addColorStop(1, f.color + '0)');
-                    ctx.fillStyle = grad;
+                // 渲染圓形散射光環 (Burst / Shockwave)
+                for(let i = this.bursts.length - 1; i >= 0; i--) {
+                    let b = this.bursts[i];
+                    b.life -= 0.05;
+                    if(b.life <= 0) { this.bursts.splice(i, 1); continue; }
+                    
+                    ctx.save();
                     ctx.globalCompositeOperation = "lighter";
-                    ctx.fillRect(HIT_X - 15 - (1-f.life)*20, f.y - 100, 30 + (1-f.life)*40, 200);
-                    ctx.globalCompositeOperation = "source-over";
+                    ctx.globalAlpha = b.life;
+                    ctx.strokeStyle = b.color;
+                    
+                    // 擴散的主光圈
+                    let radius = 45 + (1 - b.life) * 80;
+                    ctx.beginPath();
+                    ctx.arc(HIT_X, b.y, radius, 0, Math.PI*2);
+                    ctx.lineWidth = 6 * b.life;
+                    ctx.stroke();
+                    
+                    // 放射狀的散射光線
+                    for(let j=0; j<8; j++) {
+                        let angle = j * (Math.PI / 4) + (1-b.life)*Math.PI; 
+                        let r1 = 45 + (1 - b.life) * 100;
+                        let r2 = r1 + 30 * b.life;
+                        ctx.beginPath();
+                        ctx.moveTo(HIT_X + Math.cos(angle)*r1, b.y + Math.sin(angle)*r1);
+                        ctx.lineTo(HIT_X + Math.cos(angle)*r2, b.y + Math.sin(angle)*r2);
+                        ctx.lineWidth = 4 * b.life;
+                        ctx.lineCap = "round";
+                        ctx.stroke();
+                    }
+                    ctx.restore();
                 }
             }
         };
@@ -1370,11 +1367,6 @@
                 }
             }
             
-            // 在延遲時間後啟動音樂
-            timeouts.push(setTimeout(() => {
-                if (gameState === 'PLAYING' && bgm) bgm.play().catch(e => console.log("BGM Error", e));
-            }, SEASON1_MUSIC_START_DELAY * 1000));
-            
             notify("準備開始", "var(--comp-gold)");
             
             // 設定遊戲在最後一顆音符結束後的音樂漸弱 (Fade Out)
@@ -1487,15 +1479,8 @@
         }
         function drawTrack(c, y, color, label, bump = 1) {
             c.shadowBlur = 25; c.shadowColor = color; c.fillStyle = "rgba(30, 41, 59, 0.8)"; c.fillRect(0, y-60, width, 120);
-            
-            // 流光邊界
-            c.shadowBlur = 0; c.strokeStyle = color; c.lineWidth = 2;
-            c.setLineDash([20, 15]);
-            c.lineDashOffset = -(AudioEngine.ctx.currentTime * 100);
-            
+            c.shadowBlur = 0; c.strokeStyle = "rgba(255,255,255,0.15)"; c.lineWidth = 2;
             c.beginPath(); c.moveTo(0, y-60); c.lineTo(width, y-60); c.moveTo(0, y+60); c.lineTo(width, y+60); c.stroke();
-            c.setLineDash([]); // 重置
-            
             c.beginPath(); c.arc(HIT_X, y, 45 * bump, 0, Math.PI*2);
             c.strokeStyle = "white"; c.lineWidth = 4; c.stroke();
             c.fillStyle = "rgba(255,255,255,0.05)"; c.fill();
@@ -1580,10 +1565,10 @@
                 if(minDiff < WINDOWS.PERF) { rating = 'PERFECT'; rCol = 'var(--rank-s)'; }
                 else if(minDiff < WINDOWS.GOOD) { rating = 'GOOD'; rCol = 'var(--rank-a)'; }
                 
-                // 新增打擊光束特效 Flare
+                // 新增圓形向外散射特效
                 if(rating === 'PERFECT' || rating === 'GOOD') {
-                    let flareColor = rating === 'PERFECT' ? 'rgba(34, 211, 238,' : 'rgba(74, 222, 128,';
-                    VFX.flares.push({ y: y, color: flareColor, life: 1.0 });
+                    let burstColor = rating === 'PERFECT' ? '#22d3ee' : '#4ade80';
+                    VFX.bursts.push({ y: y, color: burstColor, life: 1.0 });
                 }
                 
                 handleResult(pid, rating); showFeedback(rating, HIT_X, y, rCol);
