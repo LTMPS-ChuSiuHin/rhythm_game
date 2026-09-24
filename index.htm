@@ -8,8 +8,8 @@
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <!-- 引入 Google Identity Services 以支援 OAuth 登入 -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- 引入 Google Identity Services，取消 async defer 確保順序載入 -->
+    <script src="https://accounts.google.com/gsi/client"></script>
     <style>
         :root {
             /* Theme Colors */
@@ -46,7 +46,7 @@
             position: relative;
         }
 
-        /* 背景層 */
+        /* 增強背景特效 */
         .bg-layer { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             overflow: hidden; z-index: 0; pointer-events: none; 
@@ -110,7 +110,7 @@
         .p-4 { left: 90%; width: 4px; height: 4px; animation-duration: 6s; animation-delay: 0.5s; }
         @keyframes floatUp { 0% { bottom: -10px; opacity: 0; } 50% { opacity: 0.6; box-shadow: 0 0 10px white; } 100% { bottom: 100%; opacity: 0; } }
 
-        /* 呼吸燈特效外框 */
+        /* 呼吸燈特效外框 - 調整透明度讓背景透過 */
         #game-wrapper {
             position: relative; width: 100%; max-width: 1100px; height: 100%; max-height: 680px;
             background: rgba(15, 23, 42, 0.15); border-radius: 24px;
@@ -1366,6 +1366,11 @@
                     noteCount++;
                 }
             }
+            
+            // 在延遲時間後啟動音樂
+            timeouts.push(setTimeout(() => {
+                if (gameState === 'PLAYING' && bgm) bgm.play().catch(e => console.log("BGM Error", e));
+            }, SEASON1_MUSIC_START_DELAY * 1000));
             
             notify("準備開始", "var(--comp-gold)");
             
