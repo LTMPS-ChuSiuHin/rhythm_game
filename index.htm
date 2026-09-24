@@ -8,14 +8,17 @@
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <!-- 引入 Google Identity Services 以支援 OAuth 登入 -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             /* Theme Colors */
             --bg-dark: #020617;
-            --glass-panel: rgba(5, 10, 20, 0.85); 
+            /* 玻璃材質設定 - 提高透明度 */
+            --glass-panel: rgba(15, 25, 45, 0.35); 
             --glass-border: rgba(255, 255, 255, 0.2);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
-            --glass-blur: blur(16px);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            --glass-blur: blur(12px);
             
             /* Colors */
             --p1-color: #22d3ee;
@@ -28,7 +31,7 @@
             
             /* Competition Specific */
             --comp-gold: #fbbf24;
-            --season2-color: #a78bfa;
+            --prog-color: #a78bfa;
             
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
@@ -41,39 +44,102 @@
             user-select: none; -webkit-user-select: none; 
             touch-action: none; -webkit-touch-callout: none;
             position: relative;
+            perspective: 1200px; /* 為 3D 微視角特效提供景深 */
         }
 
-        .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; background: #020617; }
+        /* 增強背景特效：加入 3D 微移過渡 */
+        .bg-layer { 
+            position: absolute; top: -5%; left: -5%; width: 110%; height: 110%; 
+            overflow: hidden; z-index: 0; pointer-events: none; 
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            transition: transform 0.1s ease-out;
+            transform: translate(0, 0);
+        }
+        
+        /* 動態極光流光 (Cyber Aurora / Mesh Gradient) */
+        .aurora-container {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            overflow: hidden; opacity: 0.5; z-index: 1; mix-blend-mode: screen;
+        }
+        .aurora-blob {
+            position: absolute; border-radius: 50%; filter: blur(100px);
+            animation: aurora-flow 15s infinite alternate ease-in-out;
+        }
+        .aurora-1 { top: -20%; left: -10%; width: 60vw; height: 60vw; background: #6366f1; animation-delay: 0s; }
+        .aurora-2 { bottom: -20%; right: -10%; width: 70vw; height: 70vw; background: #ec4899; animation-delay: -5s; }
+        .aurora-3 { top: 30%; left: 30%; width: 50vw; height: 50vw; background: #06b6d4; animation-delay: -10s; }
+
+        @keyframes aurora-flow {
+            0% { transform: translate(0, 0) scale(0.8); }
+            33% { transform: translate(15%, 10%) scale(1.1); }
+            66% { transform: translate(-10%, 20%) scale(0.9); }
+            100% { transform: translate(5%, -15%) scale(1.2); }
+        }
+
+        /* 流星雨 / 光束飛掠 (Shooting Stars) */
+        .shooting-star {
+            position: absolute; width: 150px; height: 2px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.8), transparent);
+            border-radius: 50%; z-index: 2; opacity: 0;
+            transform: rotate(-45deg); filter: drop-shadow(0 0 6px white);
+        }
+        .ss-1 { top: 5%; left: 80%; animation: shooting 4s linear infinite 0.5s; }
+        .ss-2 { top: 15%; left: 100%; animation: shooting 5s linear infinite 2s; }
+        .ss-3 { top: 40%; left: 120%; animation: shooting 6s linear infinite 3.5s; }
+        .ss-4 { top: -10%; left: 60%; animation: shooting 4.5s linear infinite 1s; }
+        .ss-5 { top: 25%; left: 90%; animation: shooting 5.5s linear infinite 4s; }
+
+        @keyframes shooting {
+            0% { transform: translate(0, 0) rotate(-45deg); opacity: 1; }
+            15% { opacity: 1; }
+            100% { transform: translate(-2000px, 2000px) rotate(-45deg); opacity: 0; }
+        }
+
         .cyber-grid {
             position: absolute; width: 200%; height: 200%; bottom: -50%; left: -50%;
-            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
             background-size: 60px 60px; background-position: center bottom; transform: perspective(500px) rotateX(60deg);
             animation: gridMove 4s linear infinite;
             mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
             -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
+            z-index: 3;
         }
         @keyframes gridMove { 0% { transform: perspective(500px) rotateX(60deg) translateY(0); } 100% { transform: perspective(500px) rotateX(60deg) translateY(60px); } }
-        .particle { position: absolute; background: white; border-radius: 50%; opacity: 0; animation: floatUp 5s linear infinite; }
+        
+        .particle { position: absolute; background: white; border-radius: 50%; opacity: 0; animation: floatUp 5s linear infinite; z-index: 4; }
         .p-1 { left: 10%; width: 2px; height: 2px; animation-duration: 4s; animation-delay: 0s; }
         .p-2 { left: 30%; width: 3px; height: 3px; animation-duration: 7s; animation-delay: 1s; }
         .p-3 { left: 70%; width: 2px; height: 2px; animation-duration: 5s; animation-delay: 2s; }
         .p-4 { left: 90%; width: 4px; height: 4px; animation-duration: 6s; animation-delay: 0.5s; }
-        @keyframes floatUp { 0% { bottom: -10px; opacity: 0; } 50% { opacity: 0.4; } 100% { bottom: 100%; opacity: 0; } }
+        @keyframes floatUp { 0% { bottom: -10px; opacity: 0; } 50% { opacity: 0.6; box-shadow: 0 0 10px white; } 100% { bottom: 100%; opacity: 0; } }
 
+        /* 呼吸燈特效外框，加入3D過渡 */
         #game-wrapper {
             position: relative; width: 100%; max-width: 1100px; height: 100%; max-height: 680px;
-            background: rgba(15, 23, 42, 0.4); border-radius: 24px;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8); border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(15, 23, 42, 0.15); border-radius: 24px;
             overflow: hidden; z-index: 10; backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: borderPulse 4s infinite alternate;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            transform: translateZ(0); /* Default state before JS kicks in */
         }
+
+        @keyframes borderPulse {
+            0% { box-shadow: 0 0 40px rgba(34, 211, 238, 0.15), inset 0 0 15px rgba(34, 211, 238, 0.1); border-color: rgba(34, 211, 238, 0.2); }
+            100% { box-shadow: 0 0 60px rgba(244, 114, 182, 0.25), inset 0 0 25px rgba(244, 114, 182, 0.15); border-color: rgba(244, 114, 182, 0.3); }
+        }
+
         canvas { display: block; width: 100%; height: 100%; }
         .touch-layer { position: absolute; left: 0; width: 100%; height: 50%; z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         #touch-p1 { top: 0; } #touch-p2 { top: 50%; }
         
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
-            display: flex; flex-direction: column; justify-content: space-between; padding: 25px; box-sizing: border-box; z-index: 20;
+            display: none; /* 預設隱藏遊戲介面 */
+            flex-direction: column; justify-content: space-between; padding: 25px; box-sizing: border-box; z-index: 20;
         }
+
         .hud-bar {
             display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: 800; letter-spacing: 1px;
             padding: 8px 20px; border-radius: 12px; background: rgba(0, 0, 0, 0.4);
@@ -102,22 +168,119 @@
             font-size: 90px; font-weight: 900; text-transform: uppercase; opacity: 0; white-space: nowrap;
             filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5)); transition: all 0.2s ease-out; z-index: 50;
         }
+        
+        /* 暫停/返回主選單 按鈕置中 */
+        #btn-pause {
+            display: none;
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 30px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 60;
+            backdrop-filter: blur(5px);
+            transition: 0.2s;
+            font-size: 16px;
+            pointer-events: auto;
+        }
+        #btn-pause:hover { 
+            background: rgba(255,255,255,0.2); 
+            border-color: white; 
+            transform: translateX(-50%) scale(1.05); 
+        }
+
+        /* 賽季1 專屬標語特效：圓潤可愛字體、柔和色彩、錯開跳動 */
+        .s1-slogan {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px; 
+            font-size: 48px; 
+            font-weight: 900;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            z-index: 15;
+            font-family: 'Comic Sans MS', 'Varela Round', 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+        }
+        
+        .s1-slogan.visible {
+            opacity: 1;
+        }
+        
+        #season1-slogan-top {
+            top: calc(50% - 180px);
+        }
+        
+        #season1-slogan-bottom {
+            top: calc(50% + 140px);
+        }
+
+        .s1-slogan span {
+            display: inline-block;
+            text-shadow: 
+                0px 3px 0px rgba(0,0,0,0.15), 
+                0 0 15px currentColor, 
+                0 0 25px rgba(255,255,255,0.7);
+            animation: cuteFloat 2s ease-in-out infinite;
+            animation-delay: calc(var(--i) * 0.15s);
+        }
+
+        @keyframes cuteFloat {
+            0%, 100% { transform: translateY(0) rotate(-4deg) scale(1); }
+            50% { transform: translateY(-12px) rotate(4deg) scale(1.15); filter: brightness(1.2); }
+        }
+
+        /* COMBO 進階特效 (Fever / Hyper) */
         .combo-popup {
             position: absolute; font-weight: 900; font-size: 48px; color: #facc15; text-shadow: 0 0 10px #b45309, 0 0 20px #facc15;
             transform: translate(-50%, -50%); pointer-events: none; opacity: 0; z-index: 40;
             font-family: 'Segoe UI', sans-serif; font-style: italic; animation: comboPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
+        
+        .combo-fever {
+            color: #ff5722; 
+            text-shadow: 0 0 15px #ffeb3b, 0 0 30px #ff9800, 0 0 45px #f44336;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .combo-hyper {
+            background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(255,255,255,0.8);
+            transform: translate(-50%, -50%) scale(1.2);
+            animation: hyperPop 0.6s ease-out forwards, aurora-flow 2s infinite linear;
+        }
+
         @keyframes comboPop {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
             20% { opacity: 1; transform: translate(-50%, -60%) scale(1.2); }
             100% { opacity: 0; transform: translate(-50%, -80%) scale(1.0); }
         }
+        
+        @keyframes hyperPop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -60%) scale(1.4); }
+            100% { opacity: 0; transform: translate(-50%, -80%) scale(1.2); }
+        }
+
         .hit-popup { position: absolute; font-weight: 900; font-size: 48px; transform: translate(-50%, -50%); pointer-events: none; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; text-shadow: 0 0 20px currentColor; z-index: 25; }
         @keyframes popUp { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -120%) scale(1); } }
 
+        /* 畫面遮罩 - 調低不透明度以配合毛玻璃 */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 23, 0.96); backdrop-filter: blur(40px);
+            background: rgba(2, 6, 23, 0.4); backdrop-filter: blur(3px);
             z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
             display: flex; flex-direction: column; align-items: center; 
             box-sizing: border-box; padding: 20px 30px;
@@ -136,24 +299,25 @@
         
         .season-banner {
             background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);
-            border-radius: 20px; padding: 10px 25px; 
+            border-radius: 20px; padding: 12px 30px; 
             display: flex; flex-direction: column; gap: 5px; align-items: center;
             margin-bottom: 5px;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
         }
-        .season-text { color: #facc15; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
-        .season-sep { color: rgba(255,255,255,0.2); }
-        .reward-text { color: #4ade80; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
+        .season-text { color: #facc15; font-size: 16px; font-weight: 700; letter-spacing: 1px; text-shadow: 0 0 15px rgba(250, 204, 21, 0.5); }
 
         .main-content-area {
             flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
             overflow: hidden; 
         }
 
+        /* 增強玻璃面板視覺 */
         .control-panel {
             display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 650px;
             background: var(--glass-panel);
             backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
+            border: 1px solid var(--glass-border); 
+            box-shadow: var(--glass-shadow), inset 0 0 15px rgba(255, 255, 255, 0.05);
             padding: 20px 30px; border-radius: 20px; margin: 5px 0; flex-shrink: 0; 
         }
         .control-group.full { grid-column: span 2; }
@@ -162,7 +326,7 @@
         
         select, .btn, input {
             padding: 10px; border-radius: 8px; 
-            background: rgba(0, 0, 0, 0.7); 
+            background: rgba(0, 0, 0, 0.35); /* 半透明輸入框 */
             border: 1px solid rgba(255,255,255,0.2); 
             backdrop-filter: blur(5px);
             color: white; font-family: inherit; font-size: 14px; 
@@ -170,21 +334,21 @@
         }
         select:hover:not(:disabled), .btn:hover:not(:disabled), input:focus:not(:disabled) { 
             border-color: var(--p1-color); 
-            background: rgba(0, 0, 0, 0.9); 
+            background: rgba(0, 0, 0, 0.6); 
             box-shadow: 0 0 15px rgba(34,211,238,0.2); 
         }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
         .control-group.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
 
         .mode-description {
-            grid-column: span 2; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--glass-border);
+            grid-column: span 2; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--glass-border);
             border-radius: 10px; padding: 10px; font-size: 13px; color: #e2e8f0; text-align: center;
             line-height: 1.4; margin-top: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
         
         .toggle-wrapper { 
             display: grid; grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); 
-            background: rgba(0,0,0,0.7); 
+            background: rgba(0,0,0,0.35); 
             border-radius: 8px; padding: 3px; gap: 3px; 
             border: 1px solid rgba(255,255,255,0.15); 
         }
@@ -202,8 +366,8 @@
         .toggle-btn[data-mode="vanishing"].active { color: #d946ef; border-color: #d946ef; background: rgba(217, 70, 239, 0.2); }
         .toggle-btn[data-mode="survival"].active { color: #facc15; border-color: #facc15; background: rgba(250, 204, 21, 0.2); }
         .toggle-btn[data-mode="vanishing-survival"].active { color: #f87171; border-color: #f87171; background: rgba(248, 113, 113, 0.2); }
-        .toggle-btn[data-mode="competition"].active { color: var(--comp-gold); border-color: var(--comp-gold); background: rgba(251, 191, 36, 0.2); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
-        .toggle-btn[data-mode="season2"].active { color: var(--season2-color); border-color: var(--season2-color); background: rgba(167, 139, 250, 0.2); box-shadow: 0 0 15px rgba(167, 139, 250, 0.3); }
+        .toggle-btn[data-mode="progressive"].active { color: var(--prog-color); border-color: var(--prog-color); background: rgba(167, 139, 250, 0.2); box-shadow: 0 0 15px rgba(167, 139, 250, 0.3); }
+        .toggle-btn[data-mode="season1"].active { color: var(--comp-gold); border-color: var(--comp-gold); background: rgba(251, 191, 36, 0.2); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
         .toggle-btn[data-val="2"].active { color: var(--p2-color); border-color: var(--p2-color); background: rgba(244, 114, 182, 0.2); }
 
         .screen-footer { flex-shrink: 0; width: 100%; margin-top: 20px; }
@@ -218,31 +382,6 @@
         .lb-lock-btn { flex: 0 0 40px; padding: 12px 0; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; color: white; cursor: pointer; transition: 0.2s; font-size: 18px; display: flex; align-items: center; justify-content: center;}
         .lb-lock-btn:hover { background: rgba(255,255,255,0.1); border-color: white; }
         .leaderboard-btn-wrapper { display: flex; flex: 1; gap: 5px; }
-
-        #season2-overlay {
-            display: none;
-            justify-content: center; 
-            align-items: center;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 100;
-        }
-        #season2-overlay.active { display: flex; }
-        .choice-card {
-            background: var(--glass-panel); border: 2px solid var(--season2-color);
-            padding: 30px; border-radius: 20px; text-align: center;
-            box-shadow: 0 0 50px rgba(167, 139, 250, 0.3);
-            max-width: 480px; width: 90%;
-        }
-        .choice-title { color: var(--season2-color); font-size: 28px; font-weight: 900; margin-bottom: 10px; }
-        .choice-desc { color: #ddd; margin-bottom: 25px; font-size: 15px; line-height: 1.5; }
-        .choice-btn {
-            display: block; width: 100%; padding: 15px; margin: 10px 0;
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-            color: white; font-size: 16px; font-weight: bold; border-radius: 12px;
-            cursor: pointer; transition: 0.2s;
-        }
-        .choice-btn:hover:not(:disabled) { background: var(--season2-color); color: #000; box-shadow: 0 0 15px rgba(167, 139, 250, 0.5); border-color: white; }
-        .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
 
         .scroll-content { flex: 1; width: 100%; overflow-y: auto; display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; }
         .single-mode-layout { flex-direction: row !important; align-items: flex-start !important; justify-content: center !important; gap: 30px !important; overflow: hidden !important; }
@@ -296,13 +435,28 @@
         .lb-title { color:white; font-size: 14px; margin-bottom: 10px; text-align:center; font-weight:bold; letter-spacing: 2px; text-transform: uppercase;}
         .lb-stats { display: flex; gap: 8px; align-items: center; }
         .lb-meta { font-size: 11px; color: var(--text-secondary); text-align: right; margin-right: 5px; }
-        .comp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; max-height: 450px; overflow-y: auto; padding-right: 5px; }
+        
+        /* 賽季龍虎榜更闊 */
+        .comp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 15px; max-height: 450px; overflow-y: auto; padding-right: 5px; }
+        
         .comp-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px; }
         .comp-grade-title { text-align: center; font-size: 16px; font-weight: bold; color: var(--comp-gold); margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
         .comp-item { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03); align-items: center; }
         .comp-rank { width: 25px; font-weight: bold; text-align: center; }
         .comp-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 5px; color: #ddd; }
         .comp-score { color: var(--p1-color); font-weight: bold; font-family: monospace; }
+        
+        /* 暫停頁面卡片 */
+        .choice-card {
+            background: rgba(15, 25, 45, 0.65); border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            padding: 30px; border-radius: 20px; text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            max-width: 400px; width: 90%;
+            margin: auto;
+        }
+        .choice-title { font-size: 28px; font-weight: 900; margin-bottom: 10px; color: var(--p1-color); }
+        .choice-desc { color: #ddd; margin-bottom: 25px; font-size: 15px; line-height: 1.5; }
 
         @media (max-height: 600px) {
             h1 { font-size: 32px; }
@@ -316,14 +470,34 @@
             .upload-form-row { flex-wrap: wrap; }
             .lb-category-container { margin-bottom: 5px; }
             .cat-btn { padding: 5px 10px; font-size: 11px; }
-            .comp-grid { max-height: 250px; }
+            .comp-grid { max-height: 250px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+            .s1-slogan { font-size: 36px; gap: 10px; }
+            #season1-slogan-top { top: calc(50% - 150px); }
+            #season1-slogan-bottom { top: calc(50% + 110px); }
+            .season-text { font-size: 14px; }
         }
     </style>
 </head>
+
 <body>
+    <!-- 賽季1 背景音樂 -->
+    <audio id="bgm-season1" src="https://ltmps-chusiuhin.github.io/rhythm-game/30.mp3" preload="auto" style="display:none;"></audio>
     <audio id="bgmPlayer" style="display:none;"></audio>
 
     <div class="bg-layer">
+        <!-- 動態極光流光特效 -->
+        <div class="aurora-container">
+            <div class="aurora-blob aurora-1"></div>
+            <div class="aurora-blob aurora-2"></div>
+            <div class="aurora-blob aurora-3"></div>
+        </div>
+        <!-- 流星雨特效 -->
+        <div class="shooting-star ss-1"></div>
+        <div class="shooting-star ss-2"></div>
+        <div class="shooting-star ss-3"></div>
+        <div class="shooting-star ss-4"></div>
+        <div class="shooting-star ss-5"></div>
+        
         <div class="cyber-grid"></div>
         <div class="particle p-1"></div>
         <div class="particle p-2"></div>
@@ -336,6 +510,27 @@
         <div id="touch-p1" class="touch-layer"></div>
         <div id="touch-p2" class="touch-layer"></div>
         <div id="ui-layer">
+            
+            <!-- 賽季1 專屬字句：利用 span 拆分每個字以達到錯開的微彈跳柔和特效 -->
+            <div id="season1-slogan-top" class="s1-slogan">
+                <span style="--i:1; color:#ffb3ba;">藍</span>
+                <span style="--i:2; color:#ffd1a9;">循</span>
+                <span style="--i:3; color:#fde047;">三</span>
+                <span style="--i:4; color:#baffc9;">十</span>
+                <span style="--i:5; color:#bae1ff;">傳</span>
+                <span style="--i:6; color:#dcbaff;">承</span>
+                <span style="--i:7; color:#ffb3ff;">愛</span>
+            </div>
+            <div id="season1-slogan-bottom" class="s1-slogan">
+                <span style="--i:1; color:#ffb3ba;">信</span>
+                <span style="--i:2; color:#ffd1a9;">守</span>
+                <span style="--i:3; color:#fde047;">真</span>
+                <span style="--i:4; color:#baffc9;">理</span>
+                <span style="--i:5; color:#bae1ff;">育</span>
+                <span style="--i:6; color:#dcbaff;">英</span>
+                <span style="--i:7; color:#ffb3ff;">才</span>
+            </div>
+            
             <div class="hud-bar p1-hud" id="hud-p1">
                 <div>P1 SCORE <span id="p1-score" style="margin-left:10px; color:white;">0</span></div>
                 <div id="p1-lives" class="lives"></div> 
@@ -346,25 +541,17 @@
                 <div>P2 SCORE <span id="p2-score" style="margin-left:10px; color:white;">0</span></div>
                 <div id="p2-lives" class="lives"></div>
             </div>
-        </div>
-
-        <div id="season2-overlay" class="screen">
-            <div class="choice-card">
-                <div class="choice-title" id="s2-title">LEVEL UP!</div>
-                <div class="choice-desc" id="s2-desc">恭喜完成 4 回合！速度將自動 +10<br>請選擇一項增益效果：</div>
-                <button id="s2-btn-life" class="choice-btn" onclick="applySeason2Choice('life')">💖 增加一顆心 (目前 1 顆，上限 5 顆)</button>
-                <button id="s2-btn-vision" class="choice-btn" onclick="applySeason2Choice('vision')">👁️ 顯示音符 (下4回合)</button>
-                <button id="s2-btn-score" class="choice-btn" onclick="applySeason2Choice('score')">🌟 分數加乘 1.2 倍</button>
-            </div>
+            
+            <!-- 暫停按鈕 置中 -->
+            <button id="btn-pause" onclick="pauseGame()">返回主選單</button>
         </div>
 
         <div id="menu-screen" class="screen active">
             <div class="screen-header">
                 <h1>藍循節奏大師</h1>
                 <p class="subtitle">先聆聽四拍節奏，然後擊打出相同的節奏。</p>
-                <div class="season-banner" style="display: flex; flex-direction: column; gap: 5px; border-radius: 15px; padding: 10px 25px; height: auto;">
-                    <span class="season-text" style="opacity: 0.8;">賽季1（已完結）：2025年12月2日 - 12月18日</span>
-                    <span class="season-text" style="color: #4ade80; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3);">賽季2(已完結)：2026年3月25-4月15日</span>
+                <div class="season-banner">
+                    <span class="season-text">(藍循三十周年校慶) 賽季1：2026年10月21日至11月1日</span>
                 </div>
             </div>
             
@@ -384,8 +571,8 @@
                             <button class="toggle-btn" data-mode="vanishing" onclick="setMode('vanishing')">消失</button>
                             <button class="toggle-btn" data-mode="survival" onclick="setMode('survival')">生存</button>
                             <button class="toggle-btn" data-mode="vanishing-survival" onclick="setMode('vanishing-survival')">消存</button>
-                            <button class="toggle-btn" data-mode="competition" onclick="setMode('competition')">賽季1</button>
-                            <button class="toggle-btn" data-mode="season2" onclick="setMode('season2')">賽季2</button>
+                            <button class="toggle-btn" data-mode="progressive" onclick="setMode('progressive')">漸進</button>
+                            <button class="toggle-btn" data-mode="season1" onclick="setMode('season1')">賽季1</button>
                         </div>
                     </div>
                     <div id="mode-desc" class="mode-description">載入說明中...</div>
@@ -455,8 +642,8 @@
                         <button class="mode-tab" id="menu-lb-vanishing" onclick="switchLBMode('vanishing')">消失</button>
                         <button class="mode-tab" id="menu-lb-survival" onclick="switchLBMode('survival')">生存</button>
                         <button class="mode-tab" id="menu-lb-vanishing-survival" onclick="switchLBMode('vanishing-survival')">消存</button>
-                        <button class="mode-tab" id="menu-lb-competition" onclick="switchLBMode('competition')">賽季1</button>
-                        <button class="mode-tab" id="menu-lb-season2" onclick="switchLBMode('season2')">賽季2</button>
+                        <button class="mode-tab" id="menu-lb-progressive" onclick="switchLBMode('progressive')">漸進</button>
+                        <button class="mode-tab" id="menu-lb-season1" onclick="switchLBMode('season1')">賽季1</button>
                     </div>
                 </div>
             </div>
@@ -465,14 +652,13 @@
 
         <div id="competition-screen" class="screen">
             <div class="screen-header">
-                <h1 style="color:var(--comp-gold); text-shadow: 0 0 30px var(--comp-gold);">賽季龍虎榜</h1>
+                <h1 style="color:var(--comp-gold); text-shadow: 0 0 30px var(--comp-gold);">賽季龍虎榜 (即時)</h1>
                 <p class="subtitle">每級首三名可獲 AE 分 100分</p>
             </div>
             <div class="scroll-content">
                 <div class="leaderboard-section active" style="max-width: 800px; width: 100%;">
                     <div class="lb-category-container" style="margin-bottom: 15px;">
-                        <button class="cat-btn" id="comp-tab-1" onclick="switchCompSeason(1)">第一賽季 (已完結)</button>
-                        <button class="cat-btn active" id="comp-tab-2" onclick="switchCompSeason(2)">第二賽季 (已完結)</button>
+                        <button class="cat-btn active" id="comp-tab-1">(藍循三十周年校慶) 賽季1：2026年10月21日至11月1日</button>
                     </div>
                     <div class="comp-grid" id="comp-grid-container">
                         <div style="text-align:center; padding:20px; grid-column:1/-1; color:#aaa;">讀取比賽數據中...</div>
@@ -527,12 +713,93 @@
             </div>
             <div class="screen-footer"><button class="btn btn-start" onclick="resetToMenu()">返回選單</button></div>
         </div>
+
+        <!-- 暫停確認視窗 -->
+        <div id="pause-overlay" class="screen" style="z-index: 100;">
+            <div class="choice-card">
+                <div class="choice-title">暫停遊戲</div>
+                <div class="choice-desc">是否確定放棄當前進度並返回主選單？</div>
+                <div style="display:flex; gap:10px; margin-top:20px; justify-content:center;">
+                    <button class="btn btn-secondary" style="flex:1;" onclick="resumeGame()">繼續遊戲</button>
+                    <button class="btn btn-start" style="flex:1; background:#f43f5e; box-shadow:0 0 15px rgba(244,63,94,0.4); border:none;" onclick="quitToMenu()">確定返回</button>
+                </div>
+            </div>
+        </div>
+
     </div>
+
     <script>
+        // ==========================================
+        // 🎵 賽季1：自定義音樂與譜面參數設定 🎵
+        // ==========================================
+        
+        const SEASON1_BPM = 75; // 樂曲速度 (BPM)
+        const SEASON1_MUSIC_START_DELAY = 1.0; // 按下開始後，等待多少秒才開始播放音樂
+        const SEASON1_CHART_OFFSET = 1.52; // 譜面延遲 (秒)：正數代表譜面延後出現，負數代表提早 (用以微調音樂與節拍的同步)
+        const SEASON1_NOTE_FLIGHT_TIME = 3.0; // 音符從畫面右側飛到判定線所需的時間（秒）
+        
+        // 譜面設定：每個字元代表一個「十六分音符」的長度 (1 = 擊打, 0 = 休止)
+        // 自動忽略所有空格，方便你排版對齊
+        const SEASON1_MAP = "10 10000010 10000010 10000010 10000010 10000010 10000010 10010010 10000010 10000010 10000011 10101011 00000010 10110011 10010010 10010010      10000000 00000010 10000010 10000011 10101011 00000010 10000010 10000010 10101011 00000010 10000010 10000011 10101011 00000010 10110011 10010010 10101011      00000011 10101011 00000011 10101011 00000011 10101011 00000011 10010010 10000000 00101010 10010011 10101010 00100000 00101010 10010010 10101010 10110000      00101010 10010011 10101010 10010010 10000010 10110010 10010010 10000000 00000000";
+        
+        // 歌詞設定：系統會自動去除空格，並從第 42 個音符 (index: 41) 開始將中文字放入音符中
+        const SEASON1_LYRICS = "藍天碧海春風化雨暖我心無盡 旅途 伴快樂一世間耶穌恩典早已充滿我心裏勤學求道效主愛人樂與學在藍循我在長廊裏禱告你在球場上散步帶着疑問與苦惱也會為我引路我結伴同行邁向天際遇星河書海內奮鬥得到知識再破巨浪你我在藍循實—踐那美夢全然綻放用新世界的光去共創".replace(/\s+/g, '');
+        
+        // ==========================================
+
+        // 3D 視角滑鼠互動
+        let mouseX = 0; let mouseY = 0;
+        window.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+            applyTilt();
+        });
+        window.addEventListener('deviceorientation', (e) => {
+            if (e.gamma && e.beta) {
+                mouseX = Math.max(-1, Math.min(1, e.gamma / 45));
+                mouseY = Math.max(-1, Math.min(1, (e.beta - 45) / 45));
+                applyTilt();
+            }
+        });
+        function applyTilt() {
+            const gw = document.getElementById('game-wrapper');
+            const bg = document.querySelector('.bg-layer');
+            let baseTY = window.innerHeight > 700 ? -4 : 0; // 保留 iPad 的 Y 軸偏移
+            if(gw) gw.style.transform = `perspective(1200px) rotateX(${mouseY * -4}deg) rotateY(${mouseX * 4}deg) translateY(${baseTY}vh)`;
+            if(bg) bg.style.transform = `translate(${mouseX * -15}px, ${mouseY * -15}px)`;
+        }
+
         const firebaseConfig = { apiKey: "AIzaSyD4rb1PhX9TCxj8VORCnZW8Ik6HPDZk8NE", authDomain: "ltmps-rhythm-game.firebaseapp.com", projectId: "ltmps-rhythm-game", storageBucket: "ltmps-rhythm-game.firebasestorage.app", messagingSenderId: "1035907577062", appId: "1:1035907577062:web:0c7e1625fa4c22a9aff727" };
         let db;
         let isLBLocked = false;
         let lockDocRef = null;
+        let isGoogleLoggedIn = false;
+        let googleUserInfo = null;
+        let tokenClient;
+
+        window.onload = function () {
+            if (window.google) {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: '573911894747-0c28hfr0bmkjnn8pkm2msg6sjal1thqe.apps.googleusercontent.com',
+                    scope: 'email profile',
+                    callback: (tokenResponse) => {
+                        if (tokenResponse && tokenResponse.access_token) {
+                            fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                            }).then(res => res.json()).then(data => {
+                                isGoogleLoggedIn = true;
+                                googleUserInfo = data;
+                                alert("Google 登入成功！歡迎，" + data.name);
+                                setModeInternal('season1');
+                            }).catch(err => {
+                                console.error("Error fetching user info:", err);
+                                alert("獲取用戶資訊失敗，請重試。");
+                            });
+                        }
+                    }
+                });
+            }
+        };
 
         try { 
             if (firebaseConfig.apiKey !== "您的_API_KEY") { 
@@ -564,7 +831,6 @@
         function setLockState(locked) {
             if (lockDocRef) {
                 lockDocRef.set({ locked: locked }, { merge: true }).then(() => {
-                    // Success
                 }).catch(err => {
                     console.error("無法更新雲端狀態", err);
                     alert("更新雲端狀態失敗！請檢查 Firebase 資料庫的寫入權限是否已開放。");
@@ -608,27 +874,9 @@
                 'vanishing': "消失模式：音符會在途中消失，考驗你對節奏的記憶力。",
                 'survival': "生存模式：無盡挑戰直至出現3次失誤，挑戰你的集中力。",
                 'vanishing-survival': "消存模式：消失與生存的混合模式，大師級的終極試練！",
-                'competition': "賽季1：重溫第一賽季的挑戰！無盡挑戰直至出現5次失誤，難度將逐漸提升。",
-                'season2': "賽季2：2顆心的生存挑戰！每4回合自動加速並可選擇一項強大的增益效果。"
+                'progressive': "漸進模式：無盡挑戰直至出現5次失誤，難度將逐漸提升。",
+                'season1': "賽季1：一邊欣賞三十周年主題曲一邊擊打節奏！(需先登入 Google 帳戶)"
             }
-        };
-
-        const SEASON_1_RESULTS = {
-            1: [ {classId: "1B", name: "22", score: 19550}, {classId: "1E", name: "01", score: 17100}, {classId: "1B", name: "11", score: 12150}, {classId: "1D", name: "17", score: 10600}, {classId: "1D", name: "07", score: 8300} ],
-            2: [ {classId: "2A", name: "12", score: 9700}, {classId: "2D", name: "05", score: 8850}, {classId: "2B", name: "07", score: 7800}, {classId: "2E", name: "19", score: 7750}, {classId: "2D", name: "15", score: 7550} ],
-            3: [ {classId: "3B", name: "07", score: 11100}, {classId: "3A", name: "27", score: 10700}, {classId: "3C", name: "02", score: 9300}, {classId: "3B", name: "04", score: 9250}, {classId: "3A", name: "26", score: 9200} ],
-            4: [ {classId: "4E", name: "01", score: 28000}, {classId: "4A", name: "12", score: 13850}, {classId: "4B", name: "05", score: 13600}, {classId: "4A", name: "07", score: 12300}, {classId: "4B", name: "08", score: 9450} ],
-            5: [ {classId: "5B", name: "22", score: 12350}, {classId: "5E", name: "07", score: 11650}, {classId: "5E", name: "03", score: 10750}, {classId: "5B", name: "17", score: 9700}, {classId: "5D", name: "20", score: 8150} ],
-            6: [ {classId: "6E", name: "01", score: 64150}, {classId: "6A", name: "11", score: 38800}, {classId: "6E", name: "18", score: 37650}, {classId: "6A", name: "20", score: 22300}, {classId: "6C", name: "06", score: 15650} ]
-        };
-
-        const SEASON_2_RESULTS = {
-            1: [ {classId: "1B", name: "22", score: 39311}, {classId: "1D", name: "17", score: 24873}, {classId: "1B", name: "12", score: 24151}, {classId: "1E", name: "26", score: 22237}, {classId: "1B", name: "11", score: 20959} ],
-            2: [ {classId: "2D", name: "05", score: 17676}, {classId: "2E", name: "17", score: 16996}, {classId: "2A", name: "06", score: 16656}, {classId: "2E", name: "05", score: 15830}, {classId: "2E", name: "01", score: 14862} ],
-            3: [ {classId: "3A", name: "03", score: 30505}, {classId: "3B", name: "07", score: 25440}, {classId: "3E", name: "21", score: 25332}, {classId: "3E", name: "10", score: 20925}, {classId: "3A", name: "01", score: 19554} ],
-            4: [ {classId: "4E", name: "01", score: 35757}, {classId: "4E", name: "03", score: 25988}, {classId: "4B", name: "05", score: 25785}, {classId: "4A", name: "12", score: 24884}, {classId: "4A", name: "05", score: 19320} ],
-            5: [ {classId: "5A", name: "18", score: 26448}, {classId: "5D", name: "20", score: 21934}, {classId: "5E", name: "14", score: 21882}, {classId: "5A", name: "23", score: 19188}, {classId: "5A", name: "29", score: 18456} ],
-            6: [ {classId: "6E", name: "01", score: 41768}, {classId: "6E", name: "23", score: 32882}, {classId: "6E", name: "22", score: 30712}, {classId: "6A", name: "20", score: 29856}, {classId: "6A", name: "21", score: 25643} ]
         };
 
         function showMenu() { 
@@ -637,11 +885,64 @@
             updateDescription(); 
         }
 
+        // 暫停與返回選單邏輯
+        function pauseGame() {
+            if (gameState !== 'PLAYING') return;
+            gameState = 'PAUSED';
+            AudioEngine.ctx.suspend();
+            
+            const bgm = document.getElementById('bgm-season1');
+            if (bgm && !bgm.paused) {
+                bgm.pause();
+                session.bgmWasPlaying = true;
+            } else {
+                session.bgmWasPlaying = false;
+            }
+            
+            document.getElementById('pause-overlay').classList.add('active');
+        }
+
+        function resumeGame() {
+            document.getElementById('pause-overlay').classList.remove('active');
+            gameState = 'PLAYING';
+            AudioEngine.ctx.resume();
+            
+            const bgm = document.getElementById('bgm-season1');
+            if (session.bgmWasPlaying && bgm) {
+                bgm.play().catch(e => console.log(e));
+            }
+        }
+
+        function quitToMenu() {
+            document.getElementById('pause-overlay').classList.remove('active');
+            resetToMenu();
+        }
+
         function resetToMenu() {
             gameState = 'MENU';
             timeouts.forEach(clearTimeout);
-            if (animId) cancelAnimationFrame(animId);
+            
+            if (animId) {
+                cancelAnimationFrame(animId);
+                animId = null;
+            }
+            // 清除畫布，避免殘留遊戲畫面
+            ctx.clearRect(0, 0, width, height);
+            
+            if (session.fadeInterval) {
+                clearInterval(session.fadeInterval);
+                session.fadeInterval = null;
+            }
+            
+            const bgmSeason = document.getElementById('bgm-season1');
+            if(bgmSeason) { bgmSeason.pause(); bgmSeason.currentTime = 0; bgmSeason.volume = 1.0; }
             if(AudioEngine.ctx && AudioEngine.ctx.state === 'running') { AudioEngine.ctx.suspend().then(()=>AudioEngine.ctx.resume()); }
+            
+            document.getElementById('ui-layer').style.display = 'none';
+            document.getElementById('season1-slogan-top').classList.remove('visible');
+            document.getElementById('season1-slogan-bottom').classList.remove('visible');
+            document.getElementById('btn-pause').style.display = 'none';
+            
             showMenu();
         }
 
@@ -654,11 +955,11 @@
             if(config.mode.includes('vanishing')) mColor = '#d946ef';
             if(config.mode.includes('survival')) mColor = '#facc15';
             if(config.mode === 'vanishing-survival') mColor = '#f87171';
-            if(config.mode === 'competition') mColor = 'var(--comp-gold)';
-            if(config.mode === 'season2') mColor = 'var(--season2-color)';
+            if(config.mode === 'progressive') mColor = 'var(--prog-color)';
+            if(config.mode === 'season1') mColor = 'var(--comp-gold)';
             if(el) { el.innerHTML = `<div><span style="color:${pColor}; font-weight:bold;">[${config.players}P]</span> ${pText}</div><div style="margin-top:3px;"><span style="color:${mColor}; font-weight:bold;">[${getModeName(config.mode)}]</span> ${mText}</div>`; }
         }
-        function getModeName(m) { const names = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'賽季1', 'season2':'賽季2'}; return names[m] || m; }
+        function getModeName(m) { const names = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'progressive':'漸進', 'season1':'賽季1'}; return names[m] || m; }
         function setUploadRole(role) { uploadRole = role; document.getElementById('role-student').classList.toggle('active', role === 'student'); document.getElementById('role-guest').classList.toggle('active', role === 'guest'); document.getElementById('input-student-row').style.display = role === 'student' ? 'flex' : 'none'; document.getElementById('input-guest-row').style.display = role === 'guest' ? 'flex' : 'none'; }
         function switchLBCategory(cat) { currentLB.category = cat; document.querySelectorAll('#lb-category-tabs .cat-btn').forEach(b => b.classList.remove('active')); document.getElementById(`cat-${cat}`).classList.add('active'); const filters = document.getElementById('lb-filters'); const fGrade = document.getElementById('filter-grade'); const fClass = document.getElementById('filter-class'); if(cat === 'class') { filters.style.display = 'flex'; fGrade.style.display = 'block'; fClass.style.display = 'block'; } else if (cat === 'grade') { filters.style.display = 'flex'; fGrade.style.display = 'block'; fClass.style.display = 'none'; } else { filters.style.display = 'none'; } refreshLB(); }
         
@@ -680,7 +981,19 @@
             refreshLB(); 
         }
         
-        function setMode(m) { 
+        function setMode(m) {
+            if (m === 'season1' && !isGoogleLoggedIn) {
+                if (tokenClient) {
+                    tokenClient.requestAccessToken();
+                } else {
+                    alert("Google 登入服務未載入，請刷新頁面重試。");
+                }
+                return;
+            }
+            setModeInternal(m);
+        }
+
+        function setModeInternal(m) { 
             config.mode = m; 
             document.querySelectorAll('.toggle-btn[data-mode]').forEach(b => b.classList.remove('active')); 
             document.querySelector(`.toggle-btn[data-mode="${m}"]`).classList.add('active'); 
@@ -693,15 +1006,10 @@
             
             rg.classList.remove('disabled'); ds.classList.remove('disabled'); ss.classList.remove('disabled'); pGroup.classList.remove('disabled');
 
-            if(m === 'competition') {
+            if(m === 'progressive' || m === 'season1') {
                 rg.classList.add('disabled'); ds.classList.add('disabled'); ss.classList.add('disabled'); pGroup.classList.add('disabled');
                 setPlayers(1);
                 document.getElementById('speed-select').value = "95";
-                document.getElementById('diff-select').value = "easy";
-            } else if (m === 'season2') {
-                rg.classList.add('disabled'); ds.classList.add('disabled'); ss.classList.add('disabled'); pGroup.classList.add('disabled');
-                setPlayers(1);
-                document.getElementById('speed-select').value = "95"; 
                 document.getElementById('diff-select').value = "easy";
             } else if(m.includes('survival')) { 
                 rg.classList.add('disabled'); 
@@ -710,8 +1018,8 @@
         }
         
         function setPlayers(n) { 
-            if (n === 2 && (config.mode === 'competition' || config.mode === 'season2')) {
-                setMode('fixed'); 
+            if (n === 2 && (config.mode === 'progressive' || config.mode === 'season1')) {
+                setModeInternal('fixed'); 
             }
             config.players = n; 
             document.querySelectorAll('.toggle-btn[data-val]').forEach(b => b.classList.remove('active')); 
@@ -720,16 +1028,7 @@
         }
 
         function getScoreMultiplier() {
-            if (config.mode === 'competition') return 1.0; 
-            
-            if (config.mode === 'season2') {
-                let base = 1.0;
-                if (config.diff === 'normal') base = 1.2;
-                if (config.diff === 'hard') base = 1.5;
-                if (config.diff === 'master') base = 2.0;
-                return base * (session.p1.s2Multi || 1.0);
-            }
-
+            if (config.mode === 'progressive' || config.mode === 'season1') return 1.0; 
             if (config.bpm === 70) return 0.8;
             if (config.bpm === 120) return 1.2;
             return 1.0;
@@ -771,12 +1070,11 @@
             try { 
                 let payload = { name: name, score: session.p1.score, difficulty: config.diff, bpm: config.bpm, type: type, mode: config.mode, timestamp: firebase.firestore.FieldValue.serverTimestamp() }; 
                 if(type === 'student') { payload.grade = grade; payload.class = cls; payload.classId = classId; } 
-                
-                let colName = 'leaderboard';
-                if (config.mode === 'competition') colName = 'lb_competition';
-                else if (config.mode === 'season2') colName = 'lb_season2';
+                if(config.mode === 'season1' && googleUserInfo) {
+                    payload.lastName = googleUserInfo.family_name || googleUserInfo.name;
+                }
 
-                await db.collection(colName).add(payload); 
+                await db.collection('leaderboard').add(payload); 
                 lbCache = {};
                 document.getElementById('upload-ui').style.display = 'none'; 
                 document.getElementById('upload-success-msg').style.display = 'block'; 
@@ -791,15 +1089,7 @@
             if (lbCache[cacheKey] && (now - lbCache[cacheKey].timestamp < CACHE_DURATION)) { renderLBList(list, lbCache[cacheKey].data); return; }
             list.innerHTML = '<li class="lb-item" style="justify-content:center;">讀取中...</li>'; 
             
-            let colName = 'leaderboard';
-            if (mode === 'competition') colName = 'lb_competition';
-            else if (mode === 'season2') colName = 'lb_season2';
-
-            let q = db.collection(colName);
-            if (colName === 'leaderboard') {
-                q = q.where('mode', '==', mode);
-            }
-
+            let q = db.collection('leaderboard').where('mode', '==', mode);
             try { 
                 if (currentLB.category === 'class') { const cid = currentLB.filterGrade + currentLB.filterClass; q = q.where('classId', '==', cid).orderBy('score', 'desc'); } 
                 else if (currentLB.category === 'grade') { q = q.where('grade', '==', currentLB.filterGrade).orderBy('score', 'desc'); } 
@@ -820,8 +1110,12 @@
             dataList.forEach((data) => { 
                 const safeName = data.name.replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
                 let rankColor = 'var(--rank-b)'; if(rank===1) rankColor = 'var(--rank-s)'; if(rank===2) rankColor = 'var(--rank-a)'; if(rank===3) rankColor = '#fff'; 
-                let detailInfo = "訪客"; if(data.type === 'student') { detailInfo = `${data.classId} (${data.grade}年級)`; } 
-                const metaStr = `${getSpeedText(data.bpm || 95)} | ${getDiffText(data.difficulty)}`;
+                let detailInfo = "訪客"; 
+                if(data.type === 'student') { 
+                    detailInfo = `${data.classId} (${data.grade}年級)`; 
+                } 
+                let metaStr = `${getSpeedText(data.bpm || 95)} | ${getDiffText(data.difficulty)}`;
+                if(data.mode === 'season1') metaStr = `指定音樂`;
                 const item = document.createElement('li'); item.className = 'lb-item';
                 item.innerHTML = `<span class="lb-rank" style="color:${rankColor}">${rank++}</span><div class="lb-info"><span class="lb-name">${safeName}</span><span class="lb-detail">${detailInfo}</span></div><div class="lb-stats"><span class="lb-meta">${metaStr}</span><span class="lb-score">${data.score}</span></div>`; 
                 listElement.appendChild(item); 
@@ -831,19 +1125,41 @@
         function openCompetitionRanking() {
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
             document.getElementById('competition-screen').classList.add('active');
-            switchCompSeason(2);
+            fetchSeasonLeaderboard();
         }
 
-        function switchCompSeason(season) {
-            document.getElementById('comp-tab-1').classList.remove('active');
-            document.getElementById('comp-tab-2').classList.remove('active');
-            document.getElementById('comp-tab-' + season).classList.add('active');
-            
+        async function fetchSeasonLeaderboard() {
             const container = document.getElementById('comp-grid-container');
-            if (season === 1) {
-                renderCompGrid(container, SEASON_1_RESULTS);
-            } else if (season === 2) {
-                renderCompGrid(container, SEASON_2_RESULTS);
+            container.innerHTML = '<div style="text-align:center; padding:20px; grid-column:1/-1; color:#aaa;">實時讀取比賽數據中...</div>';
+            if (!db) { container.innerHTML = '<div style="text-align:center; color:#f87171;">資料庫未連接</div>'; return; }
+            try {
+                // 獲取賽季1的所有學生成績 (即時運算)
+                const querySnapshot = await db.collection('leaderboard').where('mode', '==', 'season1').get();
+                let gradesData = {1:[], 2:[], 3:[], 4:[], 5:[], 6:[]};
+                const uniqueData = new Map();
+                
+                querySnapshot.forEach(doc => { 
+                    const d = doc.data(); 
+                    if (d.type !== 'student') return; // 只計算學生
+                    const key = d.classId + '_' + d.name; 
+                    if (!uniqueData.has(key) || d.score > uniqueData.get(key).score) { 
+                        uniqueData.set(key, d); 
+                    } 
+                });
+                
+                let allStudents = Array.from(uniqueData.values());
+                allStudents.forEach(d => {
+                    let grade = parseInt(d.grade);
+                    if (gradesData[grade]) { gradesData[grade].push(d); }
+                });
+                
+                for(let g=1; g<=6; g++) {
+                    gradesData[g].sort((a,b) => b.score - a.score);
+                }
+                renderCompGrid(container, gradesData);
+            } catch(e) {
+                console.error("Season LB fetch Error:", e);
+                container.innerHTML = '<div style="text-align:center; color:#f87171;">讀取失敗，請重試。</div>';
             }
         }
 
@@ -855,10 +1171,17 @@
                 if (gradeList.length === 0) { cardHtml += `<div style="text-align:center; color:#666; padding:10px; font-size:12px;">暫無紀錄</div>`; } 
                 else {
                     let rank = 1;
-                    gradeList.forEach(data => {
+                    // 每級顯示最多5人，但頭三名有特別標記
+                    gradeList.slice(0, 5).forEach(data => {
                         let badge = rank; let color = '#fff';
-                        if(rank===1) { badge='🥇'; color='var(--comp-gold)'; } else if(rank===2) { badge='🥈'; color='var(--comp-silver)'; } else if(rank===3) { badge='🥉'; color='var(--comp-bronze)'; } else { badge = rank + '.'; color='#94a3b8'; }
-                        cardHtml += `<div class="comp-item"><span class="comp-rank" style="color:${color}">${badge}</span><span class="comp-name" style="color:${color}">${data.classId} ${data.name}</span><div style="text-align:right;"><div class="comp-score">${data.score}</div></div></div>`;
+                        if(rank===1) { badge='🥇'; color='var(--comp-gold)'; } else if(rank===2) { badge='🥈'; color='#94a3b8'; } else if(rank===3) { badge='🥉'; color='#fb923c'; } else { badge = rank + '.'; color='#64748b'; }
+                        
+                        let dispName = `${data.classId} ${data.name}`;
+                        if (data.lastName) {
+                            dispName += ` (${data.lastName})`;
+                        }
+
+                        cardHtml += `<div class="comp-item"><span class="comp-rank" style="color:${color}">${badge}</span><span class="comp-name" style="color:${color}">${dispName}</span><div style="text-align:right;"><div class="comp-score">${data.score}</div></div></div>`;
                         rank++;
                     });
                 }
@@ -868,9 +1191,53 @@
         }
 
         const VFX = {
-            particles: [],
-            init() { this.particles = []; for(let i=0; i<100; i++) { this.particles.push({ x: Math.random() * 1100, y: Math.random() * 680, size: Math.random() * 2 + 0.5, speed: Math.random() * 4 + 1, alpha: Math.random() * 0.6 + 0.1, color: Math.random() > 0.5 ? '#22d3ee' : '#f472b6' }); } },
-            update(ctx) { this.particles.forEach(p => { p.x -= p.speed; if(p.x < -10) { p.x = 1110; p.y = Math.random() * 680; } ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill(); }); ctx.globalAlpha = 1; }
+            particles: [], confetti: [], flares: [],
+            init() { 
+                this.particles = []; this.confetti = []; this.flares = [];
+                for(let i=0; i<100; i++) { 
+                    this.particles.push({ x: Math.random() * 1100, y: Math.random() * 680, size: Math.random() * 2 + 0.5, speed: Math.random() * 4 + 1, alpha: Math.random() * 0.6 + 0.1, color: Math.random() > 0.5 ? '#22d3ee' : '#f472b6' }); 
+                }
+                // 賽季1 飄落彩帶/金箔
+                for(let i=0; i<60; i++) {
+                    this.confetti.push({
+                        x: Math.random() * 1100, y: Math.random() * 680,
+                        w: Math.random() * 8 + 4, h: Math.random() * 8 + 4,
+                        speedY: Math.random() * 2 + 1, speedX: Math.random() * 2 - 1,
+                        rot: Math.random() * 360, rotSpeed: Math.random() * 5 - 2.5,
+                        color: Math.random() > 0.5 ? '#fbbf24' : '#fbcfe8'
+                    });
+                }
+            },
+            update(ctx) { 
+                this.particles.forEach(p => { p.x -= p.speed; if(p.x < -10) { p.x = 1110; p.y = Math.random() * 680; } ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill(); }); 
+                ctx.globalAlpha = 1; 
+                
+                if (config.mode === 'season1') {
+                    this.confetti.forEach(c => {
+                        c.y += c.speedY; c.x += c.speedX; c.rot += c.rotSpeed;
+                        if(c.y > 680 + 20) { c.y = -20; c.x = Math.random() * 1100; }
+                        ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rot * Math.PI / 180);
+                        ctx.fillStyle = c.color; ctx.globalAlpha = 0.8;
+                        ctx.fillRect(-c.w/2, -c.h/2, c.w, c.h);
+                        ctx.restore();
+                    });
+                }
+                
+                // 渲染光束 Flare
+                for(let i = this.flares.length - 1; i >= 0; i--) {
+                    let f = this.flares[i];
+                    f.life -= 0.05;
+                    if(f.life <= 0) { this.flares.splice(i, 1); continue; }
+                    let grad = ctx.createLinearGradient(HIT_X, f.y - 80, HIT_X, f.y + 80);
+                    grad.addColorStop(0, f.color + '0)');
+                    grad.addColorStop(0.5, f.color + f.life + ')');
+                    grad.addColorStop(1, f.color + '0)');
+                    ctx.fillStyle = grad;
+                    ctx.globalCompositeOperation = "lighter";
+                    ctx.fillRect(HIT_X - 15 - (1-f.life)*20, f.y - 100, 30 + (1-f.life)*40, 200);
+                    ctx.globalCompositeOperation = "source-over";
+                }
+            }
         };
         const AudioEngine = {
             ctx: null,
@@ -883,6 +1250,7 @@
                 else if(type === 'p1') { o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1000; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t+0.15); g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.25); o.start(t); o.stop(t+0.3); }
                 else if(type === 'p2') { o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 1500; o.frequency.setValueAtTime(400, t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.3, t+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+0.3); o.start(t); o.stop(t+0.35); }
                 else if(type === 'metro') { o.type = 'square'; f.type = 'highpass'; f.frequency.value = 2500; o.frequency.setValueAtTime(800, t); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.05); o.start(t); o.stop(t+0.05); }
+                else if(type === 'bell') { o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 2000; o.frequency.setValueAtTime(1046.5, t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.02, t+0.01); g.gain.exponentialRampToValueAtTime(0.001, t+0.5); o.start(t); o.stop(t+0.55); }
             }
         };
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
@@ -905,103 +1273,126 @@
         }
         
         function startGame() {
+            const bgm = document.getElementById('bgm-season1');
+            if (config.mode === 'season1' && bgm) {
+                // 為解決瀏覽器安全策略，在按鈕點擊當下先獲取播放權限並暫停
+                bgm.volume = 1.0;
+                bgm.play().then(() => {
+                    bgm.pause();
+                    bgm.currentTime = 0;
+                }).catch(e => console.log("Init BGM Error", e));
+            }
+
             if(document.activeElement) document.activeElement.blur(); AudioEngine.init(); VFX.init();
             
-            config.bpm = parseInt(document.getElementById('speed-select').value);
-
-            if (config.mode === 'competition') {
+            if (config.mode === 'season1') {
+                config.bpm = SEASON1_BPM; config.rounds = Infinity; config.players = 1; config.diff = 'easy'; 
+                
+                // 顯示賽季1專屬字句
+                document.getElementById('season1-slogan-top').classList.add('visible');
+                document.getElementById('season1-slogan-bottom').classList.add('visible');
+                
+            } else if (config.mode === 'progressive') {
                 config.bpm = 95; config.rounds = Infinity; config.players = 1; config.diff = 'easy'; 
-            } else if (config.mode === 'season2') {
-                config.bpm = 100; config.rounds = Infinity; config.players = 1; config.diff = 'easy';
             } else {
+                config.bpm = parseInt(document.getElementById('speed-select').value);
                 config.diff = document.getElementById('diff-select').value;
                 config.rounds = config.mode.includes('survival') ? Infinity : parseInt(document.getElementById('round-select').value);
             }
 
-            let initLives = config.mode === 'competition' ? 5 : 3;
-            if (config.mode === 'season2') initLives = 2; 
+            let initLives = (config.mode === 'progressive') ? 5 : 3;
+            // 賽季1不設生命值，用無限大表示
+            if (config.mode === 'season1') {
+                initLives = 999;
+            }
 
-            const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1, combo: 0, maxCombo: 0, s2VisionRounds: 0, s2Multi: 1.0 });
+            const initP = () => ({ score: 0, lives: initLives, notes: [], stats: {p:0,g:0,m:0}, bump: 1, combo: 0, maxCombo: 0 });
             session = { round: 0, nextTime: AudioEngine.ctx.currentTime + 2.0, p1: initP(), p2: initP() };
             
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('hud-p2').style.opacity = config.players === 2 ? 1 : 0;
+            
+            document.getElementById('ui-layer').style.display = 'flex'; // 顯示遊戲 UI
+            document.getElementById('btn-pause').style.display = 'block'; // 顯示暫停按鈕
+            
             updateHUD(); gameState = 'PLAYING'; timeouts.forEach(clearTimeout); timeouts = []; if(animId) cancelAnimationFrame(animId);
             
-            schedule(); render();
-        }
-
-        function pauseGameForChoice() {
-            gameState = 'PAUSED';
-            let diffUpText = "";
-            let nextDiff = config.diff;
-            if (session.round === 12) nextDiff = 'normal';
-            if (session.round === 24) nextDiff = 'hard';
-            if (session.round === 36) nextDiff = 'master';
-            
-            if (nextDiff !== config.diff) {
-                diffUpText = `<br><span style="color:#f43f5e; font-weight:bold;">🔥 難度將提升至：${getDiffText(nextDiff)}</span>`;
-            }
-
-            document.getElementById('s2-desc').innerHTML = `恭喜完成 ${session.round} 回合！<br>⚡ 速度將自動 +10 (目前 ${config.bpm} &rarr; ${config.bpm + 10})${diffUpText}<br><br>請選擇一項增益效果：`;
-
-            const btnLife = document.getElementById('s2-btn-life');
-            if (session.p1.lives >= 5) {
-                btnLife.innerText = "💖 生命已達上限 (MAX)";
-                btnLife.disabled = true;
+            if (config.mode === 'season1') {
+                startSeason1Mode();
             } else {
-                btnLife.innerText = `💖 增加一顆心 (目前 ${session.p1.lives} 顆，上限 5 顆)`;
-                btnLife.disabled = false;
+                schedule(); 
             }
-
-            document.getElementById('s2-btn-score').innerText = `🌟 分數加乘 x1.2 (目前疊加: ${(session.p1.s2Multi * 1.2).toFixed(2)}x)`;
-
-            document.getElementById('season2-overlay').classList.add('active');
+            render();
         }
 
-        function applySeason2Choice(choice) {
-            document.getElementById('season2-overlay').classList.remove('active');
+        // 賽季1的專屬生成與排程函數
+        function startSeason1Mode() {
+            const bgm = document.getElementById('bgm-season1');
+            if (bgm) { bgm.currentTime = 0; bgm.volume = 1.0; }
             
-            config.bpm += 10;
-            if (session.round === 12) config.diff = 'normal';
-            if (session.round === 24) config.diff = 'hard';
-            if (session.round === 36) config.diff = 'master';
-
-            let notifyMsg = "";
-            if (choice === 'life') {
-                if (session.p1.lives < 5) session.p1.lives++;
-                notifyMsg = "生命 +1 ❤";
-            } else if (choice === 'vision') {
-                session.p1.s2VisionRounds = 5; 
-                notifyMsg = "獲得視野 👁️";
-            } else if (choice === 'score') {
-                session.p1.s2Multi *= 1.2;
-                notifyMsg = "分數加乘 🌟";
+            const now = AudioEngine.ctx.currentTime;
+            const musicStartTime = now + SEASON1_MUSIC_START_DELAY; // 音樂正式開始播放的絕對時間
+            
+            session.bgmStartTime = musicStartTime;
+            session.bgmStarted = false;
+            
+            // 計算一個十六分音符的長度 (秒)
+            const sixteenthDuration = (60 / SEASON1_BPM) / 4; 
+            
+            // 移除譜面中的所有空格，方便排版
+            const cleanMap = SEASON1_MAP.replace(/\s+/g, '');
+            
+            let noteCount = 0;
+            let lyricIndex = 0;
+            let lastNoteTarget = 0;
+            
+            for (let i = 0; i < cleanMap.length; i++) {
+                if (cleanMap[i] === '1') {
+                    // targetTime = 音樂播放時間 + 譜面整體偏移 + (音符所在索引 * 十六分音符時長)
+                    let targetTime = musicStartTime + SEASON1_CHART_OFFSET + (i * sixteenthDuration);
+                    
+                    let char = "";
+                    // 從第 42 個音符 (index: 41) 開始塞入中文字
+                    if (noteCount >= 41 && lyricIndex < SEASON1_LYRICS.length) {
+                        char = SEASON1_LYRICS[lyricIndex];
+                        lyricIndex++;
+                    }
+                    
+                    session.p1.notes.push({ 
+                        target: targetTime, 
+                        hit: false, 
+                        missed: false, 
+                        index: noteCount,
+                        lyric: char 
+                    });
+                    
+                    lastNoteTarget = targetTime;
+                    noteCount++;
+                }
             }
-
-            updateHUD();
-            notify(notifyMsg, 'var(--season2-color)');
-
-            gameState = 'PLAYING';
-            session.nextTime = AudioEngine.ctx.currentTime + 2.0; 
-            schedule();
+            
+            // 在延遲時間後啟動音樂
+            timeouts.push(setTimeout(() => {
+                if (gameState === 'PLAYING' && bgm) bgm.play().catch(e => console.log("BGM Error", e));
+            }, SEASON1_MUSIC_START_DELAY * 1000));
+            
+            notify("準備開始", "var(--comp-gold)");
+            
+            // 設定遊戲在最後一顆音符結束後的音樂漸弱 (Fade Out)
+            let durationToLastNote = lastNoteTarget > 0 ? (lastNoteTarget - now) : 5;
+            session.endTime = now + durationToLastNote + 0.5;
+            session.ending = false;
         }
 
         function schedule() {
-            if(gameState !== 'PLAYING') return;
-            
-            if (config.mode === 'season2' && session.round > 0 && session.round % 4 === 0) {
-                if (!session.checkpointPassed) {
-                    pauseGameForChoice();
-                    session.checkpointPassed = true; 
-                    return;
-                }
-            } else {
-                session.checkpointPassed = false; 
+            if(gameState === 'PAUSED') {
+                timeouts.push(setTimeout(schedule, 100)); // 暫停時持續重試
+                return;
             }
+            if(gameState !== 'PLAYING') return;
 
-            if(!config.mode.includes('survival') && config.mode !== 'competition' && config.mode !== 'season2' && session.round >= config.rounds) { endGame(); return; }
+            if(!config.mode.includes('survival') && config.mode !== 'progressive' && session.round >= config.rounds) { endGame(); return; }
             
-            if(config.mode === 'competition') {
+            if(config.mode === 'progressive') {
                 if(session.round < 4) config.diff = 'easy';
                 else if(session.round < 8) config.diff = 'normal';
                 else if(session.round < 12) config.diff = 'hard';
@@ -1013,35 +1404,71 @@
             pattern.forEach((b, idx) => { const target = playStart + b*BEAT; session.p1.notes.push({ target: target, hit: false, missed: false, index: idx }); if(config.players === 2) session.p2.notes.push({ target: target, hit: false, missed: false, index: idx }); });
             
             timeouts.push(setTimeout(() => { 
-                if(gameState!=='PLAYING') return; 
+                if(gameState !== 'PLAYING') return; 
                 session.round++; 
-                if (config.mode === 'season2' && session.p1.s2VisionRounds > 0) {
-                    session.p1.s2VisionRounds--;
-                }
                 updateHUD(); 
                 notify("LISTEN", "var(--p1-color)"); 
                 AudioEngine.play('metro', AudioEngine.ctx.currentTime); 
             }, (now - AudioEngine.ctx.currentTime)*1000));
             
             timeouts.push(setTimeout(() => { 
-                if(gameState!=='PLAYING') return; 
+                if(gameState !== 'PLAYING') return; 
                 let col = config.mode.includes('vanishing') ? '#d946ef' : '#facc15'; 
                 if(config.mode === 'vanishing-survival') col = '#f87171'; 
-                if(config.mode === 'competition') col = 'var(--comp-gold)';
-                if(config.mode === 'season2') col = 'var(--season2-color)';
+                if(config.mode === 'progressive') col = 'var(--prog-color)';
                 notify("PLAY", col); AudioEngine.play('metro', AudioEngine.ctx.currentTime); 
             }, (playStart - AudioEngine.ctx.currentTime)*1000));
             
             session.nextTime += (BEAT * 8); timeouts.push(setTimeout(schedule, (session.nextTime - AudioEngine.ctx.currentTime - 0.1)*1000));
         }
+        
         function render() {
-            if(gameState !== 'PLAYING' && gameState !== 'PAUSED') return; 
-            if(gameState === 'PAUSED') { requestAnimationFrame(render); return; } 
+            if(gameState === 'PAUSED') {
+                animId = requestAnimationFrame(render);
+                return;
+            }
+            if(gameState !== 'PLAYING') return; 
 
             ctx.clearRect(0, 0, width, height); VFX.update(ctx);
-            const now = AudioEngine.ctx.currentTime; const speed = getSpeed(); const beatSec = getBeatSec();
+            const now = AudioEngine.ctx.currentTime; 
+            const beatSec = getBeatSec();
             
-            const isVanishingP1 = (config.mode.includes('vanishing') || config.mode === 'competition' || config.mode === 'season2') && !(config.mode === 'season2' && session.p1.s2VisionRounds > 0);
+            // 賽季1 音樂播放排程 (不受暫停影響)
+            if (config.mode === 'season1' && !session.bgmStarted && now >= session.bgmStartTime) {
+                session.bgmStarted = true;
+                const bgm = document.getElementById('bgm-season1');
+                if (bgm) bgm.play().catch(e => console.log("BGM Error", e));
+            }
+            
+            // 賽季1 結束與淡出處理 (不受暫停影響)
+            if (config.mode === 'season1' && session.endTime && now >= session.endTime && !session.ending) {
+                session.ending = true;
+                
+                let fadeSteps = 20;
+                let fadeOutTime = 2.0; 
+                let intervalTime = (fadeOutTime * 1000) / fadeSteps;
+                let volumeStep = 1.0 / fadeSteps;
+                const bgm = document.getElementById('bgm-season1');
+                
+                session.fadeInterval = setInterval(() => {
+                    if (bgm && bgm.volume > volumeStep) {
+                        bgm.volume -= volumeStep;
+                    } else {
+                        if(bgm) { bgm.volume = 0; bgm.pause(); }
+                        clearInterval(session.fadeInterval);
+                        session.fadeInterval = null;
+                        if(gameState === 'PLAYING') endGame();
+                    }
+                }, intervalTime);
+            }
+            
+            // 決定音符飛行速度與消失效果
+            let speed = getSpeed();
+            if (config.mode === 'season1') {
+                speed = (SPAWN_X - HIT_X) / SEASON1_NOTE_FLIGHT_TIME;
+            }
+
+            const isVanishingP1 = config.mode.includes('vanishing') || config.mode === 'progressive';
             
             const y1 = config.players === 1 ? height/2 : height*0.28; const y2 = height*0.72;
             
@@ -1051,7 +1478,7 @@
             drawTrack(ctx, y1, 'var(--p1-color)', 'P1', session.p1.bump);
             drawNotes(ctx, session.p1.notes, y1, '#22d3ee', now, speed, beatSec, isVanishingP1, 1);
             if(config.players === 2) {
-                const isVanishingP2 = config.mode.includes('vanishing') || config.mode === 'competition';
+                const isVanishingP2 = config.mode.includes('vanishing') || config.mode === 'progressive';
                 ctx.save(); ctx.beginPath(); ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 4; ctx.setLineDash([15, 15]); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke(); ctx.shadowBlur = 15; ctx.shadowColor = "rgba(255, 255, 255, 0.5)"; ctx.stroke(); ctx.restore();
                 drawTrack(ctx, y2, 'var(--p2-color)', 'P2', session.p2.bump);
                 drawNotes(ctx, session.p2.notes, y2, '#f472b6', now, speed, beatSec, isVanishingP2, 2);
@@ -1060,8 +1487,15 @@
         }
         function drawTrack(c, y, color, label, bump = 1) {
             c.shadowBlur = 25; c.shadowColor = color; c.fillStyle = "rgba(30, 41, 59, 0.8)"; c.fillRect(0, y-60, width, 120);
-            c.shadowBlur = 0; c.strokeStyle = "rgba(255,255,255,0.15)"; c.lineWidth = 2;
+            
+            // 流光邊界
+            c.shadowBlur = 0; c.strokeStyle = color; c.lineWidth = 2;
+            c.setLineDash([20, 15]);
+            c.lineDashOffset = -(AudioEngine.ctx.currentTime * 100);
+            
             c.beginPath(); c.moveTo(0, y-60); c.lineTo(width, y-60); c.moveTo(0, y+60); c.lineTo(width, y+60); c.stroke();
+            c.setLineDash([]); // 重置
+            
             c.beginPath(); c.arc(HIT_X, y, 45 * bump, 0, Math.PI*2);
             c.strokeStyle = "white"; c.lineWidth = 4; c.stroke();
             c.fillStyle = "rgba(255,255,255,0.05)"; c.fill();
@@ -1079,9 +1513,12 @@
                     if (alpha > 1) alpha = 1; if (alpha < 0) alpha = 0;
                 }
                 if (x > -50 && x < width && !n.missed && alpha > 0.01) {
-                    const isIncoming = dt <= (BEATS_PHASE * beatSec);
+                    // 根據模式判斷是否快到達
+                    let isIncoming = dt <= (BEATS_PHASE * beatSec);
+                    if (config.mode === 'season1') isIncoming = (dt <= SEASON1_NOTE_FLIGHT_TIME);
+
                     let noteColor = (vanish && isIncoming) ? '#d946ef' : (isIncoming ? color : '#64748b');
-                    if (config.mode === 'season2' && vanish && isIncoming) noteColor = '#a78bfa'; 
+                    if (config.mode === 'season1') noteColor = color; // Season1 固定顏色，不變暗
 
                     c.save(); c.globalAlpha = alpha;
                     c.shadowBlur = 25; c.shadowColor = noteColor;
@@ -1089,10 +1526,38 @@
                     grad.addColorStop(0, 'rgba(255,255,255,0.9)'); grad.addColorStop(0.7, noteColor); grad.addColorStop(1, noteColor);
                     c.fillStyle = grad; c.beginPath(); c.arc(x, y, 35, 0, Math.PI*2); c.fill();
                     c.strokeStyle = "white"; c.lineWidth = 2; c.stroke(); c.shadowBlur = 0;
-                    c.fillStyle = "rgba(255,255,255,0.5)"; c.beginPath(); c.ellipse(x-12, y-12, 10, 15, Math.PI/4, 0, Math.PI*2); c.fill();
+                    c.fillStyle = "rgba(255,255,255,0.3)"; c.beginPath(); c.ellipse(x-12, y-12, 10, 15, Math.PI/4, 0, Math.PI*2); c.fill();
+                    
+                    // 繪製歌詞文字在音符中間
+                    if (n.lyric) {
+                        c.font = "900 34px 'Segoe UI', sans-serif";
+                        c.textAlign = "center";
+                        c.textBaseline = "middle";
+                        
+                        // 使用基於 index 的動態色彩
+                        let hue = (n.index * 15) % 360;
+                        
+                        // 彩色外框
+                        c.lineWidth = 5;
+                        c.strokeStyle = `hsl(${hue}, 90%, 40%)`;
+                        c.strokeText(n.lyric, x, y + 2);
+                        
+                        // 白色字體與同色系發光
+                        c.fillStyle = "#fff";
+                        c.shadowBlur = 15;
+                        c.shadowColor = `hsl(${hue}, 100%, 60%)`;
+                        c.fillText(n.lyric, x, y + 2);
+                        
+                        c.shadowBlur = 0; 
+                    }
+                    
                     c.restore();
                 }
-                if(dt < -WINDOWS.MISS && !n.missed) { n.missed = true; handleResult(pid, 'MISS'); showFeedback('MISS', HIT_X, y, 'var(--rank-d)'); }
+                if(dt < -WINDOWS.MISS && !n.missed) { 
+                    n.missed = true; 
+                    handleResult(pid, 'MISS'); 
+                    showFeedback('MISS', HIT_X, y, 'var(--rank-d)'); 
+                }
             });
         }
         function handleInput(pid) {
@@ -1100,7 +1565,11 @@
             if(config.players === 1 && pid === 2) return;
             const now = AudioEngine.ctx.currentTime; const data = pid === 1 ? session.p1 : session.p2;
             const y = config.players === 1 ? height/2 : (pid===1 ? height*0.28 : height*0.72);
-            AudioEngine.play(pid === 1 ? 'p1' : 'p2', now);
+            
+            let sfx = pid === 1 ? 'p1' : 'p2';
+            if (config.mode === 'season1' && pid === 1) sfx = 'bell';
+            AudioEngine.play(sfx, now);
+            
             data.bump = 1.2; 
             let best = null, minDiff = Infinity;
             data.notes.forEach(n => {
@@ -1110,21 +1579,41 @@
                 best.hit = true; let rating = 'POOR', rCol = 'var(--rank-b)';
                 if(minDiff < WINDOWS.PERF) { rating = 'PERFECT'; rCol = 'var(--rank-s)'; }
                 else if(minDiff < WINDOWS.GOOD) { rating = 'GOOD'; rCol = 'var(--rank-a)'; }
+                
+                // 新增打擊光束特效 Flare
+                if(rating === 'PERFECT' || rating === 'GOOD') {
+                    let flareColor = rating === 'PERFECT' ? 'rgba(34, 211, 238,' : 'rgba(74, 222, 128,';
+                    VFX.flares.push({ y: y, color: flareColor, life: 1.0 });
+                }
+                
                 handleResult(pid, rating); showFeedback(rating, HIT_X, y, rCol);
             }
         }
         function handleResult(pid, rating) {
-            const data = pid === 1 ? session.p1 : session.p2; const isSurvival = config.mode.includes('survival') || config.mode === 'competition' || config.mode === 'season2';
+            const data = pid === 1 ? session.p1 : session.p2; 
+            const isSurvival = config.mode.includes('survival') || config.mode === 'progressive';
             let multiplier = getScoreMultiplier();
+            
             if(rating === 'PERFECT' || rating === 'GOOD') { 
                 data.combo++; if(data.combo > data.maxCombo) data.maxCombo = data.combo;
                 if(data.combo >= 10 && data.combo % 10 === 0) { const y = config.players === 1 ? height/2 : (pid===1 ? height*0.28 : height*0.72); showCombo(data.combo, HIT_X, y - 50); }
                 if(rating === 'PERFECT') { data.score += Math.round(100 * multiplier); data.stats.p++; } else { data.score += Math.round(50 * multiplier); data.stats.g++; }
-            } else { data.stats.m++; data.combo = 0; if(isSurvival) loseLife(pid); }
+            } else { 
+                data.stats.m++; 
+                data.combo = 0; 
+                // 只有非賽季1的生存模式才會扣除生命
+                if(isSurvival) loseLife(pid); 
+            }
             updateHUD();
         }
         function showCombo(count, x, y) {
-            const el = document.createElement('div'); el.className = 'combo-popup'; el.innerText = count + " COMBO!";
+            const el = document.createElement('div'); el.className = 'combo-popup'; 
+            
+            // 加入 Combo 連擊進階狀態
+            if(count >= 50) el.classList.add('combo-hyper');
+            else if(count >= 20) el.classList.add('combo-fever');
+            
+            el.innerText = count + " COMBO!";
             el.style.left = x + 'px'; el.style.top = y + 'px'; document.getElementById('game-wrapper').appendChild(el); setTimeout(()=>el.remove(), 600);
         }
         function loseLife(pid) {
@@ -1138,21 +1627,54 @@
         }
         function updateHUD() {
             document.getElementById('p1-score').innerText = session.p1.score; document.getElementById('p2-score').innerText = session.p2.score;
-            const isSurvivalMode = config.mode.includes('survival') || config.mode === 'competition' || config.mode === 'season2';
-            if(isSurvivalMode) { renderHearts('p1-lives', session.p1.lives); renderHearts('p2-lives', session.p2.lives); } else { document.getElementById('p1-lives').innerHTML = ""; document.getElementById('p2-lives').innerHTML = ""; }
-            let rTxt = `ROUND ${session.round}`; 
-            if(config.mode === 'season2') rTxt = `S2 | ${config.bpm} BPM | ${getDiffText(config.diff)} | R${session.round}`;
-            else if(!config.mode.includes('survival') && config.mode !== 'competition') rTxt += ` / ${config.rounds}`; 
+            
+            // 賽季1不顯示生命值
+            const isSurvivalMode = config.mode.includes('survival') || config.mode === 'progressive';
+            if(isSurvivalMode) { 
+                renderHearts('p1-lives', session.p1.lives); 
+                renderHearts('p2-lives', session.p2.lives); 
+            } else { 
+                document.getElementById('p1-lives').innerHTML = ""; 
+                document.getElementById('p2-lives').innerHTML = ""; 
+            }
+            
+            let rTxt = `ROUND ${session.round}`;
+            if(config.mode === 'season1') rTxt = 'MUSIC MODE';
+            else if(!config.mode.includes('survival') && config.mode !== 'progressive') rTxt += ` / ${config.rounds}`; 
             document.getElementById('round-info').innerText = rTxt;
         }
         function renderHearts(elementId, count) { const container = document.getElementById(elementId); let html = ''; for(let i=0; i<Math.max(0, count); i++) { html += '<span class="heart">❤</span>'; } container.innerHTML = html; }
         function showFeedback(text, x, y, color) { const el = document.createElement('div'); el.className = 'hit-popup'; el.innerText = text; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color; document.getElementById('game-wrapper').appendChild(el); setTimeout(()=>el.remove(), 500); }
         function notify(text, color) { const el = document.getElementById('center-notify'); el.innerText = text; el.style.color = color; el.style.opacity = 1; if (config.players === 1) { el.style.top = "75%"; } else { el.style.top = "50%"; } el.style.transform = "translate(-50%, -50%) scale(1.2)"; setTimeout(() => { el.style.opacity = 0; el.style.transform = "translate(-50%, -50%) scale(1)"; }, 600); }
+        
         function endGame() {
             gameState = 'END'; document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('result-screen').classList.add('active'); timeouts.forEach(clearTimeout);
-            const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'competition':'賽季1', 'season2':'賽季2'}[config.mode];
-            document.getElementById('res-mode').innerText = mName; document.getElementById('res-len').innerText = (config.mode.includes('survival') || config.mode === 'competition' || config.mode === 'season2') ? "∞" : config.rounds + "R";
-            const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; document.getElementById('res-diff').innerText = (config.mode === 'competition' || config.mode === 'season2') ? '自動晉級' : dNames[config.diff];
+            
+            if (animId) {
+                cancelAnimationFrame(animId);
+                animId = null;
+            }
+            // 清除畫布，避免殘留遊戲畫面
+            ctx.clearRect(0, 0, width, height);
+            
+            if (session.fadeInterval) {
+                clearInterval(session.fadeInterval);
+                session.fadeInterval = null;
+            }
+            
+            const bgmSeason = document.getElementById('bgm-season1');
+            if(bgmSeason) { bgmSeason.pause(); bgmSeason.volume = 1.0; } // 確保結束時重置音量
+            
+            document.getElementById('ui-layer').style.display = 'none';
+            document.getElementById('season1-slogan-top').classList.remove('visible');
+            document.getElementById('season1-slogan-bottom').classList.remove('visible');
+            document.getElementById('btn-pause').style.display = 'none';
+
+            const mName = {'fixed':'練習', 'vanishing':'消失', 'survival':'生存', 'vanishing-survival':'消存', 'progressive':'漸進', 'season1':'賽季1'}[config.mode];
+            document.getElementById('res-mode').innerText = mName; document.getElementById('res-len').innerText = (config.mode.includes('survival') || config.mode === 'progressive' || config.mode === 'season1') ? "∞" : config.rounds + "R";
+            const dNames = {easy:'簡單', normal:'普通', hard:'困難', master:'達人'}; 
+            document.getElementById('res-diff').innerText = (config.mode === 'progressive' || config.mode === 'season1') ? '自動/指定' : dNames[config.diff];
+            
             const scrollContainer = document.getElementById('result-scroll-container'); const container = document.getElementById('result-content'); container.innerHTML = ''; 
             if(config.players === 1) { scrollContainer.classList.add('single-mode-layout'); container.className = 'result-flex single-layout'; } else { scrollContainer.classList.remove('single-mode-layout'); container.className = 'result-flex'; }
             container.appendChild(createResultCard(1, session.p1)); if(config.players === 2) container.appendChild(createResultCard(2, session.p2));
@@ -1178,8 +1700,8 @@
             if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(code)) { e.preventDefault(); if(!e.repeat) handleInput(2); }
         });
         const t1 = document.getElementById('touch-p1'); const t2 = document.getElementById('touch-p2');
-        t1.addEventListener('touchstart', (e)=>handleTouch(1,e)); t1.addEventListener('mousedown', (e)=>handleTouch(1,e));
-        t2.addEventListener('touchstart', (e)=>handleTouch(2,e)); t2.addEventListener('mousedown', (e)=>handleTouch(2,e));
+        if(t1){ t1.addEventListener('touchstart', (e)=>handleTouch(1,e)); t1.addEventListener('mousedown', (e)=>handleTouch(1,e)); }
+        if(t2){ t2.addEventListener('touchstart', (e)=>handleTouch(2,e)); t2.addEventListener('mousedown', (e)=>handleTouch(2,e)); }
         updateDescription();
     </script>
 </body>
