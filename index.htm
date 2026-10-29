@@ -585,11 +585,25 @@
                                 <option value="1.1">極速 Master (1.1秒)</option>
                             </select>
                         </div>
-                        <div class="control-group full">
-                            <label>旋律琴鍵音 (MELODY KEY SOUND)</label>
+                        <div class="control-group">
+                            <label>旋律琴鍵音 (KEY SOUND)</label>
                             <select id="pianist-keysound-select">
-                                <option value="on" selected>開啟旋律鋼琴音 (準確擊中音符時發出真實旋律音高)</option>
-                                <option value="off">關閉琴鍵音 (僅播放背景 MP3)</option>
+                                <option value="on" selected>開啟旋律鋼琴音 (推薦)</option>
+                                <option value="off">關閉琴鍵音 (僅播背景 MP3)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>跨裝置音畫同步微調 (OFFSET)</label>
+                            <select id="pianist-offset-select" onchange="saveUserAudioOffset()">
+                                <option value="-0.15">-150ms (音符極早出現)</option>
+                                <option value="-0.10">-100ms (音符提早出現)</option>
+                                <option value="-0.06">-60ms (音符微早出現)</option>
+                                <option value="-0.03">-30ms (音符略早出現)</option>
+                                <option value="0" selected>0ms (預設硬體自動對齊)</option>
+                                <option value="0.03">+30ms (音符略晚出現)</option>
+                                <option value="0.06">+60ms (音符微晚出現)</option>
+                                <option value="0.10">+100ms (音符延後出現)</option>
+                                <option value="0.15">+150ms (藍牙耳機補償)</option>
                             </select>
                         </div>
                         <div class="mode-description" style="border-color: rgba(251, 191, 36, 0.25);">
@@ -597,7 +611,7 @@
                                 🎹 嚴謹五級判定：Charming (±42ms) / Great / Good / Poor / Miss
                             </div>
                             <div style="font-size: 12px; color: #cbd5e1;">
-                                連續 Charming 達 <b>5次 (x1.2)</b>、<b>15次 (x1.5)</b>、<b>30次 (x2.0)</b> 將觸發專屬流光特效與分數加成！
+                                已啟用「硬體音訊鎖定同步引擎」，音符位置100%跟隨音樂播放進度！如使用藍牙耳機可調整上方微調。
                             </div>
                         </div>
                     </div>
@@ -728,6 +742,138 @@
 
     <script>
         // ============================================================================
+        // ⏱️ 【跨裝置高精準音畫同步時鐘引擎 SongClock】
+        // 解決不同電腦/平板/手機上 <audio> 播放延遲與畫面幀率不同導致的音符不對齊問題
+        // ============================================================================
+        const SongClock = {
+            audioEl: null,
+            leadInDuration: 1.0,
+            leadInStartPerf: 0,
+            pauseStartPerf: 0,
+            startedPlaying: false,
+            playTriggered: false,
+            lastRawAudioTime: -1,
+            lastAudioPerf: 0,
+            userOffset: 0,
+
+            init(audioEl, leadInSec, userOffsetSec = 0) {
+                this.audioEl = audioEl;
+                this.leadInDuration = leadInSec;
+                this.leadInStartPerf = performance.now();
+                this.pauseStartPerf = 0;
+                this.startedPlaying = false;
+                this.playTriggered = false;
+                this.lastRawAudioTime = -1;
+                this.lastAudioPerf = performance.now();
+                this.userOffset = userOffsetSec;
+            },
+
+            // 取得當前精準音樂秒數（包含倒數負數秒、高幀率線性插值與硬體輸出延遲補償）
+            getTime() {
+                const nowPerf = performance.now();
+
+                // 階段 1：倒數預備階段 (音樂尚未達到 0 秒)
+                if (!this.startedPlaying) {
+                    const elapsed = (nowPerf - this.leadInStartPerf) / 1000;
+                    const songTime = elapsed - this.leadInDuration;
+
+                    if (songTime >= 0 && this.audioEl && !this.playTriggered) {
+                        this.playTriggered = true;
+                        this.audioEl.currentTime = 0;
+                        this.audioEl.play().then(() => {
+                            this.startedPlaying = true;
+                            this.lastRawAudioTime = this.audioEl.currentTime;
+                            this.lastAudioPerf = performance.now();
+                        }).catch(e => {
+                            console.log("Audio play error:", e);
+                            this.startedPlaying = true;
+                            this.leadInStartPerf = performance.now() - (this.leadInDuration * 1000);
+                        });
+                    }
+                    // 在音訊硬體真正推進 currentTime 前，保持在 <= 0 的平滑過渡，避免音符偷跑
+                    if (!this.startedPlaying) {
+                        return Math.min(0, songTime) + this.userOffset;
+                    }
+                }
+
+                // 階段 2：音樂正式播放階段 (100% 鎖定真實音檔進度 + 高幀率平滑插值)
+                if (this.audioEl && !this.audioEl.paused) {
+                    const raw = this.audioEl.currentTime;
+                    if (raw !== this.lastRawAudioTime) {
+                        this.lastRawAudioTime = raw;
+                        this.lastAudioPerf = nowPerf;
+                    }
+                    // 補償兩個 audio.currentTime 更新點之間的微小時間差 (最多插值 55ms 防止爆衝)
+                    const delta = Math.min(0.055, Math.max(0, (nowPerf - this.lastAudioPerf) / 1000));
+                    // 自動讀取瀏覽器底層音訊硬體延遲 (outputLatency)，確保聽見的聲音與畫面一致
+                    let hwLatency = 0;
+                    if (AudioEngine.ctx) {
+                        hwLatency = (AudioEngine.ctx.outputLatency || AudioEngine.ctx.baseLatency || 0);
+                    }
+                    return Math.max(0, raw + delta - hwLatency) + this.userOffset;
+                }
+
+                return (this.lastRawAudioTime > 0 ? this.lastRawAudioTime : 0) + this.userOffset;
+            },
+
+            onPause() {
+                this.pauseStartPerf = performance.now();
+            },
+
+            onResume() {
+                const nowPerf = performance.now();
+                if (this.pauseStartPerf > 0) {
+                    const pausedDur = nowPerf - this.pauseStartPerf;
+                    this.leadInStartPerf += pausedDur;
+                    this.lastAudioPerf = nowPerf;
+                    this.pauseStartPerf = 0;
+                }
+            }
+        };
+
+        // 預熱並解鎖音檔，等待瀏覽器完成緩衝與歸零後才啟動時鐘
+        async function warmupAndResetAudio(audioEl, srcUrl) {
+            if (!audioEl) return;
+            try {
+                if (srcUrl && audioEl.src !== srcUrl) {
+                    audioEl.src = srcUrl;
+                }
+                audioEl.volume = 0;
+                await audioEl.play();
+                audioEl.pause();
+                audioEl.currentTime = 0;
+                audioEl.volume = 1.0;
+            } catch (e) {
+                console.log("Audio warmup notice:", e);
+                try {
+                    audioEl.pause();
+                    audioEl.currentTime = 0;
+                    audioEl.volume = 1.0;
+                } catch (_) {}
+            }
+        }
+
+        function getUserAudioOffset() {
+            const sel = document.getElementById('pianist-offset-select');
+            return sel ? (parseFloat(sel.value) || 0) : 0;
+        }
+
+        function saveUserAudioOffset() {
+            try {
+                const val = document.getElementById('pianist-offset-select').value;
+                localStorage.setItem('ltmps_audio_offset', val);
+            } catch (e) {}
+        }
+
+        function loadUserAudioOffset() {
+            try {
+                const saved = localStorage.getItem('ltmps_audio_offset');
+                const sel = document.getElementById('pianist-offset-select');
+                if (saved !== null && sel) sel.value = saved;
+            } catch (e) {}
+        }
+
+        // ============================================================================
         // 🎹 【藍循演奏家】樂曲庫、譜面與旋律音高編輯區 (支援 6 軌道 + 真實旋律音高) 🎹
         // ============================================================================
         const PIANIST_SONGS = [
@@ -842,6 +988,7 @@
 
         window.onload = function () {
             initPianistSongSelect();
+            loadUserAudioOffset();
             if (window.google) {
                 tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: '573911894747-0c28hfr0bmkjnn8pkm2msg6sjal1thqe.apps.googleusercontent.com',
@@ -974,6 +1121,7 @@
             if (gameState !== 'PLAYING') return;
             gameState = 'PAUSED';
             AudioEngine.ctx.suspend();
+            SongClock.onPause();
             const bgm = document.getElementById('bgm-season1');
             if (bgm && !bgm.paused) { bgm.pause(); session.bgmWasPlaying = true; } else { session.bgmWasPlaying = false; }
             const pBgm = document.getElementById('bgmPlayer');
@@ -985,6 +1133,7 @@
             document.getElementById('pause-overlay').classList.remove('active');
             gameState = 'PLAYING';
             AudioEngine.ctx.resume();
+            SongClock.onResume();
             const bgm = document.getElementById('bgm-season1');
             if (session.bgmWasPlaying && bgm) bgm.play().catch(e => console.log(e));
             const pBgm = document.getElementById('bgmPlayer');
@@ -1303,14 +1452,16 @@
             } return beats;
         }
 
-        function startGame() {
+        async function startGame() {
             activeGameType = 'rhythm';
+            if (document.activeElement) document.activeElement.blur();
+            AudioEngine.init(); VFX.init();
+
             const bgm = document.getElementById('bgm-season1');
             if (config.mode === 'season1' && bgm) {
-                bgm.volume = 1.0;
-                bgm.play().then(() => { bgm.pause(); bgm.currentTime = 0; }).catch(e => console.log("Init BGM Error", e));
+                await warmupAndResetAudio(bgm);
             }
-            if (document.activeElement) document.activeElement.blur(); AudioEngine.init(); VFX.init();
+
             if (config.mode === 'season1') {
                 config.bpm = SEASON1_BPM; config.rounds = Infinity; config.players = 1; config.diff = 'easy';
                 document.getElementById('season1-slogan-top').classList.add('visible');
@@ -1341,28 +1492,26 @@
             render();
         }
 
+        // 賽季1 改用 SongClock 相對音樂時間軸 (target 為相對於音樂 0 秒的拍點秒數)
         function startSeason1Mode() {
             const bgm = document.getElementById('bgm-season1');
-            if (bgm) { bgm.currentTime = 0; bgm.volume = 1.0; }
-            const now = AudioEngine.ctx.currentTime;
-            const musicStartTime = now + SEASON1_MUSIC_START_DELAY;
-            session.bgmStartTime = musicStartTime; session.bgmStarted = false;
+            SongClock.init(bgm, SEASON1_MUSIC_START_DELAY, getUserAudioOffset());
+
             const sixteenthDuration = (60 / SEASON1_BPM) / 4;
             const cleanMap = SEASON1_MAP.replace(/\s+/g, '');
             let noteCount = 0, lyricIndex = 0, lastNoteTarget = 0;
             for (let i = 0; i < cleanMap.length; i++) {
                 if (cleanMap[i] === '1') {
-                    let targetTime = musicStartTime + SEASON1_CHART_OFFSET + (i * sixteenthDuration);
+                    // 相對於音樂播放的精準秒數
+                    let targetSongTime = SEASON1_CHART_OFFSET + (i * sixteenthDuration);
                     let char = "";
                     if (noteCount >= 41 && lyricIndex < SEASON1_LYRICS.length) { char = SEASON1_LYRICS[lyricIndex]; lyricIndex++; }
-                    session.p1.notes.push({ target: targetTime, hit: false, missed: false, index: noteCount, lyric: char });
-                    lastNoteTarget = targetTime; noteCount++;
+                    session.p1.notes.push({ target: targetSongTime, hit: false, missed: false, index: noteCount, lyric: char });
+                    lastNoteTarget = targetSongTime; noteCount++;
                 }
             }
-            timeouts.push(setTimeout(() => { if (gameState === 'PLAYING' && bgm) bgm.play().catch(e => console.log("BGM Error", e)); }, SEASON1_MUSIC_START_DELAY * 1000));
             notify("準備開始", "var(--comp-gold)");
-            let durationToLastNote = lastNoteTarget > 0 ? (lastNoteTarget - now) : 5;
-            session.endTime = now + durationToLastNote + 0.5;
+            session.endSongTime = (lastNoteTarget > 0 ? lastNoteTarget : 5) + 0.5;
             session.ending = false;
         }
 
@@ -1388,13 +1537,10 @@
             if (gameState === 'PAUSED') { animId = requestAnimationFrame(render); return; }
             if (gameState !== 'PLAYING') return;
             ctx.clearRect(0, 0, width, height); VFX.update(ctx);
-            const now = AudioEngine.ctx.currentTime; const beatSec = getBeatSec();
-            if (config.mode === 'season1' && !session.bgmStarted && now >= session.bgmStartTime) {
-                session.bgmStarted = true;
-                const bgm = document.getElementById('bgm-season1');
-                if (bgm) bgm.play().catch(e => console.log("BGM Error", e));
-            }
-            if (config.mode === 'season1' && session.endTime && now >= session.endTime && !session.ending) {
+            const now = (config.mode === 'season1') ? SongClock.getTime() : AudioEngine.ctx.currentTime;
+            const beatSec = getBeatSec();
+
+            if (config.mode === 'season1' && session.endSongTime && now >= session.endSongTime && !session.ending) {
                 session.ending = true;
                 let fadeSteps = 20, intervalTime = 100, volumeStep = 1.0 / fadeSteps;
                 const bgm = document.getElementById('bgm-season1');
@@ -1462,9 +1608,10 @@
         function handleInput(pid) {
             if (gameState !== 'PLAYING' || activeGameType !== 'rhythm') return;
             if (config.players === 1 && pid === 2) return;
-            const now = AudioEngine.ctx.currentTime; const data = pid === 1 ? session.p1 : session.p2;
+            const now = (config.mode === 'season1') ? SongClock.getTime() : AudioEngine.ctx.currentTime;
+            const data = pid === 1 ? session.p1 : session.p2;
             const y = config.players === 1 ? height / 2 : (pid === 1 ? height * 0.28 : height * 0.72);
-            AudioEngine.play((config.mode === 'season1' && pid === 1) ? 'bell' : (pid === 1 ? 'p1' : 'p2'), now);
+            AudioEngine.play((config.mode === 'season1' && pid === 1) ? 'bell' : (pid === 1 ? 'p1' : 'p2'), AudioEngine.ctx.currentTime);
             data.bump = 1.2;
             let best = null, minDiff = Infinity;
             data.notes.forEach(n => { if (!n.hit && !n.missed) { let d = Math.abs(n.target - now); if (d < minDiff) { minDiff = d; best = n; } } });
@@ -1517,7 +1664,6 @@
             setTimeout(() => { if (data.lives <= 0) endGame(); else updateHUD(); }, 300);
         }
 
-        // 計算連續 Charming 分數加成倍率
         function getPianistCharmingMultiplier(streak) {
             if (streak >= 30) return 2.0;
             if (streak >= 15) return 1.5;
@@ -1643,7 +1789,7 @@
         }
 
         // ============================================================================
-        // 🎹 【藍循演奏家】Deemo 風格 3D 透視 6 軌鋼琴遊戲核心引擎 (嚴謹五級判定版) 🎹
+        // 🎹 【藍循演奏家】Deemo 風格 3D 透視 6 軌鋼琴遊戲核心引擎 (嚴謹五級判定 + 跨裝置音畫同步) 🎹
         // ============================================================================
         const PIANIST_GEOM = {
             LANES: 6,          
@@ -1670,11 +1816,11 @@
             charmingStreak: 0, maxCharmingStreak: 0,
             stats: { charming: 0, great: 0, good: 0, poor: 0, miss: 0 },
             laneFlash: [0, 0, 0, 0, 0, 0], ripples: [],
-            bgmStartTime: 0, bgmStarted: false, endTime: 0, ending: false, fadeInterval: null
+            endSongTime: 0, ending: false, fadeInterval: null
         };
 
-        // 解析譜面與每個音符對應的旋律音高
-        function buildPianistChart(song, musicStartTime) {
+        // 解析譜面與每個音符對應的旋律音高 (target 全部採用相對於音樂 0 秒的純音樂時間)
+        function buildPianistChart(song) {
             let rawNotes = [];
             const sixteenthSec = (60 / song.bpm) / 4;
             const defaultPitches = song.defaultLanePitches || ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'];
@@ -1691,7 +1837,8 @@
                 const tokens = cleanChart.split(/\s+/);
                 tokens.forEach((tok, stepIdx) => {
                     if (!tok || tok === '.' || tok === '0' || tok === '-') return;
-                    let targetTime = musicStartTime + (song.chartOffset || 0) + (stepIdx * sixteenthSec);
+                    // 相對於音樂播放進度的秒數 (不摻雜系統時鐘)
+                    let targetSongTime = (song.chartOffset || 0) + (stepIdx * sixteenthSec);
                     let parsedItems = [];
 
                     if (tok.includes(':')) {
@@ -1721,7 +1868,7 @@
                             }
                         }
                         rawNotes.push({
-                            target: targetTime,
+                            target: targetSongTime,
                             lane: item.lane,
                             pitch: assignedPitch,
                             isChord: isChord,
@@ -1735,9 +1882,9 @@
             if (Array.isArray(song.customNotes) && song.customNotes.length > 0) {
                 song.customNotes.forEach(cn => {
                     let laneIdx = Math.max(0, Math.min(PIANIST_GEOM.LANES - 1, (cn.lane || 1) - 1));
-                    let targetTime = musicStartTime + (song.chartOffset || 0) + cn.time;
+                    let targetSongTime = (song.chartOffset || 0) + cn.time;
                     let assignedPitch = cn.pitch || defaultPitches[laneIdx] || 'C5';
-                    rawNotes.push({ target: targetTime, lane: laneIdx, pitch: assignedPitch, isChord: !!cn.isChord, hit: false, missed: false });
+                    rawNotes.push({ target: targetSongTime, lane: laneIdx, pitch: assignedPitch, isChord: !!cn.isChord, hit: false, missed: false });
                 });
             }
 
@@ -1759,7 +1906,7 @@
             return { x1: leftEdge + laneIdx * laneW, x2: leftEdge + (laneIdx + 1) * laneW, center: leftEdge + (laneIdx + 0.5) * laneW, width: laneW };
         }
 
-        function startPianistGame() {
+        async function startPianistGame() {
             activeGameType = 'pianist';
             if (document.activeElement) document.activeElement.blur();
             AudioEngine.init(); VFX.init();
@@ -1768,15 +1915,15 @@
             const flightTime = parseFloat(document.getElementById('pianist-speed-select').value) || 2.0;
             const keySound = document.getElementById('pianist-keysound-select').value === 'on';
             const pBgm = document.getElementById('bgmPlayer');
-            if (pBgm) {
-                pBgm.src = selectedSong.audioSrc; pBgm.volume = 1.0;
-                pBgm.play().then(() => { pBgm.pause(); pBgm.currentTime = 0; }).catch(e => console.log("Pianist BGM unlock:", e));
-            }
-            const now = AudioEngine.ctx.currentTime;
+
+            // 預熱並等待瀏覽器完成音檔解鎖與歸零，消除行動裝置首次播放延遲
+            await warmupAndResetAudio(pBgm, selectedSong.audioSrc);
+
             const startDelay = selectedSong.startDelay !== undefined ? selectedSong.startDelay : 1.0;
-            const musicStartTime = now + startDelay;
-            const notes = buildPianistChart(selectedSong, musicStartTime);
-            const lastNoteTime = notes.length > 0 ? notes[notes.length - 1].target : (musicStartTime + 10);
+            SongClock.init(pBgm, startDelay, getUserAudioOffset());
+
+            const notes = buildPianistChart(selectedSong);
+            const lastNoteTime = notes.length > 0 ? notes[notes.length - 1].target : 10;
 
             pianistSession = {
                 song: selectedSong, flightTime: flightTime, keySound: keySound, notes: notes,
@@ -1784,7 +1931,7 @@
                 charmingStreak: 0, maxCharmingStreak: 0,
                 stats: { charming: 0, great: 0, good: 0, poor: 0, miss: 0 },
                 laneFlash: [0, 0, 0, 0, 0, 0], ripples: [],
-                bgmStartTime: musicStartTime, bgmStarted: false, endTime: lastNoteTime + 1.2, ending: false, fadeInterval: null
+                endSongTime: lastNoteTime + 1.2, ending: false, fadeInterval: null
             };
 
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1806,14 +1953,12 @@
             if (gameState === 'PAUSED') { animId = requestAnimationFrame(renderPianist); return; }
             if (gameState !== 'PLAYING' || activeGameType !== 'pianist') return;
             ctx.clearRect(0, 0, width, height);
-            const now = AudioEngine.ctx.currentTime;
+
+            // 直接從 SongClock 取得與音檔 100% 同步的精準音樂秒數
+            const nowSongTime = SongClock.getTime();
             const pBgm = document.getElementById('bgmPlayer');
 
-            if (!pianistSession.bgmStarted && now >= pianistSession.bgmStartTime) {
-                pianistSession.bgmStarted = true;
-                if (pBgm) pBgm.play().catch(e => console.log("Play error:", e));
-            }
-            if (pianistSession.endTime && now >= pianistSession.endTime && !pianistSession.ending) {
+            if (pianistSession.endSongTime && nowSongTime >= pianistSession.endSongTime && !pianistSession.ending) {
                 pianistSession.ending = true;
                 let fadeSteps = 20, intervalTime = 100, volumeStep = 1.0 / fadeSteps;
                 pianistSession.fadeInterval = setInterval(() => {
@@ -1822,7 +1967,7 @@
                 }, intervalTime);
             }
             drawPianistStage(ctx);
-            drawPianistNotes(ctx, now);
+            drawPianistNotes(ctx, nowSongTime);
             drawPianistRipples(ctx);
             animId = requestAnimationFrame(renderPianist);
         }
@@ -1838,7 +1983,6 @@
             const feverTier = cStreak >= 30 ? 3 : (cStreak >= 15 ? 2 : (cStreak >= 5 ? 1 : 0));
 
             c.save();
-            // 遠方地平線光暈 (隨連續 Charming 等級強化色彩與範圍)
             let horizonRadius = 260 + feverTier * 45;
             let horizonGrad = c.createRadialGradient(width / 2, topY, 10, width / 2, topY, horizonRadius);
             if (feverTier >= 2) {
@@ -1905,7 +2049,6 @@
                 c.stroke();
             }
 
-            // 判定線隨連續 Charming 強化發光特效
             c.shadowBlur = 22 + feverTier * 10;
             c.shadowColor = feverTier >= 2 ? '#f472b6' : '#fbbf24';
             c.strokeStyle = feverTier >= 1 ? '#ffffff' : '#fef08a';
@@ -1919,7 +2062,6 @@
             pianistSession.notes.forEach(n => {
                 if (n.hit || n.missed) return;
                 const timeDiff = n.target - now;
-                // 超過 POOR 窗口未擊打即判定為 MISS
                 if (timeDiff < -PIANIST_WINDOWS.POOR) {
                     n.missed = true;
                     pianistSession.stats.miss++;
@@ -1966,7 +2108,6 @@
                 c.lineWidth = (r.boost ? 6 : 4) * r.life;
                 c.beginPath(); c.ellipse(r.x, r.y, rx, ry, 0, 0, Math.PI * 2); c.stroke();
 
-                // 連續 Charming 時額外繪製第二層金色擴散光環
                 if (r.boost) {
                     c.strokeStyle = '#fef08a';
                     c.lineWidth = 3 * r.life;
@@ -1986,13 +2127,16 @@
         function triggerPianistLane(laneIdx) {
             if (gameState !== 'PLAYING' || activeGameType !== 'pianist') return;
             if (laneIdx < 0 || laneIdx >= PIANIST_GEOM.LANES) return;
-            const now = AudioEngine.ctx.currentTime;
+
+            // 使用與畫面渲染完全相同的 SongClock 音樂時鐘進行判定
+            const nowSongTime = SongClock.getTime();
+            const audioCtxNow = AudioEngine.ctx ? AudioEngine.ctx.currentTime : 0;
             pianistSession.laneFlash[laneIdx] = 1.0;
 
             let bestNote = null, minDiff = Infinity;
             for (let n of pianistSession.notes) {
                 if (n.lane === laneIdx && !n.hit && !n.missed) {
-                    let diff = Math.abs(n.target - now);
+                    let diff = Math.abs(n.target - nowSongTime);
                     if (diff < minDiff) { minDiff = diff; bestNote = n; }
                 }
             }
@@ -2020,7 +2164,6 @@
                     if (mult > 1.0) {
                         subBonusText = `STREAK x${pianistSession.charmingStreak} (+${gained})`;
                     }
-                    // 連續 Charming 里程碑橫幅特效 (5, 10, 15, 20, 30, 40...)
                     if (pianistSession.charmingStreak === 5 || pianistSession.charmingStreak === 15 || pianistSession.charmingStreak === 30 || (pianistSession.charmingStreak >= 10 && pianistSession.charmingStreak % 10 === 0)) {
                         showCharmingStreakBanner(pianistSession.charmingStreak, `${mult.toFixed(1)}x BONUS`);
                     }
@@ -2028,7 +2171,7 @@
                     rating = 'GREAT';
                     rCol = '#38bdf8';
                     pianistSession.stats.great++;
-                    pianistSession.charmingStreak = 0; // 中斷連續 Charming
+                    pianistSession.charmingStreak = 0;
                     pianistSession.score += 80;
                 } else if (minDiff <= PIANIST_WINDOWS.GOOD) {
                     rating = 'GOOD';
@@ -2041,16 +2184,15 @@
                     rCol = '#fb923c';
                     pianistSession.stats.poor++;
                     pianistSession.charmingStreak = 0;
-                    pianistSession.combo = 0; // Poor 會中斷 Combo
+                    pianistSession.combo = 0;
                     pianistSession.score += 20;
                     if (pianistSession.keySound && bestNote.pitch) {
-                        AudioEngine.playPianoPitch(bestNote.pitch, now);
+                        AudioEngine.playPianoPitch(bestNote.pitch, audioCtxNow);
                     }
                     updateHUD();
                     showFeedback(rating, jb.center, PIANIST_GEOM.JUDGE_Y - 50, rCol);
                     return;
                 } else {
-                    // 介於 POOR 與 MISS 之間 (過早誤觸)：判定為 MISS，不發聲
                     rating = 'MISS';
                     rCol = 'var(--rank-d)';
                     pianistSession.stats.miss++;
@@ -2063,7 +2205,7 @@
 
                 // 有效命中 (CHARMING / GREAT / GOOD) 奏響該音符的專屬旋律音高
                 if (pianistSession.keySound && bestNote.pitch) {
-                    AudioEngine.playPianoPitch(bestNote.pitch, now);
+                    AudioEngine.playPianoPitch(bestNote.pitch, audioCtxNow);
                 }
 
                 pianistSession.combo++;
