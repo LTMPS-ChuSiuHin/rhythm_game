@@ -588,7 +588,7 @@
                         <div class="control-group">
                             <label>旋律琴鍵音 (KEY SOUND)</label>
                             <select id="pianist-keysound-select">
-                                <option value="on" selected>開啟旋律鋼琴音 (推薦)</option>
+                                <option value="on" selected>開啟擬真鋼琴音 + Reverb (推薦)</option>
                                 <option value="off">關閉琴鍵音 (僅播背景 MP3)</option>
                             </select>
                         </div>
@@ -611,7 +611,7 @@
                                 🎹 嚴謹五級判定：Charming (±42ms) / Great / Good / Poor / Miss
                             </div>
                             <div style="font-size: 12px; color: #cbd5e1;">
-                                已啟用「硬體音訊鎖定同步引擎」，音符位置100%跟隨音樂播放進度！如使用藍牙耳機可調整上方微調。
+                                已啟用「硬體音訊鎖定同步引擎」與「平台鋼琴 Reverb 共鳴音色」，音符位置100%跟隨音樂播放進度！
                             </div>
                         </div>
                     </div>
@@ -743,7 +743,6 @@
     <script>
         // ============================================================================
         // ⏱️ 【跨裝置高精準音畫同步時鐘引擎 SongClock】
-        // 解決不同電腦/平板/手機上 <audio> 播放延遲與畫面幀率不同導致的音符不對齊問題
         // ============================================================================
         const SongClock = {
             audioEl: null,
@@ -768,7 +767,6 @@
                 this.userOffset = userOffsetSec;
             },
 
-            // 取得當前精準音樂秒數（包含倒數負數秒、高幀率線性插值與硬體輸出延遲補償）
             getTime() {
                 const nowPerf = performance.now();
 
@@ -790,7 +788,6 @@
                             this.leadInStartPerf = performance.now() - (this.leadInDuration * 1000);
                         });
                     }
-                    // 在音訊硬體真正推進 currentTime 前，保持在 <= 0 的平滑過渡，避免音符偷跑
                     if (!this.startedPlaying) {
                         return Math.min(0, songTime) + this.userOffset;
                     }
@@ -803,9 +800,7 @@
                         this.lastRawAudioTime = raw;
                         this.lastAudioPerf = nowPerf;
                     }
-                    // 補償兩個 audio.currentTime 更新點之間的微小時間差 (最多插值 55ms 防止爆衝)
                     const delta = Math.min(0.055, Math.max(0, (nowPerf - this.lastAudioPerf) / 1000));
-                    // 自動讀取瀏覽器底層音訊硬體延遲 (outputLatency)，確保聽見的聲音與畫面一致
                     let hwLatency = 0;
                     if (AudioEngine.ctx) {
                         hwLatency = (AudioEngine.ctx.outputLatency || AudioEngine.ctx.baseLatency || 0);
@@ -831,7 +826,6 @@
             }
         };
 
-        // 預熱並解鎖音檔，等待瀏覽器完成緩衝與歸零後才啟動時鐘
         async function warmupAndResetAudio(audioEl, srcUrl) {
             if (!audioEl) return;
             try {
@@ -874,7 +868,31 @@
         }
 
         // ============================================================================
-        // 🎹 【藍循演奏家】樂曲庫、譜面與旋律音高編輯區 (支援 6 軌道 + 真實旋律音高) 🎹
+        // 🎼 《以愛育才三十載》(30.mp3) 共用旋律音高序列
+        // 同時供「藍循演奏家」與「藍循節奏大師 (賽季1)」擊打時奏響真實鋼琴旋律
+        // ============================================================================
+        const THEME_SONG_30_MELODY = `
+            G4 E5 G4 D5 G4 C5 E4 B4
+            G4 A4 C5 G4 E5 F5 E5 C5 D5
+            G4 E5 G5 D5 E5 D5 C5 C5 C5 A5 G5
+            G4 A4 G4 A4 B4 D5 C5 G4
+            E5 F5 E5 C5 D5 
+            G4 E5 G5 D5 E5 D5 C5 C5 C5 D5 E5
+            G4 A4 C5 G4 E5 F5 E5 D5 C5 D5
+            G4 E5 G5 D5 E5 D5 D5 C5 C5 A5 G5
+            G4 A4 G4 A4 B4 D5 C5 G4 E5 F5 E5 D5 C5 C5
+            C5 B4 A4 B4 C5 A5 G5
+            E5 D5 C5 C5 D5 F5 E5
+            C5 B4 A4 B4 C5 A5 G5
+            G5 G5 A5 B5 C6 B5
+            C6 C6 B5 A5 A5 B5 C6 D6 C6 B5 D6 G5
+            G5 F5 E5 F5 F5 A5 G5 A5 G5 F5 F5 E5 E5
+            C6 C6 B5 A5 A5 B5 C6 D6 C6 B5 A5 G#5 A5 B5 C6
+            E5 G5 F5 F5 E5 D5 C5 B4 C5
+        `;
+
+        // ============================================================================
+        // 🎹 【藍循演奏家】樂曲庫、譜面與旋律音高編輯區 (Offset 統一為 1.42) 🎹
         // ============================================================================
         const PIANIST_SONGS = [
             {
@@ -885,30 +903,9 @@
                 audioSrc: 'https://ltmps-chusiuhin.github.io/rhythm-game/30.mp3',
                 bpm: 75,
                 startDelay: 1.0,
-                chartOffset: 1.42,
-                // 軌道 1~6 預設音高 (當 chart 與 melody 都未指定時使用)
+                chartOffset: 1.42, // 已統一設定為 1.42 秒
                 defaultLanePitches: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
-                
-                // 【設定你的旋律音高】：系統會自動把這些音依序填入下方的音符裡！
-                melody: `
-                    G4 E5 G4 D5 G4 C5 E4 B4
-                    G4 A4 C5 G4 E5 F5 E5 C5 D5
-                    G4 E5 G5 D5 E5 D5 C5 C5 C5 A5 G5
-                    G4 A4 G4 A4 B4 D5 C5 G4
-                    E5 F5 E5 C5 D5 
-                    G4 E5 G5 D5 E5 D5 C5 C5 C5 D5 E5
-                    G4 A4 C5 G4 E5 F5 E5 D5 C5 D5
-                    G4 E5 G5 D5 E5 D5 D5 C5 C5 A5 G5
-                    G4 A4 G4 A4 B4 D5 C5 G4 E5 F5 E5 D5 C5 C5
-                    C5 B4 A4 B4 C5 A5 G5
-                    E5 D5 C5 C5 D5 F5 E5
-                    C5 B4 A4 B4 C5 A5 G5
-                    G5 G5 A5 B5 C6 B5
-                    C6 C6 B5 A5 A5 B5 C6 D6 C6 B5 D6 G5
-                    G5 F5 E5 F5 F5 A5 G5 A5 G5 F5 F5 E5 E5
-                    C6 C6 B5 A5 A5 B5 C6 D6 C6 B5 A5 G#5 A5 B5 C6
-                    E5 G5 F5 F5 E5 D5 C5 B4 C5
-                `,
+                melody: THEME_SONG_30_MELODY,
                 customNotes: [], 
                 chart: `
                     // === 前奏 Intro ===
@@ -967,11 +964,11 @@
         }
 
         // ==========================================
-        // 🎵 賽季1：自定義音樂與譜面參數設定 🎵
+        // 🎵 賽季1：自定義音樂與譜面參數設定 (Offset 統一為 1.42) 🎵
         // ==========================================
         const SEASON1_BPM = 75;
         const SEASON1_MUSIC_START_DELAY = 1.0;
-        const SEASON1_CHART_OFFSET = 1.42;
+        const SEASON1_CHART_OFFSET = 1.42; // 已統一設定為 1.42 秒
         const SEASON1_NOTE_FLIGHT_TIME = 3.0;
         const SEASON1_MAP = "10 10000010 10000010 10000010 10000010 10000010 10000010 10010010 10000010 10000010 10000011 10101011 00000010 10110011 10010010 10010010      10000000 00000010 10000010 10000011 10101011 00000010 10000010 10000010 10101011 00000010 10000010 10000011 10101011 00000010 10110011 10010010 10101011      00000011 10101011 00000011 10101011 00000011 10101011 00000011 10010010 10000000 00101010 10010011 10101010 00100000 00101010 10010010 10101010 10110000      00101010 10010011 10101010 10010010 10000010 10110010 10010010 10000000 00000000";
         const SEASON1_LYRICS = "藍天碧海春風化雨暖我心無盡 旅途 伴快樂一世間耶穌恩典早已充滿我心裏勤學求道效主愛人樂與學在藍循我在長廊裏禱告你在球場上散步帶着疑問與苦惱也會為我引路我結伴同行邁向天際遇星河書海內奮鬥得到知識再破巨浪你我在藍循實—踐那美夢全然綻放用新世界的光去共創".replace(/\s+/g, '');
@@ -1107,7 +1104,7 @@
                 'survival': "生存模式：無盡挑戰直至出現3次失誤，挑戰你的集中力。",
                 'vanishing-survival': "消存模式：消失與生存的混合模式，大師級的終極試練！",
                 'progressive': "漸進模式：無盡挑戰直至出現5次失誤，難度將逐漸提升。",
-                'season1': "賽季1：一邊欣賞三十周年主題曲一邊擊打節奏！(需先登入 Google 帳戶)"
+                'season1': "賽季1：一邊欣賞三十周年主題曲一邊彈奏出真實鋼琴旋律！(需先登入 Google 帳戶)"
             }
         };
 
@@ -1401,9 +1398,66 @@
             }
         };
 
+        // ============================================================================
+        // 🔊 【擬真原聲平台鋼琴合成引擎 + 空間殘響 (Reverb)】
+        // ============================================================================
         const AudioEngine = {
             ctx: null,
-            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); },
+            reverbNode: null,
+            dryBus: null,
+            wetBus: null,
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.setupReverbBus();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+
+            // 建立立體聲音樂廳空間殘響 (Algorithmic Impulse Response Reverb)
+            setupReverbBus() {
+                if (!this.ctx || this.reverbNode) return;
+                const sampleRate = this.ctx.sampleRate;
+                const duration = 1.65; // 1.65秒柔和琴房尾音
+                const length = Math.floor(sampleRate * duration);
+                const impulse = this.ctx.createBuffer(2, length, sampleRate);
+                const preDelay = Math.floor(0.015 * sampleRate); // 15ms 預延遲呈現空間感
+
+                for (let ch = 0; ch < 2; ch++) {
+                    const data = impulse.getChannelData(ch);
+                    for (let i = 0; i < length; i++) {
+                        if (i < preDelay) {
+                            data[i] = 0;
+                        } else {
+                            const progress = (i - preDelay) / (length - preDelay);
+                            // 指數衰減 + 高頻自然吸收阻尼
+                            const decay = Math.pow(1 - progress, 3.2) * Math.exp(-progress * 2.4);
+                            data[i] = (Math.random() * 2 - 1) * decay * 0.65;
+                        }
+                    }
+                }
+
+                this.reverbNode = this.ctx.createConvolver();
+                this.reverbNode.buffer = impulse;
+
+                // 殘響高頻柔化濾波器，讓尾音溫暖不刺耳
+                const reverbLowpass = this.ctx.createBiquadFilter();
+                reverbLowpass.type = 'lowpass';
+                reverbLowpass.frequency.value = 3400;
+
+                this.dryBus = this.ctx.createGain();
+                this.dryBus.gain.value = 0.85; // 乾訊號 (清晰度)
+
+                this.wetBus = this.ctx.createGain();
+                this.wetBus.gain.value = 0.28; // 濕訊號 (適量優雅 Reverb)
+
+                this.dryBus.connect(this.ctx.destination);
+                this.reverbNode.connect(reverbLowpass);
+                reverbLowpass.connect(this.wetBus);
+                this.wetBus.connect(this.ctx.destination);
+            },
+
             play(type, t) {
                 if (!this.ctx) return; t = t || this.ctx.currentTime;
                 const o = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
@@ -1412,24 +1466,89 @@
                 else if (type === 'p1') { o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1000; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.15); g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.01, t + 0.25); o.start(t); o.stop(t + 0.3); }
                 else if (type === 'p2') { o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 1500; o.frequency.setValueAtTime(400, t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.3, t + 0.02); g.gain.exponentialRampToValueAtTime(0.01, t + 0.3); o.start(t); o.stop(t + 0.35); }
                 else if (type === 'metro') { o.type = 'square'; f.type = 'highpass'; f.frequency.value = 2500; o.frequency.setValueAtTime(800, t); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05); o.start(t); o.stop(t + 0.05); }
-                else if (type === 'bell') { o.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 2000; o.frequency.setValueAtTime(1046.5, t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.02, t + 0.01); g.gain.exponentialRampToValueAtTime(0.001, t + 0.5); o.start(t); o.stop(t + 0.55); }
+                else if (type === 'bell') { this.playPianoPitch('C6', t); }
             },
-            // 依據音符指定的音名或頻率發出真實鋼琴音色
+
+            // 擬真原聲平台鋼琴發聲引擎 (多泛音共鳴 + 琴槌敲擊瞬態 + Reverb 空間殘響)
             playPianoPitch(pitchOrFreq, t) {
-                if (!this.ctx) return; t = t || this.ctx.currentTime;
+                if (!this.ctx) return;
+                if (!this.reverbNode) this.setupReverbBus();
+                t = Math.max(this.ctx.currentTime, t || this.ctx.currentTime);
                 const freq = noteNameToFreq(pitchOrFreq);
-                const o1 = this.ctx.createOscillator(), o2 = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
-                o1.type = 'triangle'; o2.type = 'sine';
-                o1.frequency.setValueAtTime(freq, t);
-                o2.frequency.setValueAtTime(freq * 2, t);
-                f.type = 'lowpass';
-                f.frequency.setValueAtTime(Math.min(4500, freq * 5), t);
-                f.frequency.exponentialRampToValueAtTime(Math.max(350, freq * 1.2), t + 0.45);
-                g.gain.setValueAtTime(0.001, t);
-                g.gain.linearRampToValueAtTime(0.14, t + 0.008);
-                g.gain.exponentialRampToValueAtTime(0.0008, t + 0.5);
-                o1.connect(f); o2.connect(f); f.connect(g); g.connect(this.ctx.destination);
-                o1.start(t); o2.start(t); o1.stop(t + 0.52); o2.stop(t + 0.52);
+
+                const noteOut = this.ctx.createGain();
+                noteOut.gain.setValueAtTime(0.85, t);
+                noteOut.connect(this.dryBus);
+                noteOut.connect(this.reverbNode);
+
+                // 動態低通濾波器：模擬鋼琴觸鍵瞬間明亮、隨後泛音自然收斂成木質暖音的物理特性
+                const bodyFilter = this.ctx.createBiquadFilter();
+                bodyFilter.type = 'lowpass';
+                bodyFilter.Q.value = 1.2;
+                bodyFilter.frequency.setValueAtTime(Math.min(7500, freq * 8.5), t);
+                bodyFilter.frequency.exponentialRampToValueAtTime(Math.max(480, freq * 2.2), t + 0.28);
+                bodyFilter.frequency.exponentialRampToValueAtTime(Math.max(320, freq * 1.3), t + 1.15);
+                bodyFilter.connect(noteOut);
+
+                // 主音量包絡：極速起音 (Attack) -> 琴弦初衰減 (Early Decay) -> 悠長餘韻 (Sustain/Release)
+                const env = this.ctx.createGain();
+                env.gain.setValueAtTime(0.0001, t);
+                env.gain.linearRampToValueAtTime(0.24, t + 0.005);
+                env.gain.exponentialRampToValueAtTime(0.095, t + 0.14);
+                env.gain.exponentialRampToValueAtTime(0.0005, t + 1.25);
+                env.connect(bodyFilter);
+
+                // 1. 基音弦 (Fundamental - 溫暖飽滿)
+                const osc1 = this.ctx.createOscillator();
+                osc1.type = 'triangle';
+                osc1.frequency.setValueAtTime(freq, t);
+                osc1.connect(env);
+
+                // 2. 同音雙弦微調共鳴 (Unison Detuned String - 營造真實鋼琴多弦共鳴厚度)
+                const oscDetune = this.ctx.createOscillator();
+                const gainDetune = this.ctx.createGain();
+                oscDetune.type = 'sine';
+                oscDetune.frequency.setValueAtTime(freq, t);
+                oscDetune.detune.setValueAtTime(3.5, t); // +3.5 cents 微失諧
+                gainDetune.gain.setValueAtTime(0.55, t);
+                oscDetune.connect(gainDetune);
+                gainDetune.connect(env);
+
+                // 3. 第二泛音 (2nd Harmonic - 賦予清澈度)
+                const osc2 = this.ctx.createOscillator();
+                const gain2 = this.ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(freq * 2, t);
+                osc2.detune.setValueAtTime(-2.5, t);
+                gain2.gain.setValueAtTime(0.32, t);
+                gain2.gain.exponentialRampToValueAtTime(0.02, t + 0.65);
+                osc2.connect(gain2);
+                gain2.connect(env);
+
+                // 4. 第三泛音 (3rd Harmonic - 鋼琴高頻金屬光澤，快速衰減)
+                const osc3 = this.ctx.createOscillator();
+                const gain3 = this.ctx.createGain();
+                osc3.type = 'sine';
+                osc3.frequency.setValueAtTime(freq * 3, t);
+                gain3.gain.setValueAtTime(0.12, t);
+                gain3.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+                osc3.connect(gain3);
+                gain3.connect(env);
+
+                // 5. 琴槌敲擊弦瞬態 (Hammer Strike Transient - 最初 25ms 的木槌敲擊感)
+                const hammerOsc = this.ctx.createOscillator();
+                const hammerGain = this.ctx.createGain();
+                hammerOsc.type = 'triangle';
+                hammerOsc.frequency.setValueAtTime(freq * 6, t);
+                hammerOsc.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.025);
+                hammerGain.gain.setValueAtTime(0.06, t);
+                hammerGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.028);
+                hammerOsc.connect(hammerGain);
+                hammerGain.connect(bodyFilter);
+
+                osc1.start(t); oscDetune.start(t); osc2.start(t); osc3.start(t); hammerOsc.start(t);
+                const stopTime = t + 1.28;
+                osc1.stop(stopTime); oscDetune.stop(stopTime); osc2.stop(stopTime); osc3.stop(stopTime); hammerOsc.stop(t + 0.035);
             }
         };
 
@@ -1492,22 +1611,36 @@
             render();
         }
 
-        // 賽季1 改用 SongClock 相對音樂時間軸 (target 為相對於音樂 0 秒的拍點秒數)
+        // 賽季1：分配《以愛育才三十載》旋律音高給每一顆音符，擊中時依旋律發聲
         function startSeason1Mode() {
             const bgm = document.getElementById('bgm-season1');
             SongClock.init(bgm, SEASON1_MUSIC_START_DELAY, getUserAudioOffset());
 
             const sixteenthDuration = (60 / SEASON1_BPM) / 4;
             const cleanMap = SEASON1_MAP.replace(/\s+/g, '');
+            const melodyArr = THEME_SONG_30_MELODY.trim().split(/\s+/);
+
             let noteCount = 0, lyricIndex = 0, lastNoteTarget = 0;
             for (let i = 0; i < cleanMap.length; i++) {
                 if (cleanMap[i] === '1') {
-                    // 相對於音樂播放的精準秒數
                     let targetSongTime = SEASON1_CHART_OFFSET + (i * sixteenthDuration);
                     let char = "";
-                    if (noteCount >= 41 && lyricIndex < SEASON1_LYRICS.length) { char = SEASON1_LYRICS[lyricIndex]; lyricIndex++; }
-                    session.p1.notes.push({ target: targetSongTime, hit: false, missed: false, index: noteCount, lyric: char });
-                    lastNoteTarget = targetSongTime; noteCount++;
+                    if (noteCount >= 41 && lyricIndex < SEASON1_LYRICS.length) {
+                        char = SEASON1_LYRICS[lyricIndex];
+                        lyricIndex++;
+                    }
+                    // 依序綁定《以愛育才三十載》的旋律音高
+                    let notePitch = melodyArr[noteCount % melodyArr.length] || 'C5';
+                    session.p1.notes.push({
+                        target: targetSongTime,
+                        hit: false,
+                        missed: false,
+                        index: noteCount,
+                        lyric: char,
+                        pitch: notePitch
+                    });
+                    lastNoteTarget = targetSongTime;
+                    noteCount++;
                 }
             }
             notify("準備開始", "var(--comp-gold)");
@@ -1609,9 +1742,15 @@
             if (gameState !== 'PLAYING' || activeGameType !== 'rhythm') return;
             if (config.players === 1 && pid === 2) return;
             const now = (config.mode === 'season1') ? SongClock.getTime() : AudioEngine.ctx.currentTime;
+            const audioCtxNow = AudioEngine.ctx ? AudioEngine.ctx.currentTime : 0;
             const data = pid === 1 ? session.p1 : session.p2;
             const y = config.players === 1 ? height / 2 : (pid === 1 ? height * 0.28 : height * 0.72);
-            AudioEngine.play((config.mode === 'season1' && pid === 1) ? 'bell' : (pid === 1 ? 'p1' : 'p2'), AudioEngine.ctx.currentTime);
+
+            // 非賽季1模式保持原有鼓聲回饋
+            if (config.mode !== 'season1') {
+                AudioEngine.play(pid === 1 ? 'p1' : 'p2', audioCtxNow);
+            }
+
             data.bump = 1.2;
             let best = null, minDiff = Infinity;
             data.notes.forEach(n => { if (!n.hit && !n.missed) { let d = Math.abs(n.target - now); if (d < minDiff) { minDiff = d; best = n; } } });
@@ -1619,6 +1758,12 @@
                 best.hit = true; let rating = 'POOR', rCol = 'var(--rank-b)';
                 if (minDiff < WINDOWS.PERF) { rating = 'PERFECT'; rCol = 'var(--rank-s)'; }
                 else if (minDiff < WINDOWS.GOOD) { rating = 'GOOD'; rCol = 'var(--rank-a)'; }
+
+                // 賽季1：當成功判定擊中音符時，奏響該音符對應的真實鋼琴旋律音高！
+                if (config.mode === 'season1' && best.pitch) {
+                    AudioEngine.playPianoPitch(best.pitch, audioCtxNow);
+                }
+
                 if (rating === 'PERFECT' || rating === 'GOOD') VFX.bursts.push({ y: y, color: rating === 'PERFECT' ? '#22d3ee' : '#4ade80', life: 1.0 });
                 handleResult(pid, rating); showFeedback(rating, HIT_X, y - 90, rCol);
             }
@@ -1789,7 +1934,7 @@
         }
 
         // ============================================================================
-        // 🎹 【藍循演奏家】Deemo 風格 3D 透視 6 軌鋼琴遊戲核心引擎 (嚴謹五級判定 + 跨裝置音畫同步) 🎹
+        // 🎹 【藍循演奏家】Deemo 風格 3D 透視 6 軌鋼琴遊戲核心引擎 🎹
         // ============================================================================
         const PIANIST_GEOM = {
             LANES: 6,          
@@ -1801,7 +1946,6 @@
             KEY_LABELS: ['S', 'D', 'F', 'J', 'K', 'L']
         };
 
-        // 嚴謹五級判定時間窗 (秒)
         const PIANIST_WINDOWS = {
             CHARMING: 0.042, // ±42ms 極精準判定 (100分 + 連續加成)
             GREAT: 0.085,    // ±85ms (80分，維持Combo但中斷連續Charming)
@@ -1819,7 +1963,6 @@
             endSongTime: 0, ending: false, fadeInterval: null
         };
 
-        // 解析譜面與每個音符對應的旋律音高 (target 全部採用相對於音樂 0 秒的純音樂時間)
         function buildPianistChart(song) {
             let rawNotes = [];
             const sixteenthSec = (60 / song.bpm) / 4;
@@ -1837,7 +1980,6 @@
                 const tokens = cleanChart.split(/\s+/);
                 tokens.forEach((tok, stepIdx) => {
                     if (!tok || tok === '.' || tok === '0' || tok === '-') return;
-                    // 相對於音樂播放進度的秒數 (不摻雜系統時鐘)
                     let targetSongTime = (song.chartOffset || 0) + (stepIdx * sixteenthSec);
                     let parsedItems = [];
 
@@ -1916,7 +2058,6 @@
             const keySound = document.getElementById('pianist-keysound-select').value === 'on';
             const pBgm = document.getElementById('bgmPlayer');
 
-            // 預熱並等待瀏覽器完成音檔解鎖與歸零，消除行動裝置首次播放延遲
             await warmupAndResetAudio(pBgm, selectedSong.audioSrc);
 
             const startDelay = selectedSong.startDelay !== undefined ? selectedSong.startDelay : 1.0;
@@ -1954,7 +2095,6 @@
             if (gameState !== 'PLAYING' || activeGameType !== 'pianist') return;
             ctx.clearRect(0, 0, width, height);
 
-            // 直接從 SongClock 取得與音檔 100% 同步的精準音樂秒數
             const nowSongTime = SongClock.getTime();
             const pBgm = document.getElementById('bgmPlayer');
 
@@ -2123,12 +2263,10 @@
             }
         }
 
-        // 處理 6 軌五級嚴謹判定 (Charming / Great / Good / Poor / Miss) 與連續 Charming 特效加成
         function triggerPianistLane(laneIdx) {
             if (gameState !== 'PLAYING' || activeGameType !== 'pianist') return;
             if (laneIdx < 0 || laneIdx >= PIANIST_GEOM.LANES) return;
 
-            // 使用與畫面渲染完全相同的 SongClock 音樂時鐘進行判定
             const nowSongTime = SongClock.getTime();
             const audioCtxNow = AudioEngine.ctx ? AudioEngine.ctx.currentTime : 0;
             pianistSession.laneFlash[laneIdx] = 1.0;
@@ -2203,7 +2341,7 @@
                     return;
                 }
 
-                // 有效命中 (CHARMING / GREAT / GOOD) 奏響該音符的專屬旋律音高
+                // 有效命中 (CHARMING / GREAT / GOOD) 奏響帶有空間 Reverb 的擬真鋼琴音高
                 if (pianistSession.keySound && bestNote.pitch) {
                     AudioEngine.playPianoPitch(bestNote.pitch, audioCtxNow);
                 }
